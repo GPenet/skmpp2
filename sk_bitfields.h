@@ -88,8 +88,8 @@ struct BF8 {
 	
  	inline int On(int ch) const {return ((f & (1 << ch)));	}		
 	inline int Off(int ch) const {	return (!(f & (1 << ch)));	}	
-	inline void Set(USHORT ch) {f |= (1 << ch);	}	
-	inline void Clear(USHORT ch) {	f &= ~(1 << ch);}
+	inline void Set(USHORT ch) {f |= (UCHAR)(1 << ch);	}
+	inline void Clear(USHORT ch) {	f &= (UCHAR)~(1 << ch);}
 	inline BF8 operator &(BF8 & e) const {BF8 w;w.f = f & e.f;	return w;	}
 	inline BF8 operator |(BF8 & e) {BF8 w;	w.f = f | e.f;	return w;}
 	inline BF8 operator ^(BF8 & e) {BF8 w;	w.f = f ^ e.f;	return w;}
@@ -112,11 +112,11 @@ struct BF16 {
 	USHORT f;
 	// constructors
 	BF16() { f = 0; }
-	BF16(int i1) { f = 1 << i1; }
-	BF16(int i1, int i2) { f = (1 << i1) | (1 << i2); }
-	BF16(int i1, int i2, int i3) { f = (1 << i1) | (1 << i2) | (1 << i3); }
-	BF16(int i1, int i2, int i3, int i4) { f = (1 << i1) | (1 << i2) | (1 << i3) | (1 << i4); }
-	BF16(int i1, int i2, int i3, int i4, int i5) { f = (1 << i1) | (1 << i2) | (1 << i3) | (1 << i4) | (1 << i5); }
+	BF16(int i1) { f = (USHORT)(1 << i1); }
+	BF16(int i1, int i2) { f = (USHORT)((1 << i1) | (1 << i2)); }
+	BF16(int i1, int i2, int i3) { f = (USHORT)((1 << i1) | (1 << i2) | (1 << i3)); }
+	BF16(int i1, int i2, int i3, int i4) { f = (USHORT)((1 << i1) | (1 << i2) | (1 << i3) | (1 << i4)); }
+	BF16(int i1, int i2, int i3, int i4, int i5) { f = (USHORT)((1 << i1) | (1 << i2) | (1 << i3) | (1 << i4) | (1 << i5)); }
 
 	inline void SetAll_0() { f = 0; }
 	inline void SetAll_1() { f = 0x1ff; }
@@ -124,8 +124,8 @@ struct BF16 {
 	inline int isNotEmpty() const { return f; }
 	inline int On(int ch) const { return ((f & (1 << ch))); }
 	inline int Off(int ch) const { return (!(f & (1 << ch))); }
-	inline void Set(USHORT ch) { f |= (1 << ch); }
-	inline void Clear(USHORT ch) { f &= ~(1 << ch); }
+	inline void Set(USHORT ch) { f |= (USHORT)(1 << ch); }
+	inline void Clear(USHORT ch) { f &= (USHORT)(~(1 << ch)); }
 	inline BF16 operator &(BF16 & e) const { BF16 w;	w.f = f & e.f;	return w; }
 	inline BF16 operator |(BF16 & e) const { BF16 w;	w.f = f | e.f;	return w; }
 	inline BF16 operator ^(BF16 & e) const { BF16 w;	w.f = f ^ e.f;	return w; }
@@ -145,13 +145,13 @@ struct BF16 {
 describing some binary properties fo these regions
 */
 struct BF32 {
-	UINT f;   // bitfield
+	uint32_t f;   // bitfield
 	BF32() { f = 0; }
-	inline int On(int unit) { return ((f & (1 << unit))); }
-	inline int Off(int unit) { return (!(f & (1 << unit))); }
-	inline void Set(USHORT unit) { f |= (1 << unit); }
-	inline void Clear(USHORT unit) { f &= ~(1 << unit); }
-	inline void Inv(USHORT unit) { f ^= (1 << unit); }
+	inline int On(int unit) { return ((f & ((uint32_t)1 << unit))); }
+	inline int Off(int unit) { return (!(f & ((uint32_t)1 << unit))); }
+	inline void Set(int unit) { f |= ((uint32_t)1 << unit); }
+	inline void Clear(int unit) { f &= ~((uint32_t)1 << unit); }
+	inline void Inv(int unit) { f ^= ((uint32_t)1 << unit); }
 	inline BF32 operator -(BF32 & e) {
 		BF32 w;	w.f = f ^ (e.f & f); return w;
 	}
@@ -274,11 +274,11 @@ public:
 	}
 	inline void SetToBit(const int theBit) { 
 		if (theBit < 64) {
-			(uint64_t)bf.u64[1] = 0;
 			bf.u64[0]=(uint64_t) 1<< theBit;
+			bf.u64[1] = 0;
 		}
 		else {
-			(uint64_t)bf.u64[0] = 1;
+			bf.u64[0] = 0;
 			bf.u64[1] = (uint64_t)1 << (theBit-64);
 		}
 	}
@@ -473,7 +473,7 @@ public:
 	USHORT String(UCAND * t);
 	int IsEmpty();
 	int Count();
-	void Print(char * lib);
+	void Print(const char * lib);
 };
 
 struct RBF27{
@@ -564,7 +564,7 @@ public:
 		ff[v >> 7].setBit(v & 127);
 	}
 
-	UINT GetSetsDigit(USHORT d){ int dd = d + 3, ffi = dd>2, ffv = dd & 3;	return ff[ffi].bf.u32[4]; }
+	uint32_t GetSetsDigit(USHORT d){ int dd = d + 3, ffi = dd>2/*, ffv = dd & 3*/;	return ff[ffi].bf.u32[4]; }
 	inline bool IsEmpty() const
 	{
 		return (ff[0].isZero() && ff[1].isZero() && ff[2].isZero());

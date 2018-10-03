@@ -41,6 +41,9 @@ typedef unsigned __int64  uint64_t;
 #ifdef   _MSC_VER
 #define _popcnt64(a) __popcnt64(a)
 #define _popcnt32(a) __popcnt(a)
+//_bittestandset64 is builtin
+//_bittestandreset64 is builtin
+//_bittest64 is builtin
 #define bitscanforward(A,B) _BitScanForward((unsigned long*)& A, B)
 #define bitscanforward64(A,B) _BitScanForward64((unsigned long*)& A, B)
 #define bitscanreverse(A,B) _BitScanReverse((unsigned long*)& A, B)
@@ -56,10 +59,9 @@ typedef unsigned __int64  uint64_t;
 #else
 #define _popcnt64(a) __builtin_popcountll(a)
 #define _popcnt32(a) __builtin_popcount(a)
-//#define _BitScanForward64(res, src) (*res = __builtin_ctzll(src))
-//#define _BitScanForward(res, src) (*res = __builtin_ctz(src))
-//#define _BitScanReverse64(res, src) (*res = __builtin_clzll(src) ^ 63)
-//#define _BitScanReverse(res, src) (*res = __builtin_clz(src) ^ 31)
+#define __movsb(dst,src,count) memcpy(dst,src,count)
+#define __movsd(dst,src,count) memcpy(dst,src,count*4)
+#define __movsq(dst,src,count) memcpy(dst,src,count*8)
 #define bitscanforward64(res, src) (res = __builtin_ctzll(src))
 #define bitscanforward(res, src) (res = __builtin_ctz(src))
 #define bitscanreverse64(res, src) (res = __builtin_clzll(src) ^ 63)
@@ -87,8 +89,8 @@ typedef unsigned __int64  uint64_t;
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned short int  USHORT;
-typedef unsigned int UINT;
-typedef unsigned long ULONG;
+//typedef unsigned int UINT;
+//typedef unsigned long ULONG;
 typedef unsigned char UCHAR;
 
 
@@ -134,8 +136,8 @@ typedef union p9x9 {
 } p9_9;
 //==============================tables and functions  in tab0 and tab0b
 
-extern char *  empty_puzzle;
-extern char *  puzstart;
+extern const char *  empty_puzzle;
+extern const char *  puzstart;
 
 // printing and debugging 
 extern char * Blancs(int n, int no);
@@ -233,7 +235,7 @@ the goal is to have a simpler code, not to improve the performance
 class COMBINE
 {
 public:
-	UINT inds[15],  // internal table size p
+	uint32_t inds[15],  // internal table size p
 		p,      // maxi 15
 		lim,    // set to p-1 final index at the end
 		n;      // numer of objects in the table
@@ -295,11 +297,11 @@ public: char v[10];
 		VV9(){ v[9] = 0; };
 		//   void base(){for(USHORT i=0;i<9;i++)v[i]=(char)i;}
 		void row(char * puz, USHORT r){
-			for (USHORT i = 0, ii = 9 * r; i<9; i++)
+		for (int i = 0, ii = 9 * r; i<9; i++)
 				v[i] = puz[ii++];
 		}
 		void col(char * puz, USHORT c) {
-			for (USHORT i = 0, ii = c; i<9; i++, ii += 9)
+			for (int i = 0, ii = c; i<9; i++, ii += 9)
 				v[i] = puz[ii];
 		}
 

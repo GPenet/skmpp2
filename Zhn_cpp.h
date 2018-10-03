@@ -64,7 +64,7 @@ void ZH_GLOBAL::MorphPat(char * ze){// sort entry to optimize brute force
 	// morph the puzzle to the high band in band
 	if (imax > 2){
 		source = zdiag;		sourcei = zdiagi;
-		__movsd((unsigned long*)count, (unsigned long *) &count[3], 3);
+		__movsd((uint32_t*)count, (uint32_t *) &count[3], 3);
 	}
 	else { source = ze; sourcei = zei; }
 	int tsort[3], w;// sort bands increasing order of count
@@ -78,15 +78,15 @@ void ZH_GLOBAL::MorphPat(char * ze){// sort entry to optimize brute force
 	memcpy(puz, &source[27 * ib1], 27);
 	memcpy(&puz[27], &source[27 * ib2], 27);
 	memcpy(&puz[54], &source[27 * ib3], 27);
-	__movsd((unsigned long*)x3_cmap, (unsigned long *)&sourcei[27 * ib1], 27);
-	__movsd((unsigned long*)&x3_cmap[27], (unsigned long *)&sourcei[27 * ib2], 27);
-	__movsd((unsigned long*)&x3_cmap[54], (unsigned long *)&sourcei[27 * ib3], 27);
+	__movsd((uint32_t*)x3_cmap, (uint32_t *)&sourcei[27 * ib1], 27);
+	__movsd((uint32_t*)&x3_cmap[27], (uint32_t *)&sourcei[27 * ib2], 27);
+	__movsd((uint32_t*)&x3_cmap[54], (uint32_t *)&sourcei[27 * ib3], 27);
 
 }
 //td is 8bits cell + 8 bits digits
 void ZH_GLOBAL::Morph_digits(int morph){// using the given entry
 	ngiven = 0;
-	unsigned long count[9]; 
+	uint32_t count[9];
 	memset(count,0,sizeof count);
 	for (int i = 0; i < 81; i++){
 		register int c = puz[i];
@@ -114,7 +114,7 @@ void ZH_GLOBAL::Morph_digits(int morph){// using the given entry
 //}
 void ZH_GLOBAL::Morph_digits(GINT16 * td, int nc){// must be in line with the morphed pattern
 	ngiven = 0;
-	unsigned long count[9]; 
+	uint32_t count[9];
 	memset(count, 0, sizeof count);
 	for (int it = 0; it < nc; it++){
 		register int  dig = td[it].u8[1];
@@ -170,7 +170,7 @@ int ZH_GLOBAL::Go_InitSolve(char * ze){
 		if (c<'1' || c>'9') continue;
 		c -= '1';
 		digs |= 1 << c;
-		tgiven[ngiven++].u16 = i | (c << 8);
+		tgiven[ngiven++].u16 = (uint16_t)(i | (c << 8));
 	}
 	if (_popcnt32(digs) < 8) return 1; // don't accept less than 8 digits given
 	if( InitSudoku()) return 1;
@@ -372,7 +372,7 @@ char * ZHOU::SetKnown(char * zs){
 				uint32_t  irow;
 				bitscanforward(irow, row);
 				int	cell = Tblstartblock[ib] + TblMult9[j] + irow;
-				zs[cell] = digit + '1';
+				zs[cell] = (char)(digit + '1');
 			}
 		}
 	}
@@ -792,7 +792,7 @@ int ZHOU::SolveHiddenTriplet_Box_Row(){// look a hidden triplet in row or box
 	zh_g.pairs_naked.SetAll_0();
 	// process 9 boxes
 	for (int iband = 0, dband = 0, ibox = 0; iband < 3; iband++, dband += 27){
-		int bandpairs = zh_g.pairs.bf.u32[iband];
+		/*int bandpairs = zh_g.pairs.bf.u32[iband];*/
 		for (int iboxr = 0, mask = 07007007; iboxr < 3; iboxr++, ibox++, mask <<= 3){
 			if (box_hidden_pair & (1 << ibox)) continue;
 			if (_popcnt32(cells_unsolved.bf.u32[iband] & mask) < 5) continue;
@@ -904,6 +904,7 @@ void ZHOU::GuessFloor(){
 	if (ccmin == 10)return;// should never be
 	dcell = 27 * bmin;
 	dxcell = 32 * bmin;
+	{
 	int tp[10], ntp=0;
 	BitsInTable32(tp, ntp, min);
 	for (int i = 0; i < ntp; i++) {// no bi value, use the smallest set
@@ -914,6 +915,7 @@ void ZHOU::GuessFloor(){
 		mynext->Upd1(0);
 		mynext->GuessFloor();
 	}
+	} // end of int tp[10], ntp=0 scope
 	return;
 
 exitok:
@@ -931,4 +933,3 @@ exitok:
 	Upd1(0);
 	GuessFloor();
 }
-

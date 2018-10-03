@@ -3,8 +3,8 @@
 #include <string.h>
 #include "sk_t.h"
 
-char * empty_puzzle=".................................................................................";
-char * puzstart="12345678945................2.....................................................";
+const char * empty_puzzle=".................................................................................";
+const char * puzstart="12345678945................2.....................................................";
 
 char * Blancs(int n,int no)
  {static char wt[]="___________________ ",
@@ -277,7 +277,7 @@ const T128 maskLSB[129] =
 const T128 maskffff = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF };
 
 
-extern T128 cellsInBandBM[6] = {
+T128 cellsInBandBM[6] = {
 	{ 0x0000000007FFFFFF, 0x0000000000000000 }, //0 band 0 rows 123
 	{ 0x003FFFFFF8000000, 0x0000000000000000 }, //1 band 1 rows 456 
 	{ 0xFFC0000000000000, 0x000000000001FFFF }, //2 band 2 rows 789
@@ -288,7 +288,7 @@ extern T128 cellsInBandBM[6] = {
 };
 
 
-extern T128 cellsInHouseBM[27] = {
+T128 cellsInHouseBM[27] = {
 	{ 0x00000000000001FF, 0x0000000000000000 }, //0 row1
 	{ 0x000000000003FE00, 0x0000000000000000 }, //1
 	{ 0x0000000007FC0000, 0x0000000000000000 }, //2
@@ -318,7 +318,7 @@ extern T128 cellsInHouseBM[27] = {
 	{ 0x7000000000000000, 0x000000000001C0E0 }, //26
 };
 
-extern T128 band3xBM[6] = {
+T128 band3xBM[6] = {
 	{ 0x0000000007FFFFFF, 0x0000000000000000 }, //0 band 0 rows 123
 	{ 0x07FFFFFF00000000, 0x0000000000000000 }, //1 band 1 rows 456 
 	{ 0x0000000000000000, 0x0000000007FFFFFF }, //2 band 2 rows 789
@@ -328,7 +328,7 @@ extern T128 band3xBM[6] = {
 
 };
 
-extern T128 units3xBM[27] = {
+T128 units3xBM[27] = {
 	{ 0777, 00 },	{ 0777000, 00 },	{ 0777000000, 00 },
 	{ 037740000000000, 00 },	{ 037740000000000000, 00 },	{ 037740000000000000000, 00 },
 	{ 00, 0777 },	{ 00, 0777000 },	{ 00, 0777000000 },
@@ -442,7 +442,7 @@ int C_rbc27[81] = {// row col box in 27 bf unit mode
 	0100001200, 0100002200, 0100004200, 0200010200, 0200020200, 0200040200, 0400100200, 0400200200, 0400400200,
 	0100001400, 0100002400, 0100004400, 0200010400, 0200020400, 0200040400, 0400100400, 0400200400, 0400400400,
 };
-extern T128 cell_z3x[81] = {
+T128 cell_z3x[81] = {
 	{ 040040040007007776, 01001001 }, { 0100100100007007775, 02002002 }, { 0200200200007007773, 04004004 },
 	{ 0400400400070070767, 010010010 }, { 01001001000070070757, 020020020 }, { 02002002000070070737, 040040040 },
 	{ 04004004000700700677, 0100100100 }, { 010010010000700700577, 0200200200 }, { 020020020000700700377, 0400400400 },
@@ -489,7 +489,7 @@ void COMBINE::First(int ne, int pe, USHORT * d, USHORT * f)    {
 		p = 10;  // safety measure, not auhorised
 	lim = p - 1;
 	n = ne;
-	for (UINT i = 0, v = n - p; i<p; i++, v++)
+	for (uint32_t i = 0, v = n - p; i<p; i++, v++)
 		inds[i] = v;
 	Sort();
 }
@@ -499,11 +499,11 @@ return 1 if ok;  0 if over
 int COMBINE::Next()  {
 	if (inds[lim] == lim)
 		return 0; // finished
-	int i = 0;
+	uint32_t i = 0;
 	while (inds[i] == i)
 		i++; // lock for first that can go down
 	inds[i]--; // back one for that one
-	UINT v = inds[i];  // an restart below with no hole
+	uint32_t v = inds[i];  // an restart below with no hole
 	while (i--) inds[i] = --v;
 	Sort();
 	return 1;
@@ -515,8 +515,8 @@ inds is the list of "p" index selected
 */
 
 void COMBINE::Sort()   {
-	UINT is = 0, js = n - p, jns = 0;
-	for (UINT i = 0; i<n; i++) {
+	uint32_t is = 0, js = n - p, jns = 0;
+	for (uint32_t i = 0; i<n; i++) {
 		if (i - inds[is]){
 			output[jns++] = entry[i];
 			continue;

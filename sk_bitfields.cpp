@@ -1,4 +1,3 @@
-
 #include "sk_t.h"
 
 USHORT BF16::CountEtString(char *s) {
@@ -28,12 +27,12 @@ int BF32::Table(int * r) {
 }
 
 USHORT BF32::String(USHORT * r, int i1, int i2){
-	UINT  n = 0, x = 1 << i1;
+	uint32_t  n = 0, x = 1 << i1;
 	for (int i = i1; i<i2; i++){
 		if (f&x) r[n++] =(USHORT) i;
 		x = x << 1;
 	}
-	return n;
+	return (USHORT)n;
 }
 
 void  BF128::ClearDiag(int band, int stack) {
@@ -151,7 +150,7 @@ int PM3X::Count(){
 	return (int)n;
 }
 
-void PM3X::Print(char * lib){
+void PM3X::Print(const char * lib){
 	cout << "pm3x status for " << lib << endl;
 	for (int i = 0; i < 3;i++)	cout << ".........+++++++++---------";
 	cout << endl;
@@ -202,4 +201,3 @@ void BF81::OrBand(int F, int iband){
 	bf.u32[1] |= ((F & 0x3ff) << 22);
 	bf.u32[2] |= (F >> 10);
 }
-

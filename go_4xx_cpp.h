@@ -25,7 +25,7 @@ void Go_c400_40p(char *ze, int task) {// work on bitfields std puz
 	memset(d_units, 0, sizeof d_units);
 	memset(c_bands, 0, sizeof c_bands);
 	memset(c_units, 0, sizeof c_units);
-	char *const rcb  = "RCB";
+	const char* rcb  = "RCB";
 	for (int i = 0; i < 81; i++)if (ze[i] != '.') {
 		pattern.Set_c(i);
 		int d = ze[i] - '1',bit=1<<d;
@@ -165,7 +165,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 			break;
 		case 23://sampling start sgo.vx[1] one every sgo.vx[2]
 			if (++npuz < sgo.vx[1]) break;
-			{	int rn = (npuz - sgo.vx[1]) % sgo.vx[2];
+			{	int rn = (int)((npuz - sgo.vx[1]) % sgo.vx[2]);
 				if (!rn)fout1 << ze << endl;
 			}
 			break;
@@ -254,7 +254,7 @@ void Go_cxx() {
 		cerr << "error open file " << sgo.finput_name << endl;
 		return;
 	}
-	char * ze = finput.ze;
+	//char * ze = finput.ze;
 	while (finput.GetLigne()) {
 	}
 
@@ -267,7 +267,7 @@ void Go_cxx() {
 
 void Go_c440(){
 	cout << "Go_440 entry " << sgo.finput_name  <<" game results to parse"<< endl;
-	int v = sgo.vx[0];
+	//int v = sgo.vx[0];
 	char * ze = finput.ze;
 	finput.open(sgo.finput_name);
 	if (!finput.is_open()){
@@ -338,7 +338,7 @@ void Go_c480() {//add  compressed clues to entry
 		cerr << "missing base out" << endl;
 		return;
 	}
-	int update = sgo.vx[0];
+	//int update = sgo.vx[0];
 	finput.open(sgo.finput_name);
 	if (!finput.is_open()) {
 		cerr << "error open file " << sgo.finput_name << endl;
@@ -347,7 +347,7 @@ void Go_c480() {//add  compressed clues to entry
 	char ze[200]; ze[81] = ';';
 	int lcmp = 0;
 	while (finput.GetPuzzle(ze)) {
-		int n = 0, p = 82;
+		int /*n = 0,*/ p = 82;
 		for (int i = 9; i < 81; i++)if (ze[i] - '.')
 			ze[p++] = ze[i];
 
@@ -388,7 +388,7 @@ void Go_c481() {//base check -i ads -s1- base -o add root
 
 	//__________________________________
 	int lcmp = 0;
-	char scomp[10]; scomp[0] = 0;
+	//char scomp[10]; scomp[0] = 0;
 	char * zcompress = &ze[81],*zeb= fin2.ze;;
 	zeb[0] = 0;
 	while (finput.GetLigne()) {
@@ -404,7 +404,7 @@ void Go_c481() {//base check -i ads -s1- base -o add root
 			}
 		}
 		else lcmp = ll;
-		int lbase = (int)strlen(zcompress);
+		//int lbase = (int)strlen(zcompress);
 		// read/ out if update base as long as below
 	loop_base:
 		int icomp = strcmp(zcompress, zeb);
@@ -423,7 +423,7 @@ void Go_c481() {//base check -i ads -s1- base -o add root
 			//char zout[200];
 	next_add:;
 	}
-	if (update && zeb[0] < 255) {// copy the rest of the base
+	if (update && zeb[0] < 255) {// copy the rest of the base //MD: warning: comparison is always true due to limited range of data type
 		fout2 << zeb << endl;
 		while(fin2.GetLigne())fout2 << zeb << endl;
 	}
@@ -445,7 +445,7 @@ void Go_c484() {
 		cerr << "error open file " << sgo.finput_name << endl;
 		return;
 	}
-	char * ze = finput.ze;
+	//char * ze = finput.ze;
 	char zout[82];
 	strcpy(zout, empty_puzzle);
 	int tclues[50], nclues = 0,puz_int[81];
@@ -453,9 +453,9 @@ void Go_c484() {
 	char *w = sgo.s_strings[0];
 	for (int i = 0; i < 81; i++)
 		if (w[i] >= '1' && w[i] <= '9')puz_int[i] = w[i];
-	for (int i = 0; i < 9; i++) if (puz_int[i]) zout[i] = puz_int[i];
+	for (int i = 0; i < 9; i++) if (puz_int[i]) zout[i] = (char)puz_int[i];
 	for (int i = 9; i < 81; i++) 
-		if (puz_int[i]&& nclues<40) tclues[nclues++]=i;
+		if (puz_int[i]&& nclues<40) tclues[nclues++]=i; //MD: warning: variable ‘tclues’ set but not used
 	if (nclues > 30) {
 		cerr << "-s1- too many clues cancel " << endl;
 		return;
