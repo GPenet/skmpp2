@@ -257,6 +257,12 @@ struct ZHOU{// size 32 bytes
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
 
+
+	// located in Solver_step_dyn_cpp.h
+	int Dyn_lockedBox(int active);
+	int Dyn_lockedRowCol(int active);
+
+
 	/*
     inline void SetPat(char * pat, char * zsol, char * puzfinal){
 		zh_g.pat = pat; zh_g.zsol = zsol; zh_g.puzfinal = puzfinal;

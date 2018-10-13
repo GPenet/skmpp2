@@ -64,7 +64,7 @@ void ZH_GLOBAL::MorphPat(char * ze){// sort entry to optimize brute force
 	// morph the puzzle to the high band in band
 	if (imax > 2){
 		source = zdiag;		sourcei = zdiagi;
-		__movsd((unsigned long*)count, (unsigned long *) &count[3], 3);
+		memmove(count, &count[3], 3 * 4);
 	}
 	else { source = ze; sourcei = zei; }
 	int tsort[3], w;// sort bands increasing order of count
@@ -78,9 +78,9 @@ void ZH_GLOBAL::MorphPat(char * ze){// sort entry to optimize brute force
 	memcpy(puz, &source[27 * ib1], 27);
 	memcpy(&puz[27], &source[27 * ib2], 27);
 	memcpy(&puz[54], &source[27 * ib3], 27);
-	__movsd((unsigned long*)x3_cmap, (unsigned long *)&sourcei[27 * ib1], 27);
-	__movsd((unsigned long*)&x3_cmap[27], (unsigned long *)&sourcei[27 * ib2], 27);
-	__movsd((unsigned long*)&x3_cmap[54], (unsigned long *)&sourcei[27 * ib3], 27);
+	memmove(x3_cmap, &sourcei[27 * ib1], 27 * 4);
+	memmove(&x3_cmap[27],  &sourcei[27 * ib2], 27 * 4);
+	memmove(&x3_cmap[54], &sourcei[27 * ib3], 27 * 4);
 
 }
 //td is 8bits cell + 8 bits digits
@@ -350,7 +350,7 @@ int ZHOU::InitSudoku(GINT16 * t, int n){// if morph, done before
 int ZHOU::InitSudoku(char * zpuz, int morph){
 	if (!morph){
 		zh_g.NoMorph();
-		__movsb((unsigned char *)zh_g.puz, (unsigned char *)zpuz, 82);
+		memmove(zh_g.puz, zpuz, 82);
 	}
 	else zh_g.MorphPat(zpuz);
 	zh_g.Morph_digits(morph);
@@ -715,7 +715,7 @@ int ZHOU::PartialInitSudoku(GINT16 * t, int n){// if morph, done before
 
 int ZHOU::EndInitSudoku(GINT16 * t, int n){// if morph, done before
 	BF128 Digit_cell_Assigned[9];
-	__movsq((uint64_t*)Digit_cell_Assigned, (uint64_t*)zh_g.Digit_cell_Assigned, 18);
+	memmove(Digit_cell_Assigned, zh_g.Digit_cell_Assigned, 9 * 16);
 	*this = zhou_ip;
 	for (int ic = 0; ic < n; ic++)   {
 		int digit = t[ic].u8[1], cell = t[ic].u8[0], xcell = C_To128[cell];

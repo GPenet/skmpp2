@@ -3,6 +3,7 @@
 #include "main.h"
 #include "Zhn_cpp.h"
 
+
 void ASMtestdet(int &x32, uint64_t &x64 ,int & r32,uint64_t & r64) {
 	r32 = 1 << x32;
 	r64 = (uint64_t)1 << x32;
@@ -14,7 +15,6 @@ void ASMtestdet(int &x32, uint64_t &x64 ,int & r32,uint64_t & r64) {
 void ASMtest() {
 	//uint32_t res,res2;
 	//int x32=40,r32;
-	
 }
 // catching time as seconds+millis  (seconds since year 1970)
 long GetTimeMillis() {

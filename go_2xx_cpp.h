@@ -8,7 +8,7 @@ struct GENSTEP{
 	int row_free[9], col_free[9], box_free[9];	
 	GINT16 tclues[40];
 	int nclues,iclue;
-	int tfree[40], ntcf;
+	int tfree[40], ntcf,modegame,modehigh;
 	USHORT * tcor;
 	char puz[82];
 	void Init(){ 
@@ -133,26 +133,32 @@ struct GENSTEP{
 
 int GENSTEP::PuzzleToTest(){
 	//PrintPartial(nclues-1);
-	int digits = 0;
+	int digits = 0,nguess=0;
 	for (int i = 0; i < nclues; i++) digits |= 1<<tclues[i].u8[1];
 	if (_popcnt32(digits) < 8) return 0;// minimum 8 digits given to have a sudoku
 	if (zh_g.Go_InitSolve(tclues, nclues))goto no;
-	{
-	int nguess = (int)zh_g.cpt[1];
+	nguess = (int)zh_g.cpt[1];
 	strcpy(puz, zh_g.puz);
 	zh_g.zsol = 0; // be sure to keep the solution 
 	if (!zhou[0].IsMinimale(tclues, nclues)) goto no;
-	int ir = pm_go.SolveGetLow44(1);// pack the low ratings
-	if (ir < 0) return 0; 
-	if (ir) {
-		fout1 << puz
-			<< ";" << pm_go.rat_er << ";" << pm_go.rat_ep << ";" << pm_go.rat_ed
-		<< endl; return 1;
-	}
-	if (pm_go.rat_ed>23){ fout3 << puz << ";" << nguess << endl; return 3; }
-	fout2 << puz << ";" << nguess << endl;
-	return 2;
+	if (modegame) {
+		int ir = pm_go.SolveGetLow44(1);// pack the low ratings
+		if (ir < 0) return 0;
+		if (ir) {
+			fout1 << puz
+				<< ";" << pm_go.rat_er << ";" << pm_go.rat_ep << ";" << pm_go.rat_ed
+				<< endl; return 1;
+		}
+		if (pm_go.rat_ed > 23) { fout3 << puz << ";" << nguess << endl; return 3; }
+		fout2 << puz << ";" << nguess << endl;
+		return 2;
 	} //end of int nguess scope
+	else if (modehigh) {// filter to adjust later to dyn plus unsolved 
+		if(!pm_go.Solved_xx(90))		fout1 << puz << endl;
+	}
+	else {
+		fout1 << puz << endl;
+	}
 no:
 	if (sgo.command == 202)	{
 		char puz[82];
@@ -178,6 +184,12 @@ void GENSTEP::Gengo(int istart){
 	int ilim = nclues - 1;
 	iclue = istart;
 	Find_free_minimal_change();
+	//PrintPartial(istart);
+	//Debug(istart);
+	//cout << "start free" << oct << tc[iclue].free << dec 	
+	//	<<" cell "<<cellsFixedData[tclues[iclue].u8[0] ].pt
+	//	<< (int)tclues[iclue].u8[0] << endl;
+
 next:
 	uint32_t iw;
 	while ( tc[iclue].free){
@@ -354,6 +366,7 @@ void Go_c200(){// just split the entry file
 	for (int i = 0; i < 10; i++) if (zh_g.cptg[i])
 		cout << zh_g_cpt[i] << "\t" << zh_g.cptg[i] << endl;
 }
+
 void Go_c201(){
 	if (!sgo.foutput_name){
 		cerr << "missing output name" << endl; return;
@@ -368,7 +381,7 @@ void Go_c201(){
 	int myn;
 	uint32_t change = sgo.vx[0], idep = change, nfix = sgo.vx[2];
 	if (sgo.vx[1])idep = 1;
-
+	gscom.modegame = 1;
 	while (finput.GetPuzzle(ze)){
 		cout << ze << " to process" << endl;
 		myn = 0;
@@ -435,6 +448,7 @@ void Go_c202(){
 		strcpy(&zn[ll], "_file4.txt");
 		fout4.open(zn);
 	}
+	gscom.modegame = 1;
 	if(finput.GetPuzzle(ze)){
 		int 	nclues = 0, cclue = 0;
 		cout << ze << " pattern to process" << endl;
@@ -499,7 +513,92 @@ void Go_c202(){
 	}
 }
 
+void Go_c221() {//+-1 out of the pattern no fix
+	if (!sgo.foutput_name) {
+		cerr << "missing output name" << endl; return;
+	}
+	int cpt = 0;
+	if (!sgo.finput_name) return;
+	cout << "c203 entry for input " << sgo.finput_name << " mode upto=" << sgo.vx[1] << endl;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) { cerr << "error open " << sgo.finput_name << endl; return; }
+	char ze[82]; ze[81] = 0;
+	GINT16 myclues[40];
+	int myclues2[80],myn,myn2;
+	gscom.modegame = 0; gscom.modehigh = 1;
+	while (finput.GetPuzzle(ze)) {
+		cout << ze << " to process" << endl;
+		myn = myn2 = 0;
+		for (int i = 0; i < 81; i++)
+			if (ze[i] != '.') {// catch given
+				int c = ze[i] - '1';
+				if (c < 0 || c>9) { cerr << "invalid file" << endl; return; }
+				myclues[myn++].u16 = (uint16_t)((c << 8) | i);
+			}
+			else myclues2[myn2++] = i;
+		gscom.nclues = myn;
+		for (int ichange = 0; ichange <myn; ichange++) {
+			int n = 0,istart= myn - 1;
+			for (int i = 0; i < myn; i++) if(i-ichange){
+				gscom.tclues[n++] = myclues[i];
+			}
+			gscom.ReInit();
+			for (int i = 0; i < myn2; i++)  {
+				gscom.tclues[istart].u16 = myclues2[i];
+				gscom.tc[istart].unlocked = 0777;
+				gscom.SetClues(istart);
+				gscom.Gengo(istart);
+			}
+		}
+	}
+}
 
+/*
+void GO_PAT::Do_41(){  // -'v3' + 'v4"
+// processing a -x+y without pattern constraint
+//   fix given except x
+//   take y in the free cells and try all
+//   in 0 based puzvar unassigned cells are set to 10 for later process
+
+		// fill the 2 clues tables
+		for(int i=0;i<81;i++)
+			if(puzin.puz[i]-'.'){tclues[nclues++]=i;}
+			else{	tclues_empty[nclues_empty++]=i;	}
+		PUZC puzinr=puzin;
+		COMBINE combi_free,combi_given;
+		combi_given.First(nclues,change_skip,tclues,tclues_s);
+		int ngiven=nclues-change_skip,nfree=nclues_empty-fix_then;
+
+			// =====================loop on all perm for combi_given
+		 while(1 ) {
+			dep.Init(this);
+			for(int i=0;i<ngiven;i++){//take all given from the perm
+				int ii=tclues_s[i];		int j=puzfix.puz[ii];
+				dep.Fixer(ii,j-1);			}
+			puzin=puzinr;		// prepare puzout with emptied cells
+			for(int i=ngiven;i<nclues;i++){//emptied from the perm
+				int ii=tclues_s[i];		puzin.puz[ii]='.' ;
+			}
+			PUZC puzin3=puzin; // save that position
+			UNPAS depr=dep;
+			// now start the loop on free cells to assign
+combi_free.First(nclues_empty, fix_then,
+	tclues_empty, tclues_empty_s);
+// ===================loop2 on free cells perms
+while (1) {
+	// nothing to do out of non selected cells
+	puzin = puzin3;
+	dep = depr;
+	for (int i = nfree; i < nclues_empty; i++) {//to assign from the perm
+		int ii = tclues_empty_s[i];
+		puzin.puz[ii] = '1';   // dummy to say it is in the solution
+	}
+	dep.Exo_Game(&tclues_empty_s[nfree], fix_then, 0);
+	if (!combi_free.Next()) break;
+}
+if (!combi_given.Next()) break;
+		}
+*/
 // 210;211;212 seed on a pattern
 // 210 in once skip then one ever xx; one seed per 'n' first given
 // 211 create a primary file size 'n' other set to 1

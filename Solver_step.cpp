@@ -26,6 +26,9 @@ PM_GO pm_go;
 extern ZHOU    zhou[50], zhou_i, zhou_solve;
 extern ZH_GLOBAL zh_g;
 extern SGO sgo;
+
+#include "solver_step_dyn_cpp.h"
+
 // index rc/3 -> 3 boxes pas venu par tables, voir pourquoi
 const unsigned int rowcoltobox[18]= 
 {18,19,20,21,22,23,24,25,26,18,21,24,19,22,25,20,23,26};
@@ -2306,7 +2309,7 @@ void XYSEARCH::ExpandDynamic(GINT cand){// start with cand on
 	int dind = cand.u16[1];
 	int diag = 0;
 	//if (dcell == 34) diag = 1;
-	//if (pm_go.cycle==8 && ddig ==2  && dcell==0 )		diag = 2;
+	//if (pm_go.cycle==2 && ddig ==0  && dcell==36 )		diag = 2;
 	//if (pm_go.cycle == 16 && maxpas>6 &&  ddig == 1 && dcell == 5)diag = 3;
 	nsteps = is_contradiction = 0;// start with 1 step 
 	//if (zh_g.zerobased_sol[c1] == idig)is_contradiction = 2;// skip test if valid
@@ -2603,7 +2606,7 @@ int XYSEARCH::SearchDyn(int fast){
 	}
 	//if (ntelims) SearchDynPass(12);//  just secure the found rating
 	//else 
-	SearchDynPass(25);// try a second  pass "no limit"
+	SearchDynPass(35);// try a second  pass "no limit"
 	if (elim_done) return 1;
 	if (ntelims ){// do it  
 		pm_go.hint.rating_done = (USHORT)maxrating;
@@ -2986,13 +2989,13 @@ int PM_GO::SolveGetLow44(int pack) {
 	}
 	return 0;
 }
-int PM_GO::SolveGetLow61() {
+int PM_GO::Solved_xx(int lim) {
 	//===========================================================
 	zh_g.diag = opprint = opprint2 = stop_rating = cycle = assigned = rat_er = rat_ep = rat_ed = 0;
 	zh_g.nsol = 0; zh_g.lim = 1;	ur_serate_mode = 1;
 	while (cycle++ < 150) {
-		if (cycle > 148 || stop_rating) break;;
-		if (zhou_solve.cells_unsolved.isEmpty())return 0; // solved below 4.5
+		if (cycle > 148 || stop_rating) return 0;
+		if (zhou_solve.cells_unsolved.isEmpty())return 1; // solved 
 		zh_g.Init_Assign();
 		if (rat_er < 28){ if (Next10_28()) continue; }
 		else if (Next28()) continue;
@@ -3003,9 +3006,26 @@ int PM_GO::SolveGetLow61() {
 		if (Rate52())continue;		
 		if (Rate54())continue;
 		if (Rate56())continue;
+		if (lim < 62) return 0;
+		SetupActiveDigits();
+		XStatusPrepare();
+		if (Rate65Xcycle(1)) continue;
+		if (Rate66Xchain(1)) continue;
+		if (rat_er < 75)// skip Y loop if XY chain can be applied
+			if (ylsearch.Search(1)
+				|| ylsearch.SearchOut(1)) {
+				Quickrate(66); continue;
+			}
+		if (Rate70_75(1)) continue;
+		if (Rate75())continue;
+		if (lim < 75) return 0;
+		if (Rate76Nishio(1)) continue;
+		if (xysearch.SearchMulti(1)) { Quickrate(83); continue; }
+		if (xysearch.SearchDyn(1)) { Quickrate(85); continue; }
+		if (lim < 90) return 0;
 		break;
 	}
-	if (rat_ed) return rat_ed; else return 100;
+	return 0;
 }
 
 
@@ -4105,7 +4125,7 @@ int PM_GO::Rate46_Find_ULs(){
 		int  digst,parity_rcb;
 		int more_one, nplus, cellfirstplus, cellsecondplus;
 		inline void Init(BF128 & wpu,BF128 & wp,int cell1,int cell2){ 
-			memset(this, 0, sizeof SPOT);
+			memset(this, 0, sizeof (*this));
 			//more_one = nplus = 0; 
 			parity[0] = cell_z3x[cell2];// can not reenter with even value of ispot
 			parity[1] = cell_z3x[cell1];// can not reenter with odd value of ispot

@@ -196,15 +196,14 @@ class BUILDSTRING;
 //extern const t_128 bitSet[128];
 extern const T128 maskLSB[129]; // not in fss2
 extern const T128 maskffff; // not in fss2
-extern T128 cellsInBandBM[6];
-extern T128 cellsInHouseBM[27];
+extern T128 cellsInBandBMx[6];
+extern T128 cellsInHouseBMx[27];
 extern T128 band3xBM[6];
 extern T128 units3xBM[27];
 
 //!Small class containing the permanent data for a cell
-class CELL_FIX {
-public:
-	USHORT
+struct CELL_FIX  {
+	int
 		i8,		///< cell index (0-80)
 		el,     ///< row index (0-8)
 		pl,     ///< column index (0-8)
@@ -213,15 +212,15 @@ public:
 		ebu,     ///< box index(18_��) 
 		pb;     ///< relative position in the box (0-8)
 	char pt[5];	///< printing string like R4C9 with \0
-	T128 z;     ///< list of the  20 cells controled by a cell in a bit field
 
 	int ObjCommun(const CELL_FIX *p8) const {
 		return((el == p8->el) || (pl == p8->pl) || eb == p8->eb);
 	}
-	inline void GetRegions(int * tt){ tt[0] = el; tt[1] = plu; tt[2] = ebu; }
+	inline void GetRegions(int * tt) { tt[0] = el; tt[1] = plu; tt[2] = ebu; }
 	int GetTableRegions(USHORT * tt, CELL_FIX & cell2);
 };
 extern  CELL_FIX  cellsFixedData[81];
+
 extern T128 cell_z3x[81];
 extern int C_rbc27[81];
 /* COMBINE is a small module giving combination
@@ -317,3 +316,8 @@ extern USHORT sr90_20[20][4];
 extern USHORT sym_81[5][81];
 extern USHORT sym_f9[3][9];
 extern USHORT  sym_tcor[3][9];
+
+// possible 2_templates 3_templates 4 templates 
+extern int floors_2d[36];
+extern int floors_3d[84];
+extern int floors_4d[126];

@@ -77,8 +77,7 @@ void Go_c111(){// fast serate mode
 		}
 		pm_go.SolveSerate111();
 	}
-
-
+	
 
 }
 void Go_c199(){// test on demand

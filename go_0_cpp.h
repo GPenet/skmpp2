@@ -28,12 +28,18 @@ void Go_gen_2xx(){
 	case 200: Go_c200(); break;// split the entry file in files 1;2;3
 	case 201: Go_c201(); break;// change n clues or 1 to n clues
 	case 202: Go_c202(); break;// gen symmetry of given
+
 	case 210:  Go_c210(); break;// create a seed on a pattern
 	case 211:  Go_c211(); break;// create a seed gen interim file
 	case 212:  Go_c212(); break;// create a seed gen interim file
+
 	case 217:  Go_c217(); break;// restore a data base (v1=n v2=guesses)
 	case 218:  Go_c218(); break;// extract played seeds
 	case 219:  Go_c219(); break;// restore a data base
+
+	case 221:  Go_c221(); break;// gen +-1 out of the pattern std is high
+	//case 222:  Go_c222(); break;// gen +-2 out of the pattern  
+	//case 231:  Go_c231(); break;// change 1 add 1 out of the pattern 
 	}
 }
 void Go_can_3xx(){

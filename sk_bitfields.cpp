@@ -113,13 +113,6 @@ char * BF128::String128(char * ws){
 
 }
 
-/* pas encore fait dans PM3X
-void Set(BF16 & digs, int cell);
-void SetRegion(int dig, int unit, BF16 & pdigs);
-void operator &= (const BF128 * bf128);
-void Image(BUILDSTRING & zs);
-USHORT String(UCAND * t);
-*/
 
 void PM3X::operator &= (const PM3X &z2){
 	for (register int i = 0; i < 9; i++) pmdig[i] &= z2.pmdig[i];
@@ -129,6 +122,16 @@ void PM3X::operator |= (const PM3X &z2){
 }
 void PM3X::operator -= (const PM3X &z2){
 	for (register int i = 0; i < 9; i++) pmdig[i] -= z2.pmdig[i];
+}
+
+int PM3X::operator == (const PM3X &z2) {
+	return memcmp(this, &z2, sizeof this) == 0;
+}
+int PM3X::operator != (const PM3X &z2) {
+	return memcmp(this, &z2, sizeof this);
+}
+void PM3X::Diag3x27(PM3X & r) {
+	for (int i = 0; i < 9; i++)pmdig[i].Diag3x27(r.pmdig[i]);
 }
 int PM3X::IsEmpty(){
 	for (register int i = 0; i<9; i++)
@@ -143,7 +146,7 @@ int PM3X::Count(){
 	return (int)n;
 }
 
-void PM3X::Print(char * lib){
+void PM3X::Print(const char * lib){
 	cout << "pm3x status for " << lib << endl;
 	for (int i = 0; i < 3;i++)	cout << ".........+++++++++---------";
 	cout << endl;
@@ -153,45 +156,5 @@ void PM3X::Print(char * lib){
 	for (int i = 0; i < 3; i++)	cout << ".........+++++++++---------";
 	cout << endl << endl;
 
-}
-
-
-
-BF81::BF81(int i1, int i2) {
-	SetToBit(i1);
-	setBit(i2);
-}
-BF81::BF81(char * mode, int i1, int i2) {
-	clear();
-	if ((*mode) == 'z'){
-		bf = cellsFixedData[i1].z;
-		*this &= cellsFixedData[i2].z;
-	}
-}
-BF81::BF81(char * mode, int i1) {
-	clear();
-	if ((*mode) == 'z')
-		bf = cellsFixedData[i1].z;
-}
-BF81::BF81(const T128 &r, const BF81 & r2) {
-	bf = r;
-	*this &= r2;
-}
-void BF81::PackRows(BF16 * rows){
-	bf.u32[3] = 0;
-	bf.u32[2] = (rows[7].f >> 1) | (rows[8].f << 8);
-	bf.u32[1] = (rows[7].f << 31) | (rows[6].f << 22) | (rows[5].f << 13)
-		| (rows[4].f << 4) | (rows[3].f >> 5);
-	bf.u32[0] = (rows[3].f << 27) | (rows[2].f << 18) | (rows[1].f << 9) | rows[0].f;
-}
-void BF81::OrBand(int F, int iband){
-	if (!iband) { bf.u32[0] |= F; return; }
-	if (iband == 1){
-		bf.u32[0] |= ((F & 0x1f) << 27);
-		bf.u32[1] |= (F >> 5);
-		return;
-	}
-	bf.u32[1] |= ((F & 0x3ff) << 22);
-	bf.u32[2] |= (F >> 10);
 }
 

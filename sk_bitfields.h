@@ -69,7 +69,6 @@ PM3X is done of 9 BF128, one per digit
 ==============
 
 ===============obsoletes
-BF81 old mode, 81 first bits of a BF128 for 81 cells
 
 BFCAND a bit field sized to a maximum of 320 bits but worked at the used dimension
 that bit field is used to describe candidates properties.
@@ -197,12 +196,6 @@ struct BF64 {
 	inline void Set(const int theBit) { bf.u64|= (uint64_t)1<<theBit; }
 	inline void SetToBit(const int theBit) { bf.u64 = (uint64_t)1 << theBit; }
 	inline void Clear(const int theBit) { bf.u64 &= ~ ((uint64_t)1 << theBit); }
-
-	//inline unsigned char On(const int theBit) const { return    _bittest64((long long*)&bf.u64, theBit); }
-	//inline unsigned char Off(const int theBit) const { return    (!_bittest64((long long*)&bf.u64, theBit)); }
-	//inline void Set(const int theBit) { _bittestandset64((long long*)&bf.u64, theBit); }
-	//inline void SetToBit(const int theBit) { clear(); _bittestandset64((long long*)&bf.u64, theBit); }
-	//inline void Clear(const int theBit) { _bittestandreset64((long long*)&bf.u64, theBit); }
 
 	inline uint64_t isNotEmpty() const { return bf.u64; }
 	inline bool isEmpty() const { return (!bf.u64); }
@@ -467,12 +460,13 @@ public:
 	void operator &= (const PM3X &z2);
 	void operator |= (const PM3X &z2);
 	void operator -= (const PM3X &z2);
-	void operator &= (const BF128 * bf128);
-	void Image(BUILDSTRING & zs);
-	USHORT String(UCAND * t);
+	int operator == (const PM3X &z2);
+	int operator != (const PM3X &z2);
+	void Diag3x27(PM3X & r);
+
 	int IsEmpty();
 	int Count();
-	void Print(char * lib);
+	void Print(const char * lib);
 };
 
 struct RBF27{
@@ -486,56 +480,6 @@ struct RBF27{
 	inline int Off(int dig, int unit)	{ return t[dig].Off(unit); }
 };
 
-class BF81 : public BF128 {
-public:
-	BF81() {  }
-	BF81(int i1) { SetToBit(i1); }
-	BF81(int i1, int i2); // same start 2 cells
-	BF81(const T128 &r, const BF81 & r2); // & at start as default
-	BF81(char * mode, int i1); // mainly to include cellsFixedData[i1].z
-	BF81(char * mode, int i1, int i2);
-	inline void SetAll_1() { MaskToBit(81); }
-
-	void PackRows(BF16 * rows);
-	void OrBand(int F, int iband);
-};
-class PMBF {
-	// 9*BF81 to have candidates in native mode when needed
-public:
-	BF81 bfc[9];
-	inline void Set(int dig, int cell){ bfc[dig].Set(cell); }
-	inline void Set_c(int dig, int cell){ bfc[dig].Set_c(cell); }
-	inline void SetU(UCAND c){ bfc[c >> 7].Set(c & 127); }
-	inline void Clear(int dig, int cell){ bfc[dig].Clear(cell); }
-	inline int SetIf(int dig, int cell){
-		if (bfc[dig].On(cell)) return 0;
-		bfc[dig].Set(cell);
-		return 1;
-	}
-	inline int On(int dig, int cell){ return bfc[dig].On(cell); }
-	inline int On_c(int dig, int cell){ return bfc[dig].On_c(cell); }
-	inline int OnU(UCAND x){ return bfc[x >> 7].On(x & 0x7f); }
-	inline int OffU(UCAND x){ return bfc[x >> 7].Off(x & 0x7f); }
-	int IsEmpty(){
-		for (int i = 0; i<9; i++)
-			if (bfc[i].isNotEmpty()) return 0;
-		return 1;
-	}
-};
-class PMBFONOFF{// small class managing both status
-public:
-	PMBF bfon, bfoff;
-	//void SetAll_0(){ bfon.SetAll_0(); bfoff = bfon; }
-	inline void Set(SCAND x){
-		PMBF & mybf = (x & (1 << 11)) ? bfoff : bfon;
-		mybf.Set((x >> 7) & 15, x & 0x7f);
-	}
-	inline int On(SCAND x){
-		PMBF & mybf = (x & (1 << 11)) ? bfoff : bfon;
-		return mybf.On((x >> 7) & 15, x & 0x7f);
-	}
-
-};
 
 /* BFSETS, is a bitfield used to account sets and link sets
 in the rank 0 logic construction
@@ -573,7 +517,13 @@ public:
 	char * XsudoPrint(int mode, char * output);
 };
 
+struct HID_BIV {// seen bivalues pair digit/unit
+	int sets_biv[36];// 27 bits per (d1,d2)
+	inline int Comp(HID_BIV &r) { return memcmp(sets_biv, r.sets_biv, sizeof sets_biv); }
+};
+
 class ONE_FLOOR{// find all eliminations inside one floor
+	/*
 	class FL {
 		BF81 f_cand;
 		int lastrow, ctllast, exocet_perm;
@@ -594,8 +544,10 @@ public:
 	BF16 active_floors;
 	BF81 f_or;
 	void Go_One_Floorx(PMBF & start);
+	*/
 };
 struct ACTIVERCB{// look for active row col box in a given valid PM
+	/*
 	struct ARCB {
 		// small class  designed to find eliminations within a set in recursive mode
 		BF16  * or_perms, myor[9], tcells[9];
@@ -614,6 +566,7 @@ struct ACTIVERCB{// look for active row col box in a given valid PM
 	USHORT ncells;
 	int Go_RCBx(PMBF & start, BF16 * dcells, BF81 & actifs, PMBF * do_it = 0);
 	int URDummySet(BF16 * dcells, int n, int for_perm = 0);
+	*/
 };
 struct COMB9{// one combination C 9-n  (9 36 64 126 126 64 36  9 ) 
 	BF16 bm;

@@ -1070,10 +1070,6 @@ int ZHOU::Rate30_NakedPair(){
 	BF128 lb = zh_g.locked_nacked_brc_seen[0] - zh_g.locked_nacked_brc_done[0],
 	     lr = zh_g.locked_nacked_brc_seen[1] - zh_g.locked_nacked_brc_done[1],
 		 lc = zh_g.locked_nacked_brc_seen[2] - zh_g.locked_nacked_brc_done[2];
-	//char ws[82];
-	//cout << lb.String3X(ws) << " lb" << endl;
-	//cout << lr.String3X(ws) << " lr" << endl;
-	//cout << lc.String3X(ws) << " lc" << endl;
 
 	for (int iband = 0; iband < 3; iband++){
 		int boxband = lb.bf.u32[iband];
