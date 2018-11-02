@@ -48,7 +48,7 @@ void PrintTimeCout(long ts, long te){
 
 int Search_ccd(char * ww)
 {	// List of 2 char command, 9 commands
-	char * ccd[]={"-i" ,    // input name including extension
+	const char * ccd[]={"-i" ,    // input name including extension
 				  "-o" ,	//	output or second filename
 				  "-c",  // main command option + check boxes
 				  "-v" ,  // value   0 to 9 default 0

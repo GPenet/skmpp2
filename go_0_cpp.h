@@ -1,14 +1,18 @@
 
 
 //========================================
-char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
+const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
 #include "go_0xx_cpp.h"
 #include "go_1xx_cpp.h"
 #include "go_2xx_cpp.h"
 #include "go_4xx_cpp.h"
  void Go_0xx(){
-		Go_c0();
+	 switch (sgo.command) {
+	// case 0: Go_c0(); break;// test on brute force
+	 case 10: Go_c10(); break;// extract valid puzzles from entry
+	 case 11: Go_c11(); break;// count valid puzzles in entry 
+	 }
 }
 void Go_sol_1xx(){
 	cout << "command 1xx command=" << sgo.command << endl;

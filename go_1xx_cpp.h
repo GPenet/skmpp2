@@ -93,13 +93,13 @@ void Go_c199(){// test on demand
 	while (finput.GetPuzzle(ze)){
 		npuz++;
 		if (npuz < sgo.vx[0]) continue;
-		cout << finput.ze << "to process npuz=" << npuz << endl;
+		//cout << finput.ze << "to process npuz=" << npuz << endl;
 		zh_g.npuz = npuz;
 		if (zh_g.Go_InitSolve(ze)) {
 			cout << finput.ze << "invalid or multiple solutions npuz=" << npuz << endl;
 			continue;
 		}
 		pm_go.Solve199test();
-		if (npuz >= sgo.vx[1]) break;
+		if (sgo.vx[1] && npuz >= sgo.vx[1]) break;
 	}
 }

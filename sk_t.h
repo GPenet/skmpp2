@@ -1,4 +1,4 @@
-// all these tables are used in many functions as
+﻿// all these tables are used in many functions as
 #pragma once
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_WARNINGS
@@ -134,8 +134,8 @@ typedef union p9x9 {
 } p9_9;
 //==============================tables and functions  in tab0 and tab0b
 
-extern char *  empty_puzzle;
-extern char *  puzstart;
+extern const  char *  empty_puzzle;
+extern const char *  puzstart;
 
 // printing and debugging 
 extern char * Blancs(int n, int no);

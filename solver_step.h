@@ -54,12 +54,12 @@ struct WWUR2{// solving UR/UL 2 cells in a unit
     wcells_nserate,
     dfree,tfree[10],nfree;
 	int locdiag;
-	char * det_mess;
+	const char * det_mess;
 	BF128 wcells, cells_ur, cells_others_ur, cells_3
     ,w_b,// cells with extra digits no common digit
     w_c,// cells with only free digits 
     wnaked,wclean ;
-	inline void Set(GINT64 & t,char * lib){
+	inline void Set(GINT64 & t,const char * lib){
 		cell1 = t.u8[0], cell2 = t.u8[1], digs = t.u16[1], ul_plus = t.u8[4], nothers= t.u8[5],
 			digitsothers=t.u16[3],rbase = 45 + ul_plus;
 		det_mess = lib;
@@ -131,12 +131,12 @@ struct XYSEARCH{
 		int nt, dig,cell;
 	}paths[9];
 	
-	int idig, digit,  cell, ddig,dcell,
+	int idig, digit,  cell, ddig,dcell,dind,
 		nt,ntd,ntp, maxpas,maxrating, npaths,elim_done,
 		nsteps, c1, c2, locdiag, diag, mode,fastmode,opprint;
 	int dig_sets[9][27];
 	uint32_t d2;
-	BF128 pairs, cells_biv_all, cells_all,cells_biv_true,  dig_b_true[9];
+	BF128 pairs, cells_biv_all, cells_all,cells_biv_true,  	dig_b_true[9];
 	BF128 loop, wb;
 	BF32 dig_bivsets[9],dig_sets3[9];
 	GINT64 tback[300],t[400];// cell,digit,digit2,source
@@ -539,6 +539,7 @@ public:
 	int Rate76Nishio(int fast);
 	int Rate80Multi(int fast);
 	int Rate85Dynamic(int fast);
+	int Rate90DynamicPlus(int fast);
 
 
 	int Next10_28();

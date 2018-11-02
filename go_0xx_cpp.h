@@ -92,7 +92,40 @@ void Go_c0(){
 	}
 
 }
+void Go_c10() { // extract valid puzzles from entry
+	if (!sgo.finput_name) return;
+	cout << "brute force Go_10 entry " << sgo.finput_name << " input" << endl;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	char ze[200]; ze[81] = 0;
+	zh_g.diag = sgo.vx[8];
+	while (finput.GetPuzzle(ze)) {
+		if (zh_g.diag) cout << ze << "<<<<<<<<<<<<<< new puzzle" << endl;
+		if (zhou[0].CheckValidityQuick(ze) == 1)		fout1 << ze << endl;
+	}
 
+}
+void Go_c11() { // count valid puzzles in entry
+	if (!sgo.finput_name) return;
+	cout << "brute force Go_10 entry " << sgo.finput_name << " input" << endl;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	uint64_t cc[3] = { 0,0,0 };
+	char ze[200]; ze[81] = 0;
+	while (finput.GetPuzzle(ze)) {
+		int ir = zhou[0].CheckValidityQuick(ze);
+		if (ir < 0 || ir>2) ir = 0;
+		cc[ir]++;
+	}
+	cout << "count " << cc[0] << ";" << cc[1] << ";" << cc[2] << endl;
+
+}
 int TWO_DIGITS::Hiden_Pairs_Box(){// etude recherche hidden biv
 	nhp = 0;
 	for (int iband = 0; iband < 3; iband++){
@@ -1679,8 +1712,8 @@ int ZHOU::Rate52_JellyFish(){
 							clean3 = cols[c3] & ~mask, clean4 = cols[c4] & ~mask;
 						if (clean1 | clean2 | clean3 | clean4){//some cleaning appears
 							iret = 1;
-							if (pm_go.opprint2 & 2)cout << "Jellyfish row digit=" << idig + 1 << " rows " << r1 + 1 << r2 + 1 << r3 + 1 << r4 + 1
-								<< " cols " << c1 + 1 << c3 + 1 << c4 + 1 << c2 + 1 << endl;
+							//if (pm_go.opprint2 & 2)cout << "Jellyfish row digit=" << idig + 1 << " rows " << r1 + 1 << r2 + 1 << r3 + 1 << r4 + 1
+							//	<< " cols " << c1 + 1 << c3 + 1 << c4 + 1 << c2 + 1 << endl;
 							if (clean1)FD[idig][0].ClearCol(clean1, c1);
 							if (clean2)FD[idig][0].ClearCol(clean2, c2);
 							if (clean3)FD[idig][0].ClearCol(clean3, c3);
@@ -1697,8 +1730,8 @@ int ZHOU::Rate52_JellyFish(){
 		int cw = cfree & ~cx2;
 		for (int icol = 0; icol < 9; icol++)
 			if (cw & (1 << icol))if (_popcnt32(cols[icol]) <5)tr[nr++] = icol;
-		if (pm_go.opprint2 & 2) cout << "Jelly fish columns nr=" <<nr
-        << endl;
+		//if (pm_go.opprint2 & 2) cout << "Jelly fish columns nr=" <<nr
+        //<< endl;
 
 
 		if (nr < 4) continue;
@@ -1728,8 +1761,8 @@ int ZHOU::Rate52_JellyFish(){
 							clean3 = rows[r3] & ~mask, clean4 = rows[r4] & ~mask;
 						if (clean1 | clean2 | clean3 | clean4){//some cleaning appears
 							iret = 1;
-							if (pm_go.opprint2 & 2)cout << "swordfish col digit=" << idig + 1 << " cols " << c1 + 1 << c2 + 1 << c3 + 1 << c4 + 1
-								<< " rows " << r1 + 1 << r3 + 1 << r4 + 1 << r2 + 1 << endl;
+							//if (pm_go.opprint2 & 2)cout << "swordfish col digit=" << idig + 1 << " cols " << c1 + 1 << c2 + 1 << c3 + 1 << c4 + 1
+							//	<< " rows " << r1 + 1 << r3 + 1 << r4 + 1 << r2 + 1 << endl;
 							if (clean1)FD[idig][0].ClearRow(clean1, r1);
 							if (clean2)FD[idig][0].ClearRow(clean2, r2);
 							if (clean3)FD[idig][0].ClearRow(clean3, r3);

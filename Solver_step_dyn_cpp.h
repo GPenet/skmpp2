@@ -4,9 +4,9 @@
 
 
 */
-ZHOU zdyn,zdynstep;
+ZHOU zdyn,zdynstep,zhou_solve_start;
 ZH_GLOBAL zhgdyn;
-void BuildHiddenBiv_Xwings(PM3X& pm, PM3X& pmdiag, HID_BIV & rbiv, HID_BIV & xbiv) {
+void BuildHiddenBiv_Xwings(PM3X& pm, PM3X& pmdiag, HID_BIV & rbiv, HID_BIV & xbiv,int diag=0) {
 	// phase 1 set up bi values per digit
 	uint32_t dig_bivs[9];
 	memset(dig_bivs, 0, sizeof dig_bivs);
@@ -20,38 +20,42 @@ void BuildHiddenBiv_Xwings(PM3X& pm, PM3X& pmdiag, HID_BIV & rbiv, HID_BIV & xbi
 			if (w.Count() == 2)dig_bivs[idig] |= bit;
 		}
 	}
+	//cout << "pairs biv" << endl;
 	// phase 2 check pairs of digits biv same unit
 	for (int i1 = 0, i12 = 0; i1 < 8; i1++) {
 		for (int i2 = i1 + 1; i2 < 9; i2++, i12++) {
 			uint32_t sets_com = dig_bivs[i1] & dig_bivs[i2];
 			if (!sets_com)continue;
-			int tsets[30], ntsets;
+			int tsets[30], ntsets=0;
 			BitsInTable32(tsets, ntsets, sets_com);// potential  hidden pairs
 			for (int iu = 0; iu < ntsets; iu++) {// must be same cells
 				int unit = tsets[iu];
-				BF128 w = units3xBM[iu];// cells of the unit
+				BF128 w = units3xBM[unit];// cells of the unit
 				w &= (pm.pmdig[i1] & pm.pmdig[i2]);
 				if (w.Count() == 2) {// this is a hidden bi value i1;i2
-					rbiv.sets_biv[i12] |= 1 << iu;
+					rbiv.sets_biv[i12] |= 1 << unit;
 				}
 			}
 		}
 	}
+	if(diag) cout << "xwings" << endl;
 	// same rows columns for xwings
 	for (int i1 = 0, i12 = 0; i1 < 8; i1++) {
+		int i1b = i1 / 3, i1shift = 9 * (i1 % 3);
 		for (int i2 = i1 + 1; i2 < 9; i2++, i12++) {
+			int i2b = i2 / 3, i2shift = 9 * (i2 % 3);
 			int mask = floors_2d[i12];// rows or cols
 			for (int idig = 0; idig < 9; idig++) {				
 				int dbiv = dig_bivs[idig];
 				if (_popcnt32(dbiv&mask) == 2) {// can be xwing row
-					int r1 = pm.pmdig[idig].bf.u32[i1 / 3] >> (i1 % 3);
-					int r2 = pm.pmdig[idig].bf.u32[i2 / 3] >> (i2 % 3);
+					int r1 = (pm.pmdig[idig].bf.u32[i1b] >> i1shift) & 0x1ff;
+					int r2 = (pm.pmdig[idig].bf.u32[i2b] >> i2shift) & 0x1ff;
 					if (r1 == r2) xbiv.sets_biv[i12] |= (1 << idig);
 				}
 				dbiv >>= 9;// now columns in the low 8 bits
 				if (_popcnt32(dbiv&mask) == 2) {// can be xwing column
-					int r1 = pmdiag.pmdig[idig].bf.u32[i1 / 3] >> (i1 % 3);
-					int r2 = pmdiag.pmdig[idig].bf.u32[i2 / 3] >> (i2 % 3);
+					int r1 = (pmdiag.pmdig[idig].bf.u32[i1b] >> i1shift) & 0x1ff;
+					int r2 = (pmdiag.pmdig[idig].bf.u32[i2b] >> i2shift) & 0x1ff;
 					if (r1 == r2) xbiv.sets_biv[i12] |= (1 << (idig+9));
 				}
 			}
@@ -71,23 +75,27 @@ struct XYSEARCHDYNPLUS{
 
 	int idig, digit,  cell, sign,ddig,dcell,dsign,dind,
 		nt,ntd,ntp, maxpas,maxrating, npaths,elim_done,
-		nsteps, c1, c2, locdiag, diag, mode,fastmode,expandmode,opprint;
+		nsteps, c1, c2, 
+		locdiag, diagexpand,
+		mode,fastmode,expandmode,opprint;
 	int dig_sets[9][27];
 	uint32_t d1,d2;
 	HID_BIV hp_biv_0, hp_biv_old, hp_biv_step, //hidden pairs status (d1 d2 unit)
 		   xw_biv_0, xw_biv_old, xw_biv_step;  // xwing status (rc1 rc2 digit)
 	BF32 dig_bivsets[9],dig_sets3[9];
 	GINT64 tback[300],t[400];// cell,digit,digit2,source
-	PM3X used_off_digits,  used_off_old,used_off_new,
-		used_on_digits, cleang, cleanstart,
+	PM3X //used_off_digits,  
+		used_off_old,used_off_new,
+		//used_on_digits, 
+		cleang, cleanstart,
 		active_all,active_unit,dbiv;
 	GINT telims[50];	int ntelims ;
 	//====== for dynamic and more
-	int ind_pm[9][81],nind,is_contradiction,ntcands; // direct index for storing tables
-	PM3X off_status[400],contradiction,elim_stored;
-	GINT64 off_path[100][400];
-	GINT tcands[400]; // candidates tables and index if belong to binary
-	int tex[9][81]; // index to first "on" index in the path
+	int is_contradiction; // direct index for storing tables
+	PM3X off_off_status;
+	//PM3X off_status[400],contradiction,elim_stored;
+	//GINT64 off_path[100][400];
+	//int tex[9][81]; // index to first "on" index in the path
 	void SearchInit(int fast);
 	void Addt(int cell, int di, int sign, int source);
 	inline void AddLastInCell(int ce, int di){	Addt(ce, di, 0, 0x1000 | cell);	}	
@@ -102,12 +110,11 @@ struct XYSEARCHDYNPLUS{
 	void OnToOff_Plus(int i);
 	void OffToOff_Plus();
 	void OffToOff_Plus_New_Pairs_Status(BF128 *pmz, BF128 &wp_new);
-	int Dyn_locked(int band, int band_start, int band_step, int iband);
 	int Is_To_Clean(int rating);
-	int CleanXYChain();
-	int CleanXYLoop(GINT64 * t, int nt);
-	int Do_Clean();
 	int AddElim(int d, int c, int rat);
+	int AddElimFast(PM3X & elims);
+	void Clean_d_bf(int d, BF128 & b,int source);
+	void Clean_digs_cell(int digs, int cell,int source);
 	int SearchDynPlus(int fast);
 	void SearchDynPassPlus(int nmax);
 	void SearchDynPassMulti(int nmax);
@@ -122,41 +129,61 @@ struct XYSEARCHDYNPLUS{
 	void PrintBackMulti(int elim_dig, int elim_cell);
 	void PrintBackCom(const char * lib,GINT64 * ptback, int nback,int mode );
 	void DebugT();
-};
+}xysearchplus;
 
 //============================================= XYSEARCHDYNPLUS
 void XYSEARCHDYNPLUS::SearchInit(int fast) {
 	fastmode = fast;
+	zhou_solve_start = zhou_solve;
 	expandmode = 0;// start search no way back
 	elim_done = ntelims = 0;
 	maxrating = 200;
-	elim_stored.SetAll_0();
+	pm_go.xysearch.elim_stored.SetAll_0();
+	if(opprint)cout << "start build " << endl;
 	BuildHiddenBiv_Xwings(zh_g.pm, zh_g.pmdiag, hp_biv_0, xw_biv_0);
+	if (opprint)cout << "end build " << endl;
 }
 
 void XYSEARCHDYNPLUS::Addt(int ce , int di, int sign, int source) {
+	if (nt > 380) return;
 	GINT64 & tx = t[nt++];
-	tx.u32[0] = cell + (di << 8) + (sign << 16) + (nsteps << 24);
+	tx.u32[0] = ce + (di << 8) + (sign << 16) + (nsteps << 24);
 	tx.u32[1] = source;
+	if (diagexpand) {
+		cout << "Addt ";
+		if (sign) cout << "~";
+		cout << di + 1 << cellsFixedData[ce].pt << endl;
+	}
 	if (sign) {
-		used_off_digits.Set_c(di,ce); 
+		pm_go.xysearch.used_off_digits.Set_c(di,ce);
 		dig_cells_live[ce] &= ~(1 << di); 
 		zdyn.ClearCandidate_c(di, ce);
 	}
-	else used_on_digits.Set_c(di, ce);
+	else pm_go.xysearch.used_on_digits.Set_c(di, ce);
 }
+void XYSEARCHDYNPLUS::Clean_d_bf(int d, BF128 & b,int source) {
+	int tc[80], ntc = b.Table3X27(tc);
+	for (int i = 0; i < ntc; i++)Addt(tc[i], d, 1, source);
+}
+void XYSEARCHDYNPLUS::Clean_digs_cell(int digs, int cell, int source) {
+	if (!digs) return;
+	int td[10], ntd = 0;
+	BitsInTable32(td, ntd,digs);
+	for (int i = 0; i < ntd; i++)Addt(cell, td[i], 1, source);
+}
+
 void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 
 	if (pairs.On_c(cell)){
 		int dig = zh_g.dig_cells[cell] ^ (1 << digit);
 		bitscanforward(d2, dig);
-		if (used_on_digits.Off_c(d2, cell)){
-			tex[d2][cell] = nt;// priority to direct
+		if (pm_go.xysearch.used_on_digits.Off_c(d2, cell)){
+			pm_go.xysearch.tex[d2][cell] = nt;// priority to direct
 			Addt(cell, d2,0, isource);
 			//used_on_digits.Set_c(d2, cell);
 		}
 		else{// check to offset a last on same step
-			int oldi = tex[d2][cell];
+			int oldi = pm_go.xysearch.tex[d2][cell];
 			GINT64 w = t[oldi];
 			if( (w.u16[2] & 0x3000)&& oldi>= ntd){// old was not direct same step
 				t[oldi].u16[2] = (uint16_t)isource;
@@ -169,8 +196,8 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 		if (ndc==1){// true last in cell put it on if not yet
 			//cout << "add last in cell " << endl;
 			bitscanforward(d1, dig_cells_live[cell]);
-			if (used_on_digits.Off_c(d1, cell)){
-				tex[d1][cell] = nt;// first
+			if (pm_go.xysearch.used_on_digits.Off_c(d1, cell)){
+				pm_go.xysearch.tex[d1][cell] = nt;// first
 				AddLastInCell(cell, d1);
 				//used_on_digits.Set_c(d1, cell);
 			}
@@ -180,8 +207,8 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 			while ( digs){
 				bitscanforward(d2, digs);
 				digs ^= 1 << d2;
-				if (used_on_digits.Off_c(d2, cell)){
-					tex[d2][cell] = nt;// first
+				if (pm_go.xysearch.used_on_digits.Off_c(d2, cell)){
+					pm_go.xysearch.tex[d2][cell] = nt;// first
 					AddLastInCell(cell, d2);
 					//used_on_digits.Set_c(d2, cell);
 				}
@@ -196,19 +223,19 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 		int unit = tu[iu];
 		BF128 wu = units3xBM[unit]; wu &= zh_g.pm.pmdig[digit];
 		int  nn_start = wu.Count();
-		BF128 w81 = wu - used_off_digits.pmdig[digit];
-		if ((w81&used_on_digits.pmdig[digit]).isNotEmpty()) continue;// no on
+		BF128 w81 = wu - pm_go.xysearch.used_off_digits.pmdig[digit];
+		if ((w81&pm_go.xysearch.used_on_digits.pmdig[digit]).isNotEmpty()) continue;// no on
 		int nbc = w81.Count(),wcell2;
 		if (nbc > 1)continue; // not last in region
 		if (nbc == 1){
 			wcell2 = w81.getFirsCell();
 			if (nn_start == 2){// bi value
-				if (used_on_digits.Off_c(digit, wcell2)){
-					tex[digit][wcell2] = nt;// priority to direct
+				if (pm_go.xysearch.used_on_digits.Off_c(digit, wcell2)){
+					pm_go.xysearch.tex[digit][wcell2] = nt;// priority to direct
 					Addt(wcell2, digit, 0,isource);
 				}
 				else{// offset not direct same step
-					int oldi = tex[digit][wcell2];
+					int oldi = pm_go.xysearch.tex[digit][wcell2];
 					GINT64 w = t[oldi];
 					if ((w.u16[2] & 0x3000) && oldi >= ntd){// old was not direct same step
 						t[oldi].u16[2] = (uint16_t)isource;
@@ -216,13 +243,13 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 				}
 			}
 			else {//last in region
-				if (used_on_digits.Off_c(digit, wcell2)){
-					tex[digit][wcell2] = nt;// first
+				if (pm_go.xysearch.used_on_digits.Off_c(digit, wcell2)){
+					pm_go.xysearch.tex[digit][wcell2] = nt;// first
 					AddLastInUnit(wcell2, digit,unit);
 					//used_on_digits.Set_c(digit, wcell2);
 				}
 				else if(nn_start==3){//offset not direct if smaller size same step
-					int oldi = tex[digit][wcell2];
+					int oldi = pm_go.xysearch.tex[digit][wcell2];
 					GINT64 w = t[oldi];
 					if ((w.u16[2] & 0x2000) && oldi >= ntd){// old was not direct same step
 						t[oldi].u16[2] = (uint16_t)(0x2000 | unit); 
@@ -234,8 +261,8 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 			wu.Clear_c(cell);
 			while ((wcell2 = wu.getFirsCell()) >= 0){
 				wu.Clear_c(wcell2);
-				if (used_on_digits.Off_c(digit, wcell2)){
-					tex[digit][wcell2] = nt;// first
+				if (pm_go.xysearch.used_on_digits.Off_c(digit, wcell2)){
+					pm_go.xysearch.tex[digit][wcell2] = nt;// first
 					AddLastInUnit(wcell2, digit, unit);
 					//used_on_digits.Set_c(digit, wcell2);
 				}
@@ -248,7 +275,7 @@ void XYSEARCHDYNPLUS::OnToOff_Plus(int isource){// no bi value filter
 	while ( digs){
 		bitscanforward(d2, digs);
 		digs ^= 1 << d2;
-		if (used_off_digits.On_c(d2, cell))continue;
+		if (pm_go.xysearch.used_off_digits.On_c(d2, cell))continue;
 		if ((cell == dcell) && ((int)d2 == ddig)) continue;
 		Addt(cell, d2,1, isource);
 		//used_off_digits.Set_c(d2, cell);
@@ -256,7 +283,7 @@ void XYSEARCHDYNPLUS::OnToOff_Plus(int isource){// no bi value filter
 	CELL_FIX & cf = cellsFixedData[cell];
 	BF128 wb = cell_z3x[cell];
 	wb &= zh_g.pm.pmdig[digit];
-	wb -= used_off_digits.pmdig[digit];
+	wb -= pm_go.xysearch.used_off_digits.pmdig[digit];
 	wb.Clear_c(dcell);// be sure not to use it
 	//used_off_digits.pmdig[digit] |= wb;
 	while ((c2 = wb.getFirsCell()) >= 0){
@@ -280,7 +307,7 @@ void XYSEARCHDYNPLUS::DebugT(){
 	cout << endl;
 }
 int XYSEARCHDYNPLUS::AddElim(int d, int c, int rating){
-	if (rating <= pm_go.rat_er){// then do it
+	if (fastmode || (rating <= pm_go.rat_er)){// then do it
 		ntelims = 0;
 		maxrating = pm_go.rat_er;
 		if (zhou_solve.IsOnCandidate_c(d, c)){
@@ -299,19 +326,37 @@ int XYSEARCHDYNPLUS::AddElim(int d, int c, int rating){
 	if (rating < maxrating){
 		maxrating = rating;
 		ntelims = 0;
-		elim_stored.SetAll_0();
+		pm_go.xysearch.elim_stored.SetAll_0();
 		if (opprint)cout<< "reset elim_count to 0" << endl;
 	}
-	if (ntelims < 40 && elim_stored.Off_c(d,c)){// must continue to look for smaller
+	if (ntelims < 40 && pm_go.xysearch.elim_stored.Off_c(d,c)){// must continue to look for smaller
 		telims[ntelims++].u32 = c | (d << 16);
-		elim_stored.Set_c(d, c);
+		pm_go.xysearch.elim_stored.Set_c(d, c);
 		return 2;
 	}
 	return 0;
 }
+int XYSEARCHDYNPLUS::AddElimFast(PM3X & elims) {
+	int iret = 0;
+	for (int idig = 0; idig < 9; idig++) {
+		BF128 ee = elims.pmdig[idig];
+		if (ee.isEmpty())continue;
+		int tc[80], ntc = ee.Table3X27(tc);
+		for (int ic = 0; ic < ntc; ic++) {
+			int c = tc[ic];
+			if (zhou_solve.IsOnCandidate_c(idig, c)) {
+				zhou_solve.ClearCandidate_c(idig, c);
+				if (opprint)	cout << "immediate elim " << idig + 1
+					<< cellsFixedData[c].pt << " rating=96" << endl;
+				elim_done = iret = 1;
+			}
+		}
+	}
+	return iret;
+}
 //____________________ XY DYNPLUS  base 90
 void XYSEARCHDYNPLUS::ExpandPlusInit(GINT cand,int off) {// start with cand on
-	zdyn = zhou_solve;
+	zdyn = zhou_solve_start;
 	zhgdyn = zh_g;
 	// initial status for cells pair hid pairs and xwings
 	memcpy(dig_cells_live, zh_g.dig_cells, sizeof dig_cells_live);
@@ -324,54 +369,33 @@ void XYSEARCHDYNPLUS::ExpandPlusInit(GINT cand,int off) {// start with cand on
 	dsign = off;
 	dind = cand.u16[1];
 	nsteps = is_contradiction = 0;// start with 1 step 
-	if (zh_g.zerobased_sol[dcell] == idig)
-		is_contradiction = 2;// skip test if valid
-	nt = 1;	
-	t[0].u64 = dcell | (ddig << 8)|(dsign<<16);	// source to 0
-	used_off_digits.SetAll_0();	
-	used_on_digits.SetAll_0();
+	if (zh_g.zerobased_sol[dcell] == idig || dsign)
+		is_contradiction = 2;// skip test if valid or start off
+	//nt = 1;	
+	//t[0].u64 = dcell | (ddig << 8)|(dsign<<16);	// source to 0
+	pm_go.xysearch.used_off_digits.SetAll_0();
+	pm_go.xysearch.used_on_digits.SetAll_0();
 	used_off_old.SetAll_0();
-	if(dsign)used_off_digits.Set_c(ddig, dcell);
-	else used_on_digits.Set_c(ddig, dcell);
+	nt = 0;
+	Addt(dcell, ddig,dsign, 0);
+
+	//if(dsign)used_off_digits.Set_c(ddig, dcell);
+	//else used_on_digits.Set_c(ddig, dcell);
 }
 void XYSEARCHDYNPLUS::OffToOff_Plus_New_Pairs_Status(BF128 *pmz ,BF128 &wp_new) {
 	BF128 wpairs; wpairs.SetAll_0();
 	for (int i = 0; i < 81; i++)
 		if (_popcnt32(dig_cells_live[i]) == 2) wpairs.Set_c(i);
-	/*
-	{// build the new situation for pairs band12
-		register uint64_t  Map = pmz[0].bf.u64[0], R3 = pmz[1].bf.u64[0],
-			R2 = Map & R3, R1 = Map | R3;// digits 12
-		Map = pmz[2].bf.u64[0]; R3 = R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[3].bf.u64[0]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[4].bf.u64[0]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[5].bf.u64[0]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[6].bf.u64[0]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[7].bf.u64[0]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[8].bf.u64[0]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		wpairs.bf.u64[0] = R2 ^ R3;
-	}
-	{// build the new situation for pairs bands 3
-		register uint32_t  Map = pmz[0].bf.u32[2], R3 = pmz[1].bf.u32[2],
-			R2 = Map & R3, R1 = Map | R3;// digits 12
-		Map = pmz[2].bf.u32[2]; R3 = R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[3].bf.u32[2]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[4].bf.u32[2]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[5].bf.u32[2]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[6].bf.u32[2]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[7].bf.u32[2]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		Map = pmz[8].bf.u32[2]; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-		wpairs.bf.u32[2] = R2 ^ R3;
-	}
-	*/
 	wp_new = wpairs - pairs_step_old;
 	pairs_step_old = wpairs;
 
 }
 
 void XYSEARCHDYNPLUS::OffToOff_Plus() {
+	if (is_contradiction==1 || nt>350) return;
+	if (diagexpand) cout << "entry off to off" << endl;
 	zdynstep = zdyn;// be sure to avoid cumulative action
-	used_off_new = used_off_digits;
+	used_off_new = pm_go.xysearch.used_off_digits;
 	used_off_new -= used_off_old;
 	int tactive[10], nactive = 0,source=0;
 	PM3X pm,pmdiag;
@@ -381,40 +405,40 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 		if (used_off_new.pmdig[i].isNotEmpty())	tactive[nactive++] = i;
 	}
 	pmdiag.Diag3x27(pm);// need diagonald status for columns analyssi
-
+	OffToOff_Plus_New_Pairs_Status(pmz, wp_new);// find new pairs 
 	// locked in box/row/col
 	for (int id = 0; id < nactive; id++) {
 		int dig = tactive[id];
-		BF128 w = zdynstep.FD[idig][0], wdiag;
+		BF128 w = zdynstep.FD[dig][0], wdiag;
 		wdiag.Diag3x27(w);
 		for (int iband = 0; iband < 3; iband++) {
 			int rband = DynLock1(w.bf.u32[iband]);
 			if (rband) {
-				int tw[27], ntw;
+				if (diagexpand) cout << "seen lock dig " << dig + 1 << " band " << iband << endl;
+				int tw[27], ntw=0;
 				BitsInTable32(tw, ntw, rband);
 				for (int i = 0; i < ntw; i++) {
 					int ce = tw[i] + 27 * iband;
 					if (expandmode) { source = 0; }// to see later
 					// here need a BF128 with digit + cells
-					Addt(ce, id, 1, source);
+					Addt(ce, dig, 1, source);
 				}
 			}
 			int rbanddiag = DynLock1(wdiag.bf.u32[iband]);
 			if (rbanddiag) {
-				int tw[27], ntw;
+				if (diagexpand) cout << "seen lock diag dig " << dig + 1 << " band " << iband << endl;
+				int tw[27], ntw=0;
 				BitsInTable32(tw, ntw, rbanddiag);
 				for (int i = 0; i < ntw; i++) {
 					int ce = C_transpose_d[tw[i] + 27 * iband];
 					if (expandmode) { source = 0; }// to see later
 					// here need a BF128 with digit + cells
-					Addt(ce, id, 1, source);
+					Addt(ce, dig, 1, source);
 				}
 
 			}
-		}
-	}
-	// naked pair
-	OffToOff_Plus_New_Pairs_Status(pmz, wp_new);// find new pairs 
+		}// band loop
+	}// digit loop
 	if(wp_new.isNotEmpty()){// look here for new  naked pairs 
 		int tnak[80], ntnak = wp_new.Table3X27(tnak);
 		for (int inak = 0; inak < ntnak; inak++) {// see row col box
@@ -429,6 +453,7 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 				seenpairs &= p;// must be the same pair
 			}
 			if (seenpairs.isEmpty())continue;
+			if (diagexpand) cout << "gopair with cell " << cellsFixedData[celln1].pt << endl;
 			int tunit[3];
 			cellsFixedData[celln1].GetRegions(tunit);
 			for (int iu = 0; iu < 3; iu++) {// check the 3 units
@@ -436,12 +461,16 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 				wu &= seenpairs;// 0 or 1 cell (more???)
 				if (wu.isEmpty())continue;
 				int celln2 = wu.getFirsCell();
+				if (diagexpand) cout << "gopair2 with cell " << cellsFixedData[celln2].pt << endl;
 				BF128 clean= cell_z3x[celln1];
 				clean &= cell_z3x[celln2];//cells to clean
 				BF128 cleand1 = clean & pmz[tdig[0]];
-				cleand1 -= used_off_digits.pmdig[tdig[0]];//cells to clean dig1
+				cleand1 -= pm_go.xysearch.used_off_digits.pmdig[tdig[0]];//cells to clean dig1
 				BF128 cleand2 = clean & pmz[tdig[1]];
-				cleand2 -= used_off_digits.pmdig[tdig[1]];//cells to clean dig2
+				cleand2 -= pm_go.xysearch.used_off_digits.pmdig[tdig[1]];//cells to clean dig2
+				Clean_d_bf(tdig[0], cleand1, source);// see later for source
+				Clean_d_bf(tdig[1], cleand2, source);
+
 			}
 		}
 	}
@@ -461,6 +490,15 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 				wu &= pm.pmdig[d2];// now wu has 2 cells see if naked
 				wu-= pairs_step_old;// nothing to do in bivalue cells
 				if (wu.isEmpty())continue;
+				int c1 = wu.getFirsCell(), c2 = wu.getLastCell();
+				if (diagexpand) {
+					char ws[82];
+					cout<<wu.String3X(ws) << "try hidden pairs unit "<<unit << endl;
+					cout << d1 + 1 << d2 + 1 << " " << cellsFixedData[c1].pt << " " << cellsFixedData[c2].pt << endl;
+				}
+				int digs1 = dig_cells_live[c1]^d1d2, digs2 = dig_cells_live[c2]^d1d2;
+				Clean_digs_cell(digs1, c1, source);
+				Clean_digs_cell(digs2, c2, source);
 			}
 		}
 
@@ -468,60 +506,132 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 	}
 	//Xwing must be hidden biv 2 rows or 2 cols
 	if (xw_biv_step.Comp(xw_biv_old)) {// a new xwing  has been seen
+		for (int ir1r2 = 0; ir1r2 < 36; ir1r2++) {// check the 36 pairs of digits
+			int digits_new = xw_biv_step.sets_biv[ir1r2] ^ xw_biv_old.sets_biv[ir1r2];
+			if (!digits_new)continue;// unit is here rows or cols
+			int r1r2 = floors_2d[ir1r2], tdigits[18], ntd = 0,rr1,rr2;
+			bitscanforward(rr1, r1r2); bitscanreverse(rr2, r1r2);
+			BitsInTable32(tdigits, ntd, digits_new);
+			for (int id = 0; id < ntd; id++) {
+				int digit = tdigits[id];
+				if (digit < 9) {// rows Xwing
+					BF128 wu = units3xBM[rr1];
+					wu |= units3xBM[rr2];
+					wu &= pm.pmdig[digit];
+					int c1 = wu.getFirsCell(), c2 = wu.getLastCell();
+					int col1 = cellsFixedData[c1].plu, col2 = cellsFixedData[c2].plu;
+					BF128 wu2 = units3xBM[col1];
+					wu2 |= units3xBM[col2];
+					wu2 &= pm.pmdig[digit];
+					wu2 -= wu;// cells to clear
+					if (wu2.isEmpty())continue;
+					if (diagexpand) {
+						char ws[82];
+						cout << wu.String3X(ws) << "xwing row digit " << digit+1 << " "
+						     << rr1 + 1 << rr2 + 1 << " " << cellsFixedData[c1].pt << " " << cellsFixedData[c2].pt << endl;
+					}
+					Clean_d_bf(digit, wu2, source);
+				}
+				else {//columns Xwing
+					BF128 wu = units3xBM[rr1+9];
+					wu |= units3xBM[rr2+9];
+					wu &= pm.pmdig[digit-9];
+					int c1 = wu.getFirsCell(), c2 = wu.getLastCell();
+					int row1 = cellsFixedData[c1].el, row2 = cellsFixedData[c2].el;
+					BF128 wu2 = units3xBM[row1];
+					wu2 |= units3xBM[row2];
+					wu2 &= pm.pmdig[digit-9];
+					wu2 -= wu;// cells to clear
+					if (wu2.isEmpty())continue;
+					if ( diagexpand) {
+						char ws[82];
+						cout << wu.String3X(ws) << "xwing column digit " << digit -8 << " "
+						 << rr1 -8 << rr2 -8 << " " << cellsFixedData[c1].pt << " " << cellsFixedData[c2].pt << endl;
+					}
+					Clean_d_bf(digit-9, wu2, source);
+
+				}
+			}
+		}
 
 		xw_biv_old = xw_biv_step;
 	}
+	if (diagexpand) {
+		cout << "exit off to off" << endl;
+		//zdyn.ImageCandidats();
+	}
+
 }
 void XYSEARCHDYNPLUS::ExpandPlusGo(){// start with cand on
-	int diag = 0;
-	//if (pm_go.cycle==8 && ddig ==2  && dcell==0 )		diag = 2;
-	//if (pm_go.cycle == 16 && maxpas>6 &&  ddig == 1 && dcell == 5)diag = 3;
-	if (diag ) cout << "start xyexpand " << ddig + 1 << cellsFixedData[dcell].pt
-		<< " dind=" <<dind<<" maxpas="<<maxpas<< endl;
+			//cout <<  ddig + 1 << cellsFixedData[dcell].pt << endl;
+	diagexpand = 0;
+	//if (pm_go.cycle == 2 && ddig == 6 && dcell == 9)		diagexpand = 2;
+	if (diagexpand) {
+		cout << "start xyexpand " << ddig + 1 << cellsFixedData[dcell].pt
+			<< " dind=" << dind << " maxpas=" << maxpas << " cont="<< is_contradiction << endl;
+		zdyn.ImageCandidats();
+	}
 	ntd = 0;
 	while (nsteps++ < maxpas){ 
+		int ntpr = ntd;
 		ntp = ntd;
-		ntd = nt;
-		if (diag>1) cout << "step " << nsteps << " ntp=" << ntp << " ntd=" << ntd << endl;
-
-		// if new off in the previous step, consider  off to off
-		if (used_off_digits != used_off_old)	OffToOff_Plus();
-		used_off_old = used_off_digits;
-
+		ntd =nt;
+		if (diagexpand >1) cout << "step " << nsteps << " ntp=" << ntp << " ntd=" << ntd 
+			<< " cont=" << is_contradiction << endl;
 		for (int i = ntp; i < ntd; i++){// std off/on and on/off
 			cell = t[i].u8[0];	 
 			digit = t[i].u8[1]; 
 			sign= t[i].u8[2];
+			if (diagexpand > 1) {
+				cout << "process ";
+				if (sign)cout << "~";
+				cout << digit + 1 << cellsFixedData[cell].pt << endl;
+			}
 			if (sign)	OffToOn_Plus(i);		
 			else  OnToOff_Plus(i);
 			if (nt > 350) break;
 		}
+		// if new off in the previous step, consider  off to off
+		if (memcmp(&pm_go.xysearch.used_off_digits, &used_off_old, 9 * 16)) {
+			PM3X r_off = pm_go.xysearch.used_off_digits;
+			if (diagexpand > 1)cout << "start off to off step" << endl;
+			OffToOff_Plus();
+			used_off_old = r_off;
+		}
 
 		if (nt == ntd) 	break;
 		if (!is_contradiction){
-			contradiction = used_off_digits;  contradiction &= used_on_digits;
-			if (!contradiction.IsEmpty()){
-				if (diag) {
+			pm_go.xysearch.contradiction = pm_go.xysearch.used_off_digits;  
+			pm_go.xysearch.contradiction &= pm_go.xysearch.used_on_digits;
+			if (!pm_go.xysearch.contradiction.IsEmpty()){
+				if (diagexpand) {
 					cout << ddig + 1 << cellsFixedData[dcell].pt << " contradiction for npas=" << nsteps << " nt=" << nt << endl;
-					contradiction.Print("contradiction ");
-					if (diag > 2)DebugT();
+					pm_go.xysearch.contradiction.Print("contradiction ");
+					if (diagexpand > 2)DebugT();
 				}
 				is_contradiction = 1;
+				if (fastmode && (!dsign)) {
+					AddElim(ddig, dcell, 96);
+					if (diagexpand)cout << "94 fastelim " << ddig + 1 << cellsFixedData[dcell].pt << endl;
+					pm_go.xysearch.off_status[dind] = pm_go.xysearch.used_off_digits;
+					return;
+				}
 				//if (maxpas > nsteps + 2)maxpas = nsteps + 2;
 //<<<<<<<<<<<< //DynamicSolveContradiction(cand,contradiction);
 			}
 		}
-		if (diag > 1 && (nsteps & 1)) {
+		if (diagexpand) {
 			cout << "end of step=" << nsteps << " nt=" << nt << endl;
-			used_off_digits.Print("dyn off status end of step");
+			zdyn.ImageCandidats();
 		}
-		if ((maxpas== 6 && nt > 150)|| nt>300)break;
+		if ((maxpas<=12 && nt > 150)|| nt>300)break;
 	}
-	if (diag) {
-		cout << "expand closed nt=" << nt << " off count" << used_off_digits.Count() << endl;
-		used_off_digits.Print("dyn off status ");
+	if (diagexpand) {
+		cout << "expand closed nt=" << nt << " off count" << pm_go.xysearch.used_off_digits.Count() << endl;
+		pm_go.xysearch.used_off_digits.Print("dyn off status ");
 	}
-	off_status[dind] = used_off_digits;// store off status 
+	if(dsign)off_off_status= pm_go.xysearch.used_off_digits;
+	else pm_go.xysearch.off_status[dind] = pm_go.xysearch.used_off_digits;// store off status 
 
 }
 /*
@@ -709,11 +819,15 @@ void XYSEARCHDYNPLUS::SearchDynPassMulti(int nmax){// try multi chains if nothin
 */
 
 void XYSEARCHDYNPLUS::SearchDynPassPlus(int nmax) {	// try a  pass limited to nmax steps
-	nind = 0;
+	//nind = 0;
 	maxpas = nmax;
-	for (int icand = 0; icand < ntcands; icand++) {// all candidates processed 
-		ExpandPlusInit(tcands[icand]);
+	for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
+		ExpandPlusInit(pm_go.xysearch.tcands[icand]);
 		ExpandPlusGo();
+		ExpandPlusInit(pm_go.xysearch.tcands[icand],1);
+		ExpandPlusGo();
+		// check si signe de 2 est moins
+		// on peut aussi tester dans expand arrêt si pas de - -> -
 	}
 	if (opprint) {
 		cout << "search pass end phase 1 elim_done status=" << elim_done
@@ -764,8 +878,98 @@ void XYSEARCHDYNPLUS::SearchDynPassPlus(int nmax) {	// try a  pass limited to nm
 	*/
 }
 int XYSEARCHDYNPLUS::SearchDynPlus(int fast){
-	//SearchDynPass(6);// try a first pass limited to 6 steps
+	opprint = pm_go.opprint;
+	PM3X welims;
+	SearchInit(fast);
+	if (opprint) {// debug hp_biv
+		cout << "end init status" << endl;
+		hp_biv_0.Debug("digit bi_values at start");
+		xw_biv_0.Debug("xwings at start");
+	}
+	if (fast) {
+		maxpas = 35;
+		if (opprint)cout << "fast 1" << endl;
+		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
+			ExpandPlusInit(pm_go.xysearch.tcands[icand]);
+			if ((int)ddig == (int)zh_g.zerobased_sol[dcell]) continue;
+			ExpandPlusGo();
+		}
+		if(elim_done) return 1;
+		if (opprint)cout << "fast 2" << endl;
+		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
+			ExpandPlusInit(pm_go.xysearch.tcands[icand]);
+			if ((int)ddig == (int)zh_g.zerobased_sol[dcell])
+				ExpandPlusGo();// add missing candidates off status (no contradiction)
+		}
+		// test on and off (includes all bivalues) no contradiction
+		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
+			ExpandPlusInit(pm_go.xysearch.tcands[icand], 1);
+			ExpandPlusGo();// off_off_status
+			off_off_status &= pm_go.xysearch.off_status[dind];
+			if (!off_off_status.IsEmpty()) {
+				if(AddElimFast(off_off_status))
+					if(opprint)	cout << "elim fast on/off "<<ddig+1
+						<<cellsFixedData[dcell].pt<<endl;
+			}
+		}
+		if (elim_done) return 1;
+		if (opprint)cout << "fast 3" << endl;
+		// test multis cells >2 digits units >2 cells
+		if (opprint)cout << "try fast multi cells" << endl;
+		// try all bi values in mode x->~a and y->~a adding one in length
+		BF128 wp = zh_g.cells_unsolved_e - pairs;
+		int  xcell;
+		while ((xcell = wp.getFirsCell()) >= 0) {
+			wp.Clear_c(xcell);
+			int locdiag = 0;
+			//if (pm_go.cycle == 7 && xcell == 44)		locdiag = 2;
+			int digs = zh_g.dig_cells[xcell];
+			if (_popcnt32(digs) < 3)continue;
+			welims.SetAll_1();
+			if (locdiag)cout << "multi cell dplus r5c9" << endl;
+			while (digs) {
+				bitscanforward(d2, digs);
+				digs ^= 1 << d2;
+				int i1 = pm_go.xysearch.ind_pm[d2][xcell], 
+					coff = pm_go.xysearch.tcands[i1].u16[1];
+				if (locdiag) {
+					cout << "for digit " << d2 + 1 <<" coff="<<coff<< endl;
+					//char ws[82];
+					pm_go.xysearch.off_status[coff].Print("off status");
+				}
+				welims &= pm_go.xysearch.off_status[coff];
+			}
+			if (welims.IsEmpty()) continue;
+			if (AddElimFast(welims))
+				if (opprint)	cout << "elim fast multicell " 
+					<< cellsFixedData[xcell].pt << endl;
+		}
+		if (opprint)cout << "try fast multi units" << endl;
+		for (int id1 = 0; id1 < 9; id1++) {
+			for (int iu = 0; iu < 27; iu++) {
+				if (dig_bivsets[id1].On(iu))continue;
+				BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id1];
+				if (wu.isEmpty())continue;
+				int tcu[10], ntcu = wu.Table3X27(tcu);
+				welims.SetAll_1();
+				for (int icu = 0; icu < ntcu; icu++) {
+					int xcell = tcu[icu];
+					int i1 = pm_go.xysearch.ind_pm[id1][xcell], 
+						coff = pm_go.xysearch.tcands[i1].u16[1];
+					welims &= pm_go.xysearch.off_status[coff];
+				}
+				if (welims.IsEmpty()) continue;
+				if (AddElimFast(welims))
+					if (opprint)	cout << "elim fast multi unit digit "
+						<<id1+1 << "unit " <<iu<< endl;
+			}
+		}
+		return elim_done;
+	}
+
+	SearchDynPassPlus(10);// try a first pass limited to 6 steps
 	if (elim_done) return 1;
+	if (1) return elim_done;
 	if (ntelims && maxrating <= 93){// do it if small enough 
 		pm_go.hint.rating_done = (USHORT)maxrating;
 		for (int i = 0; i < ntelims; i++){
@@ -989,44 +1193,4 @@ int XYSEARCHDYNPLUS::BackDynamicOff(GINT target){
 	return 0;
 }
 */
-int ZHOU::Dyn_lockedBox(int active) {
-	int iret = 0;
-	for (int idig = 0; idig < 9; idig++)if (active & (1 << idig)) {
-		BF128  fd = FD[idig][0] & cells_unsolved;
-		for (int iband = 0; iband < 3; iband++) {
-			register int band = fd.bf.u32[iband];
-			if (!band)continue;// solved band
-		}
-	}
-	return iret;
-}
-
-int XYSEARCHDYNPLUS::Dyn_locked(int band, int band_start, int band_step, int iband) {
-	int iret = 0;
-	register int shrink = (TblShrinkMask[band & 0x1FF]) |
-		(TblShrinkMask[(band >> 9) & 0x1FF] << 3) |
-		(TblShrinkMask[(band >> 18) & 0x1FF] << 6);
-/*
-			register int b = band &TblComplexMask[shrink];
-			if (b != band){
-				//cout << "28 lockedrow dig=" << idig + 1 << " band=" << iband + 1 << endl;
-				iret = 1;
-				//fd.bf.u32[iband] = b;
-			}
-*/
-	for (int ibox = 0; ibox < 3; ibox++, shrink >>= 1) {
-		register int x = shrink & 0111;
-		if (_popcnt32(x) - 1)continue;// not locked in row
-		uint32_t irow;	bitscanforward(irow, x);// catch the row
-		irow /= 3;
-		int to_clean = tband_row[irow] & (~tband_box[ibox]) & band;
-		if (to_clean) {
-			//int clean = FD[idig][0].bf.u32[iband] & ~to_clean;
-			//iret = 1;
-			//FD[idig][0].bf.u32[iband] = clean;
-		}
-	}
-	return 0;
-}
-
 

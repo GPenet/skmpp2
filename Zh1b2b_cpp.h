@@ -4,135 +4,40 @@ by user zhouyundong_2012.
 The copyright is not specified.
 */
 //====================================
-//#include "sk_t.h"  // tab0  
-//#include "Zhn.h"
-#include "Zhtables_cpp.h" // also describes the pattern
-//#define DIAG
-
-ZH_GLOBAL zh_g;
+#include "main.h"   
+#include "Zh1b2b.h"
+ZH2B zh2b[50]; // must host main brute force plus minimality analysis and recursive generation
+ZH2B zh2b_i, zh2b_i1;
+ZH2B_GLOBAL   zh2b_g;   // global variables for the class GAME
+extern ZH_GLOBAL zh_g;
 
 ZHOU zhou[50]; // must host main brute force plus minimality analysis and recursive generation
 ZHOU zhou_i,zhou_ip,//zhou_i================== initial for a GAME
     zhou_solve;// basis to solve a puzzle using elimination logic
 //============================= ZH_GLOBAL code
-ZH_GLOBAL::ZH_GLOBAL(){
-	diag = 0;
-	modeguess = 1;
-	goadduas = ngiven=0;
-	zsol = pat = puzfinal = 0; // no solution unless required buy the user
+ZH2B_GLOBAL::ZH2B_GLOBAL(){
+	zsol = 0; // no solution unless required buy the user
+	nctlg = test = 0;
+	//mytable = zhxy27;
 	// init Tblgame
-	for (int i = 0; i < 3; i++)init_3x.bf.u32[i] = BIT_SET_27;
-	init_3x.bf.u32[3] = 0;
-	init_digit = init_3x;
-	init_digit.bf.u32[3] = 0777;//all rows unsolved
-	for (int i = 0; i < 9; i++)	{
-		zhou_i.FD[i][0] = init_digit;
-		zhou_i.FD[i][1] = init_3x;
+	val_init1_81.bf.u32[0] = BIT_SET_27;
+	val_init1_81.bf.u32[1] = BIT_SET_27;
+	zh2b_i.index = 0;
+	for (int i = 0; i < 9; i++) {
+		zh2b_i.FD[i] = val_init1_81;
+		zh2b_i.CompFD[i] = val_init1_81;
 	}
-	zhou_i.cells_unsolved = init_3x;
-	zhou_i.ndigits = 9;
-	zhou_i.index = 0;
-	zhou_i.box_hidden_pair = 0;
-	zhou_i.unsolved_digits = 0777;
-	NoMorph();
-	if (0){
-		cout << "gl0bal debug" << endl;
-		Debug();		zhou_i.Debug(1);
+	zh2b_i.Cells_unsolved = val_init1_81;
+	zh2b_i.Rows_unsolved.bf.u32[0] = BIT_SET_30; //6x5
+	zh2b_i.Rows_unsolved.bf.u32[1] = 077777777;  //6x4
+	for (int i = 0; i < 50; i++) {// for X+Y+27 format 50 blocs
+		zh2b[i] = zhxy27_i;
+		zh2b[i].index = i;
 	}
-}
-void ZH_GLOBAL::NoMorph(){
-	for (int i = 0; i < 9; i++){
-		x3_dmap_inv[i] = i;
-		zhou_i.FD[i][1].bf.u32[3] = i;
-	}
-	for (int i = 0; i < 81; i++)x3_cmap[i] = i;
-}
-void ZH_GLOBAL::MorphPat(char * ze){// sort entry to optimize brute force
-	char zdiag[81], *source;
-	int count[6], *sourcei, zei[81], *zdiagi = C_transpose_d;
-	memset(count, 0, sizeof count);
-	for (int i = 0; i < 81; i++) {
-		if (ze[i] - '.'){
-			int band = i / 27, stack = C_stack[i] + 3;
-			++count[band];			++count[stack];
-		}
-		zdiag[C_transpose_d[i]] = ze[i];
-		zei[i] = i;
-	}
-	int imax = 0, nmax = 0;// find biggest count band stack
-	for (int ib = 0; ib < 6; ib++)if (count[ib]>nmax){	nmax = count[ib];	imax = ib;	}
-	// morph the puzzle to the high band in band
-	if (imax > 2){
-		source = zdiag;		sourcei = zdiagi;
-		memmove(count, &count[3], 3 * 4);
-	}
-	else { source = ze; sourcei = zei; }
-	int tsort[3], w;// sort bands increasing order of count
-	tsort[0] = count[0] << 8;
-	tsort[1] = 1 | (count[1] << 8);
-	tsort[2] = 2 | (count[2] << 8);
-	for (int i = 0; i < 2; i++) for (int j = i + 1; j < 3; j++)
-		if (tsort[i]>tsort[j]){ w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
-	int ib1 = tsort[0] & 3, ib2 = tsort[1] & 3, ib3 = tsort[2] & 3;
-	puz[81]=0,
-	memcpy(puz, &source[27 * ib1], 27);
-	memcpy(&puz[27], &source[27 * ib2], 27);
-	memcpy(&puz[54], &source[27 * ib3], 27);
-	memmove(x3_cmap, &sourcei[27 * ib1], 27 * 4);
-	memmove(&x3_cmap[27],  &sourcei[27 * ib2], 27 * 4);
-	memmove(&x3_cmap[54], &sourcei[27 * ib3], 27 * 4);
 
 }
-//td is 8bits cell + 8 bits digits
-void ZH_GLOBAL::Morph_digits(int morph){// using the given entry
-	ngiven = 0;
-	unsigned long count[9]; 
-	memset(count,0,sizeof count);
-	for (int i = 0; i < 81; i++){
-		register int c = puz[i];
-		if (c<'1' || c>'9') continue;
-		c -= '1';
-		count[c]++;
-		tgiven[ngiven++].u16 =(uint16_t)( i | (c << 8));
-	}
-	if (morph){// if morph asked, map digits on increasing count.
-		int tsort[9], w;// sort bands increasing order of count
-		for (int i = 0; i < 9; i++)tsort[i] = (count[i] << 8) | i;
-		for (int i = 0; i < 8; i++) for (int j = i + 1; j < 9; j++)
-			if (tsort[i]>tsort[j]){ w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
-		for (int i = 0; i < 9; i++){
-			register int ii = tsort[i] & 15;
-			zhou_i.FD[i][1].bf.u32[3] = ii;
-			x3_dmap_inv[ii] = i;
-		}
-		// map the given to new order
-		for (int ic = 0; ic < ngiven; ic++)
-			tgiven[ic].u8[1] = (uint8_t) x3_dmap_inv[tgiven[ic].u8[1]];
-	}
-}
-//void ZH_GLOBAL::Map_Morph_digits(GINT16 * td, int nc){//applying x3_cmap to the cells
-//}
-void ZH_GLOBAL::Morph_digits(GINT16 * td, int nc){// must be in line with the morphed pattern
-	ngiven = 0;
-	unsigned long count[9]; 
-	memset(count, 0, sizeof count);
-	for (int it = 0; it < nc; it++){
-		register int  dig = td[it].u8[1];
-		count[dig]++;
-	}
-	int tsort[9], w;// sort bands increasing order of count
-	for (int i = 0; i < 9; i++)tsort[i] = (count[i] << 8) | i;
-	for (int i = 0; i < 8; i++) for (int j = i + 1; j < 9; j++)
-		if (tsort[i]>tsort[j]){ w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
-	for (int i = 0; i < 9; i++){
-		register int ii = tsort[i] & 15;
-		zhou_i.FD[i][1].bf.u32[3] = ii;
-		x3_dmap_inv[ii] = i;
-	}
-	// map the given to new order
-	for (int ic = 0; ic < ngiven; ic++)
-		tgiven[ic].u8[1] =(uint8_t) x3_dmap_inv[tgiven[ic].u8[1]];
-}
+/*
+
 int ZH_GLOBAL::InitSudoku(){ return zhou[0].InitSudoku(tgiven,ngiven); }
 int ZH_GLOBAL::Go_InitSudoku(char * ze){
 	MorphPat(ze);
@@ -210,9 +115,10 @@ void ZH_GLOBAL::ValidPuzzle(ZHOU * z){
 	nsol++;
 }
 
-
+*/
 
 //============================= zhou code
+/*
 
 inline void ZHOU::Copy(ZHOU & o){
 	*this = o;
@@ -310,7 +216,7 @@ loop_upd:
 	if (last_assigned) goto loop_upd;// nothing to do in the next cycle
 	return 1;
 }
-
+*/
 /* attempt to by pass the preprocessor, 10 to 15% slower
 int ZHOU::Update(){
 	int t3[5]={0,1,2,0,1};
@@ -369,6 +275,8 @@ loop_upd:
 	return 1;
 }
 */
+/*
+
 int ZHOU::Upd1(int digit){
 	//if (1) return 1;
 	if (zh_g.diag)cout << "Upd index=" << index << " update digit=" <<digit << endl;
@@ -488,13 +396,14 @@ int ZHOU::IsMinimale(GINT16 * to, int no){// assumed checked valid before
 	}
 	return 1;
 }
-
-#include "Zhn_doc_debug_cpp.h"
+*/
+//#include "Zhn_doc_debug_cpp.h"
 /*Zhn Control of flow
 -b9- use of hidden pairs triplets zhg_modeguess
  abc  a use pairs  b use triplets c use pairs not hidden pair
  -v7- max index for hidden pairs ...
 */
+/*
 
 int ZHOU::FullUpdate(){
 	if (zh_g.nsol > zh_g.lim) return 0;
@@ -992,3 +901,4 @@ exitok:
 	GuessFloor();
 }
 
+*/

@@ -49,16 +49,10 @@ void Go_c400_40p(char *ze, int task) {// work on bitfields std puz
 	case 42: // count digits per band
 		for (int i = 0; i < 6; i++) fout1 << ";" << _popcnt32(d_bands[i]);
 		break;
-	case 43: // count given per unit
+	case 43: // count given/digits per unit
 		for (int i1 = 0, iu = 0; i1 < 3; i1++) {
 			fout1 << ";" << rcb[i1];
 			for (int i = 0; i < 9; i++,iu++) fout1 << ";" << c_units[iu];
-		}
-		break;
-	case 44: // count digits per unit
-		for (int i1 = 0, iu = 0; i1 < 3; i1++) {
-			fout1 << ";" << rcb[i1];
-			for (int i = 0; i < 9; i++, iu++) fout1 << ";" << _popcnt32(d_units[iu]);
 		}
 		break;
 	}
@@ -78,7 +72,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 	while (finput.GetLigne()) {
 		int ll = (int)strlen(ze);
 		if (ll < 81 || ll > 250) continue;
-		if (task > 40 && task<50) {	Go_c400_40p(ze, task); continue;}
+		if (task >= 40 && task<50) {	Go_c400_40p(ze, task); continue;}
 		switch (task) {
 
 		//=========== add to ze
@@ -124,7 +118,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 			if (ll < (int)sgo.vx[1]) break;
 			ze[sgo.vx[1]] = 0;
 			fout1 << ze << endl; break;
-		case 15:// mantext in output
+		case 15:// maxtext in output
 			{	int known = 0;
 				char vec[9], vi = '9';
 				for (int i = 0; i < 81; i++)if (ze[i] - '.') {
@@ -135,6 +129,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 					}
 					ze[i] = vec[c];
 				}
+				fout1 << ze << endl; break;
 				break;
 			}
 		case 16:// mintext in output
@@ -148,6 +143,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 				}
 				ze[i] = vec[c];
 			}
+			fout1 << ze << endl; break;
 			break;
 		}
 
@@ -160,11 +156,11 @@ void Go_c400() {// small tasks on entry -v0- is the task
 			}
 			break;
 		case 22:// extract first sgo.vx[1] puzzles
-			if (++npuz < sgo.vx[1]) fout1 << ze << endl;
+			if (npuz++ < sgo.vx[1]) fout1 << ze << endl;
 			else fout2 << ze << endl;
 			break;
-		case 23://sampling start sgo.vx[1] one every sgo.vx[2]
-			if (++npuz < sgo.vx[1]) break;
+		case 23://sampling skip sgo.vx[1] one every sgo.vx[2]
+			if (npuz++ < sgo.vx[1]) break;
 			{	int rn = (npuz - sgo.vx[1]) % sgo.vx[2];
 				if (!rn)fout1 << ze << endl;
 			}
@@ -275,7 +271,7 @@ void Go_c440(){
 	}
 	while (finput.GetLigne()){
 		int ll = (int)strlen(ze);
-		if (ll<106 || ll > 200) continue;
+		if (ll<96 || ll > 200) continue;
 		char zout[200];
 		for (int i = 0; i < 81; i++)
 			if (ze[i] - '0')zout[i] = ze[i];
@@ -283,10 +279,10 @@ void Go_c440(){
 		zout[81] = ';';
 		int n = 82;
 		for (int i = 88; i < 102; i++){
-			if (ze[i] == ' ')continue;
-			if (ze[i] == '/'){
+			if (ze[i] == '/') {
 				zout[n++] = ';'; continue;
 			}
+			if (ze[i] == ' ')continue;
 			zout[n++] = ze[i];
 		}
 		zout[n++] = ';';
@@ -294,7 +290,6 @@ void Go_c440(){
 		zout[n++] = ';';
 		strcpy(&zout[n], &ze[104]);
 		fout1 << zout << endl;
-		//break;
 	}
 
 }

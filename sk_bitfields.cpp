@@ -124,11 +124,15 @@ void PM3X::operator -= (const PM3X &z2){
 	for (register int i = 0; i < 9; i++) pmdig[i] -= z2.pmdig[i];
 }
 
-int PM3X::operator == (const PM3X &z2) {
-	return memcmp(this, &z2, sizeof this) == 0;
+int PM3X::operator == (const PM3X &z2)const {
+	for (register int i = 0; i < 9; i++)
+		if (pmdig[i] != z2.pmdig[i]) return 0;
+	return 1;
 }
-int PM3X::operator != (const PM3X &z2) {
-	return memcmp(this, &z2, sizeof this);
+int PM3X::operator != (const PM3X &z2) const {
+	for (register int i = 0; i < 9; i++)
+		if (pmdig[i] != z2.pmdig[i]) return 1;
+	return 0;
 }
 void PM3X::Diag3x27(PM3X & r) {
 	for (int i = 0; i < 9; i++)pmdig[i].Diag3x27(r.pmdig[i]);
@@ -158,3 +162,11 @@ void PM3X::Print(const char * lib){
 
 }
 
+void HID_BIV::Debug(const char * lib) {
+	cout << "36x27 bits file debugging " << lib << endl;
+	for (int i = 0; i < 36; i++) {
+		if(sets_biv[i])
+		cout << Char27out(sets_biv[i]) << " for 0"
+			<< oct << floors_2d[i] << dec << endl;
+	}
+}

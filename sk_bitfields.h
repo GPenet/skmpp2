@@ -266,11 +266,11 @@ public:
 	}
 	inline void SetToBit(const int theBit) { 
 		if (theBit < 64) {
-			(uint64_t)bf.u64[1] = 0;
+			bf.u64[1] = (uint64_t)0;
 			bf.u64[0]=(uint64_t) 1<< theBit;
 		}
 		else {
-			(uint64_t)bf.u64[0] = 1;
+			bf.u64[0] = (uint64_t)1;
 			bf.u64[1] = (uint64_t)1 << (theBit-64);
 		}
 	}
@@ -374,14 +374,18 @@ public:
 		}
 		return -1;
 	}
-	inline int getLast96() const {
+	inline int getLastCell() const {
 		uint32_t res;
 		if (bf.u32[2]) {
 			bitscanreverse(res, bf.u32[2]);
-			return 64 + res;
+			return 54 + res;
 		}
-		if (bf.u64[0]) {
-			bitscanreverse64(res, bf.u64[0]);
+		if (bf.u32[1]) {
+			bitscanreverse(res, bf.u32[1]);
+			return 27 + res;
+		}
+		if (bf.u32[0]) {
+			bitscanreverse(res, bf.u32[0]);
 			return res;
 		}
 		return -1;
@@ -460,8 +464,8 @@ public:
 	void operator &= (const PM3X &z2);
 	void operator |= (const PM3X &z2);
 	void operator -= (const PM3X &z2);
-	int operator == (const PM3X &z2);
-	int operator != (const PM3X &z2);
+	int operator == (const PM3X &z2)const;
+	int operator != (const PM3X &z2)const;
 	void Diag3x27(PM3X & r);
 
 	int IsEmpty();
@@ -520,6 +524,7 @@ public:
 struct HID_BIV {// seen bivalues pair digit/unit
 	int sets_biv[36];// 27 bits per (d1,d2)
 	inline int Comp(HID_BIV &r) { return memcmp(sets_biv, r.sets_biv, sizeof sets_biv); }
+	void Debug(const char * lib);
 };
 
 class ONE_FLOOR{// find all eliminations inside one floor

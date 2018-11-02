@@ -154,7 +154,7 @@ int GENSTEP::PuzzleToTest(){
 		return 2;
 	} //end of int nguess scope
 	else if (modehigh) {// filter to adjust later to dyn plus unsolved 
-		if(!pm_go.Solved_xx(90))		fout1 << puz << endl;
+		if(!pm_go.Solved_xx(96))		fout1 << puz << endl;
 	}
 	else {
 		fout1 << puz << endl;
@@ -381,7 +381,8 @@ void Go_c201(){
 	int myn;
 	uint32_t change = sgo.vx[0], idep = change, nfix = sgo.vx[2];
 	if (sgo.vx[1])idep = 1;
-	gscom.modegame = 1;
+	gscom.modegame = 1; gscom.modehigh = 0;
+	if (sgo.vx[2]){ gscom.modegame = 0; gscom.modehigh = 1; }
 	while (finput.GetPuzzle(ze)){
 		cout << ze << " to process" << endl;
 		myn = 0;
@@ -553,52 +554,7 @@ void Go_c221() {//+-1 out of the pattern no fix
 	}
 }
 
-/*
-void GO_PAT::Do_41(){  // -'v3' + 'v4"
-// processing a -x+y without pattern constraint
-//   fix given except x
-//   take y in the free cells and try all
-//   in 0 based puzvar unassigned cells are set to 10 for later process
 
-		// fill the 2 clues tables
-		for(int i=0;i<81;i++)
-			if(puzin.puz[i]-'.'){tclues[nclues++]=i;}
-			else{	tclues_empty[nclues_empty++]=i;	}
-		PUZC puzinr=puzin;
-		COMBINE combi_free,combi_given;
-		combi_given.First(nclues,change_skip,tclues,tclues_s);
-		int ngiven=nclues-change_skip,nfree=nclues_empty-fix_then;
-
-			// =====================loop on all perm for combi_given
-		 while(1 ) {
-			dep.Init(this);
-			for(int i=0;i<ngiven;i++){//take all given from the perm
-				int ii=tclues_s[i];		int j=puzfix.puz[ii];
-				dep.Fixer(ii,j-1);			}
-			puzin=puzinr;		// prepare puzout with emptied cells
-			for(int i=ngiven;i<nclues;i++){//emptied from the perm
-				int ii=tclues_s[i];		puzin.puz[ii]='.' ;
-			}
-			PUZC puzin3=puzin; // save that position
-			UNPAS depr=dep;
-			// now start the loop on free cells to assign
-combi_free.First(nclues_empty, fix_then,
-	tclues_empty, tclues_empty_s);
-// ===================loop2 on free cells perms
-while (1) {
-	// nothing to do out of non selected cells
-	puzin = puzin3;
-	dep = depr;
-	for (int i = nfree; i < nclues_empty; i++) {//to assign from the perm
-		int ii = tclues_empty_s[i];
-		puzin.puz[ii] = '1';   // dummy to say it is in the solution
-	}
-	dep.Exo_Game(&tclues_empty_s[nfree], fix_then, 0);
-	if (!combi_free.Next()) break;
-}
-if (!combi_given.Next()) break;
-		}
-*/
 // 210;211;212 seed on a pattern
 // 210 in once skip then one ever xx; one seed per 'n' first given
 // 211 create a primary file size 'n' other set to 1
@@ -677,6 +633,7 @@ void Go_c210(){// create a seed file on a pattern
 				tfree[i] = gscom.tc[i].free;
 				if (!tfree[i]) goto back2; // locked
 			next2:
+			{
 				int tp2[10], ntp2=0;
 				BitsInTable32(tp2, ntp2, tfree[i]);
 				while (tfree[i]){
@@ -698,6 +655,7 @@ void Go_c210(){// create a seed file on a pattern
 					gscom.Restore();
 					if ((int)digit > tmaxdig[i - 1]) break;
 				}
+			}
 			back2:
 				if (--i>n1){
 					gscom.iclue = i;

@@ -2238,7 +2238,7 @@ int XYSEARCH::Do_Clean(){
 }
 
 int XYSEARCH::AddElim(int d, int c, int rating){
-	if (rating <= pm_go.rat_er){// then do it
+	if (rating <= pm_go.rat_er || fastmode){// then do it
 		ntelims = 0;
 		maxrating = pm_go.rat_er;
 		if (zhou_solve.IsOnCandidate_c(d, c)){
@@ -2303,6 +2303,8 @@ void XYSEARCH::Expand_Multi(PM3X & cleanstart){// start is t;nt falses
 	}
 }
 //____________________ XY DYN base 85
+
+
 void XYSEARCH::ExpandDynamic(GINT cand){// start with cand on
 	ddig = cand.u8[1];
 	dcell = cand.u8[0];
@@ -2341,6 +2343,12 @@ void XYSEARCH::ExpandDynamic(GINT cand){// start with cand on
 				}
 				is_contradiction = 1;
 				//if (maxpas > nsteps + 2)maxpas = nsteps + 2;
+				if (fastmode) {
+					AddElim(ddig, dcell, 85);
+					if (diag)cout << "85 fastelim " << ddig + 1 << cellsFixedData[dcell].pt << endl;
+					off_status[dind] = used_off_digits;
+					return;
+				}
 				DynamicSolveContradiction(cand,contradiction);
 			}
 		}
@@ -2589,8 +2597,103 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 }
 
 int XYSEARCH::SearchDyn(int fast){
+	opprint = pm_go.opprint;
+	if (opprint)cout << "85 search dyn fast " << endl;
 	SearchInit(fast);
 	InitCandidatesTable();// build the table of candidates 
+	if (fast) {
+		maxpas = 35;
+		PM3X welims;
+		if (opprint)cout << "85 dyn fast 1" << endl;
+		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
+			GINT wc = tcands[icand];
+			if ((char)wc.u8[1] == zh_g.zerobased_sol[wc.u8[0]]) continue;
+			ExpandDynamic(wc);
+		}
+		if (elim_done) return 1;
+		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
+			GINT wc = tcands[icand];
+			if ((char)wc.u8[1] == zh_g.zerobased_sol[wc.u8[0]]) 
+			ExpandDynamic(wc);// expand the good candidates
+		}
+		if (opprint)cout << "try fast  cells bi values" << endl;
+		// try all bi values in mode x->~a and y->~a adding one in length
+		BF128 wp = pairs;
+		uint32_t  dc1, dc2;
+		while ((cell = wp.getFirsCell()) >= 0) {
+			wp.Clear_c(cell);
+			int digs = zh_g.dig_cells[cell];
+			bitscanforward(dc1, digs);
+			bitscanreverse(dc2, digs);
+			int i1 = ind_pm[dc1][cell], i2 = ind_pm[dc2][cell];// pointers to tcands
+			GINT cand1 = tcands[i1], cand2 = tcands[i2];
+			welims = off_status[cand1.u16[1]];
+			welims &= off_status[cand2.u16[1]];
+			if (welims.IsEmpty()) continue;
+			if (opprint) welims.Print("elims fast cell bi values");
+			zhou_solve.Clean(welims);
+			elim_done = 1;
+		}
+		if (opprint)cout << "try fast unit bi values" << endl;
+		for (int id = 0; id < 9; id++) {
+			for (int iu = 0; iu < 27; iu++) {
+				if (dig_bivsets[id].Off(iu))continue;
+				BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id];
+				int cell1 = wu.getFirsCell();
+				wu.Clear_c(cell1);
+				int cell2 = wu.getFirsCell();
+				int i1 = ind_pm[id][cell1], i2 = ind_pm[id][cell2];// pointers to tcands
+				GINT cand1 = tcands[i1], cand2 = tcands[i2];
+				welims = off_status[cand1.u16[1]]; 
+				welims &= off_status[cand2.u16[1]];
+				if (welims.IsEmpty()) continue;
+				zhou_solve.Clean(welims);
+				elim_done = 1;
+				if (opprint) welims.Print("elims fast unit bi values");
+			}
+		}
+		if (elim_done) return 1;
+		if (opprint)cout << "try fast multi cells" << endl;
+		// try all bi values in mode x->~a and y->~a adding one in length
+		wp = zh_g.cells_unsolved_e - pairs;
+		int  xcell;
+		while ((xcell = wp.getFirsCell()) >= 0) {
+			wp.Clear_c(xcell);
+			int digs = zh_g.dig_cells[xcell];
+			if (_popcnt32(digs) <3)continue;
+			welims.SetAll_1();
+			while (digs) {
+				bitscanforward(d2, digs);
+				digs ^= 1 << d2;
+				int i1 = ind_pm[d2][xcell], coff = tcands[i1].u16[1];
+				welims &= off_status[coff];
+			}
+			if (welims.IsEmpty()) continue;
+			zhou_solve.Clean(welims);
+			if (opprint) welims.Print("elims fast multi cells");
+			elim_done = 1;
+		}
+		if (opprint)cout << "try fast milti units" << endl;
+		for (int id1 = 0; id1 < 9; id1++) {
+			for (int iu = 0; iu < 27; iu++) {
+				if (dig_bivsets[id1].On(iu))continue;
+				BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id1];
+				if (wu.isEmpty())continue;
+				int tcu[10], ntcu = wu.Table3X27(tcu);
+				welims.SetAll_1();
+				for (int icu = 0; icu < ntcu; icu++) {
+					int xcell = tcu[icu];
+					int i1 = ind_pm[id1][xcell], coff = tcands[i1].u16[1];
+					welims &= off_status[coff];
+				}
+				if (welims.IsEmpty()) continue;
+				zhou_solve.Clean(welims);
+				if (opprint) welims.Print("elims fast multi units");
+				elim_done = 1;
+			}
+		}
+		return elim_done;
+	}
 	SearchDynPass(6);// try a first pass limited to 6 steps
 	if (elim_done) return 1;
 	if (ntelims && maxrating <= 88){// do it if small enough 
@@ -2825,8 +2928,9 @@ NesttedLevel5=110
 
 */
 //==========================================================================PM_GO::HINT
-
+//               0  1  2  3   4   5   6   7   8   9   10
 int  steps[] = { 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128,
+//11 12    13   14   15    16   17    18    19    20    21    22 
 192, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096, 6144, 8192 };
 
 int PM_GO::HINT::ChainLengthAdjusted(int base, int length){
@@ -2993,6 +3097,7 @@ int PM_GO::Solved_xx(int lim) {
 	//===========================================================
 	zh_g.diag = opprint = opprint2 = stop_rating = cycle = assigned = rat_er = rat_ep = rat_ed = 0;
 	zh_g.nsol = 0; zh_g.lim = 1;	ur_serate_mode = 1;
+	if (sgo.vx[9])opprint = 1;
 	while (cycle++ < 150) {
 		if (cycle > 148 || stop_rating) return 0;
 		if (zhou_solve.cells_unsolved.isEmpty())return 1; // solved 
@@ -3011,6 +3116,13 @@ int PM_GO::Solved_xx(int lim) {
 		XStatusPrepare();
 		if (Rate65Xcycle(1)) continue;
 		if (Rate66Xchain(1)) continue;
+		if (opprint) {
+			cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<next cycle=" << cycle
+				<< " rating=" << rat_er
+				<< " unsolved=" << zhou_solve.cells_unsolved.Count() 
+				<< " assigned=" << assigned << endl;
+			zhou_solve.ImageCandidats();
+		}
 		if (rat_er < 75)// skip Y loop if XY chain can be applied
 			if (ylsearch.Search(1)
 				|| ylsearch.SearchOut(1)) {
@@ -3019,10 +3131,15 @@ int PM_GO::Solved_xx(int lim) {
 		if (Rate70_75(1)) continue;
 		if (Rate75())continue;
 		if (lim < 75) return 0;
+		if (opprint) cout << "call 76" << endl;
 		if (Rate76Nishio(1)) continue;
+		if (opprint) cout << "call 83" << endl;
 		if (xysearch.SearchMulti(1)) { Quickrate(83); continue; }
+		if (opprint) cout << "call 85" << endl;
 		if (xysearch.SearchDyn(1)) { Quickrate(85); continue; }
 		if (lim < 90) return 0;
+		if (opprint) cout << "call 96" << endl;
+		if (xysearchplus.SearchDynPlus(1)) { Quickrate(96); continue; }
 		break;
 	}
 	return 0;
@@ -3032,7 +3149,7 @@ int PM_GO::Solved_xx(int lim) {
 
 void PM_GO::SolveSerate110() {
 	//===========================================================
-	zh_g.diag = sgo.vx[9];	opprint = sgo.bfx[9];	opprint2 = sgo.bfx[8];
+	zh_g.diag = sgo.vx[9];	opprint = sgo.bfx[8];	opprint2 = sgo.bfx[8];
 	if (opprint2)cout << zh_g.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
 	stop_rating = cycle = assigned = 0;
 	rat_er = rat_ep = rat_ed = 0;
@@ -3087,8 +3204,9 @@ void PM_GO::SolveSerate110() {
 		if (Rate76Nishio(rat_er >82)) continue;// fast mode above
 		if (sgo.vx[2] <= 81) goto exit_limit;
 		if (Rate80Multi(rat_er >= 90))continue;
-		if (Rate85Dynamic(rat_er >= 100))continue;
+		if (Rate85Dynamic(rat_er >= 96))continue;
 		if (sgo.vx[2] <= 90) goto exit_limit;
+		if (Rate90DynamicPlus(1))continue;
 
 		if (1) { stop_rating = 1; break; }
 		stop_rating = 1;
@@ -3178,6 +3296,7 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 		if (Rate76Nishio(1)) continue; 
 		if (xysearch.SearchMulti(1))	{ Quickrate(83); continue; }
 		if (xysearch.SearchDyn(1))	{ Quickrate(85); continue; }
+		if (xysearchplus.SearchDynPlus(1)) { Quickrate(96); continue; }
 		stop_rating = 1;
 		break;
 		//next_cycle:;
@@ -3199,28 +3318,9 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 
 void PM_GO::Solve199test() {
 	//===========================================================
-	zh_g.diag = sgo.vx[9];	opprint = sgo.bfx[9];	opprint2 = sgo.bfx[8];
-	if (opprint2)cout << zh_g.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
-	stop_rating = cycle = assigned = 0;
-	rat_er = rat_ep = rat_ed = 0;
-	zh_g.nsol = 0; zh_g.lim = 1;
-	ur_serate_mode = 1;
-	while (cycle++ < 150) {
-		if (cycle > 148) { stop_rating = 7;	break; }
-		if (stop_rating) 	break;
-		if (zhou_solve.cells_unsolved.isEmpty()){
-			break;
-		}
-		zh_g.Init_Assign();
-		if (Next10_28()) continue;// clean easy cases
-		if (Rate30())continue;
-		Status("after Next30()", 0);
-		zhou_solve.Debug(1);
-		zh_g.active_floor = 0;// no elim
-		SetupActiveDigits();
-		cout << Char9out(zh_g.active_floor) << " active digits" << endl;
-		break;
-	}
+	if (!Solved_xx(96))
+		fout2 << zh_g.puz << endl;
+	else fout1 << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
 }
 
 
@@ -3441,14 +3541,14 @@ int  PM_GO::Rate45_52(){//
 	}
 	if (opprint2 & 2)cout << "exit UR pending URs " << ntur << endl;
 	if (Rate45_2cells(tur, ntur)){// clean twin digit and clear if no UR digit in the plus cells
-		if (opprint2 & 2)cout << "Rate45_URs twin digit" << endl;
+		//if (opprint2 & 2)cout << "Rate45_URs twin digit" << endl;
 		Quickrate(45);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
 	}
 	ntul = 0;
-	for (int target = 45; target < 53; target++){// try step by step more
-		if (opprint2 & 2)cout << "URs for target " << target << endl;
+	for (int target = 45; target <= 53; target++){// try step by step more
+		//if (opprint2 & 2)cout << "URs for target " << target << endl;
 		int iret = 0;
 		if (ntur && target<=48){
 			for (int iur = 0; iur < ntur; iur++)
@@ -3580,8 +3680,8 @@ int PM_GO::Rate67_70(){
 	return 0;
 }
 int PM_GO::R67_70(int rating){
-	if (pm_go.opprint2 & 2)cout << "try rating=" << rating
-		<< " nxlc=" << nstore_xlc << " nyl=" << nstore_yl << endl;
+	//if (pm_go.opprint2 & 2)cout << "try rating=" << rating
+	//	<< " nxlc=" << nstore_xlc << " nyl=" << nstore_yl << endl;
 	int iret = 0;
 	for (int i = 0; i <nstore_xlc; i++){
 		STORE_XLC & s = store_xlc[i];
@@ -3671,6 +3771,16 @@ int PM_GO::Rate85Dynamic(int fast){
 	}
 	return 0;
 }
+int PM_GO::Rate90DynamicPlus(int fast) {
+	if (opprint2 & 8)cout << "rate 90 dynamic Plus chains" << endl;
+	if (xysearchplus.SearchDynPlus(fast)) {
+		if (fast)Quickrate(96);
+		else Quickrate(xysearchplus.maxrating);
+		return 1;
+	}
+	return 0;
+}
+
 /* full processing for 2 cells with adds in one object UR or UL 
 can be bivalue, "hidden locket set" or "locked set"
 always the lowest rating found
@@ -3681,9 +3791,9 @@ summary of rating having "equalled" hidden and naked as in lksudoku 1.2.5.0
 
 URUL hidden naked sets
 cells -->  4    6    8   >=10
-pair     4.6  4.7  4.8  4.9     
-triplet  4.7  4.8  4.9  5.0     
-quad     4.8  4.9  5.0  5.1     
+pair     4.6  4.7  4.8  5.1     
+triplet  4.7  4.8  4.9  5.2     
+quad     4.8  4.9  5.0  5.3     
 
 cell1 cell2 digits(2) ul_plus other_digits_count other_digits(2) = 8 bytes
 Rate45_URs finds URs and solve easy cases
@@ -4234,7 +4344,7 @@ int PM_GO::Rate46_Find_ULs(){
 						int ncount = s->loop.Count(),
 							ser_ul = (ncount - 4) >> 1;  // one cell appears twice
 						//URUL cells -->  4    6    8   >=10
-						if (ser_ul>2) ser_ul = 5;    // =3 if >= 10
+						if (ser_ul>2) ser_ul = 5;    // =5 if >= 10
 						STORE_UL &wsul = tul[ntul++];
 						if (locdiag) cout << "loop added" << endl;
 						wsul.cells = s->loop;

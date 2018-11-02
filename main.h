@@ -26,9 +26,11 @@ class FINPUT: public ifstream{
 	word 		endf; //! Indicate if end of file has been found 1=EOF, 0=not EOF
 public:	
 	char * namex, //Input file name (without file type). default "puzzles"
+		  namestd[20],
 	      ze[600]; // big buffer to avoid problems linked to getline
+		  
 
-	FINPUT(){	endf = 0;	namex = "puzzles";	}
+	FINPUT(){	endf = 0;	strcpy(namestd,"puzzles"); namex = namestd;	}
 	void SetName(char * nn){	namex = nn;	}
 
 	int OpenFI(){
