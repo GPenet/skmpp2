@@ -3558,15 +3558,14 @@ int  PM_GO::Rate45_52(){//
 		if (ntul){
 			for (int iul = 0; iul < ntul; iul++){
 				STORE_UL & s = tul[iul];
-				GINT64 t = s.ur2;
-				int rbase = 45 + t.u8[4];
+				int rbase = 45 + s.ur2.u8[4];
 				if (rbase > target) continue; // not yet time to work on it
 				if (rbase == target){
 					iret += RateUL_base(s);
 				}
-				//cout << "try UL go serate" << endl;
-				if (t.u16[1]){// not killed  
-					iret += wwur2.Go_serate(t, target);
+				//cout << "try UL go serate itul=" << iul<< endl;
+				if (s.ur2.u16[1]){// not killed after rbase 
+					iret += wwur2.Go_serate(s.ur2, target);
 				}
 			}
 		}
@@ -3827,7 +3826,8 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 					for (int rc2 = rc1 + 1; rc2 < 3; rc2++){
 						int cell2 = startbox + ((bande<3) ? (9 * rc2 + cr1) : (9 * cr1 + rc2));
 						if (uns.Off_c(cell2)) continue;
-						int digs2 = zh_g.dig_cells[cell2]& digs1;
+						int digs2 = zh_g.dig_cells[cell2]& digs1,
+							digsor2= zh_g.dig_cells[cell2] | digs1;
 						if (_popcnt32(digs2) < 2) continue;
 						for (int ib2 = ib1 + 1; ib2 < 3; ib2++){// box2
 							int box2 = (bande < 3) ? (3 * bande + ib2) : (bande - 3 + 3 * ib2),
@@ -3836,7 +3836,8 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 								// set to turn  0 -> 1 -> 2 -> 3 -> 0
 								int cell4 = startbox2 + ((bande<3) ? (9 * rc1 + cr2) : (9 * cr2 + rc1));
 								int cell3 = startbox2 + ((bande<3) ? (9 * rc2 + cr2) : (9 * cr2 + rc2));
-								int digs = zh_g.dig_cells[cell3] & digs2 & zh_g.dig_cells[cell4];
+								int digs = zh_g.dig_cells[cell3] & digs2 & zh_g.dig_cells[cell4],
+									digsor= zh_g.dig_cells[cell3] | digsor2 | zh_g.dig_cells[cell4];
 								if (_popcnt32(digs) < 2) continue;
 								// we have a potential UR in serate mode max 2 consecutive cells more than 2
 								if (zh_g.pairs.Off_c(cell1) && zh_g.pairs.On_c(cell4)){
@@ -3852,7 +3853,24 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 									tcells[0] = cell4; tcells[1] = cell1; tcells[2] = cell2; tcells[3] = cell3;
 								}
 								else return 0; //should never be
-								if (zh_g.pairs.Off_c(tcells[2]) || zh_g.pairs.Off_c(tcells[3])) continue; // not serate mode
+								if (zh_g.pairs.Off_c(tcells[3])) continue; // not serate mode
+								if (_popcnt32(digsor) == 3) {// one extra digit
+									int extra_dig = digsor ^ digs;
+									uint32_t exd; bitscanforward(exd, extra_dig);
+									BF128 clean = cell_z3x[tcells[0]]; clean &= cell_z3x[tcells[1]];
+									if (zh_g.pairs.Off_c(tcells[2]))clean &= cell_z3x[tcells[2]];
+									clean &= zh_g.pm.pmdig[exd];
+									if (clean.isNotEmpty()) {
+										iret = 1;
+										if (opprint2 & 2)cout << "UR one extra digit "
+											<< cellsFixedData[tcells[0]].pt << " " << cellsFixedData[tcells[1]].pt << " "
+											<< cellsFixedData[tcells[2]].pt << " " << cellsFixedData[tcells[3]].pt << endl;
+										zhou_solve.FD[exd][0] -= clean;
+										continue;
+									}
+								}
+								
+								if (zh_g.pairs.Off_c(tcells[2]) ) continue; // not serate mode
 								int c1 = tcells[0],c2 = tcells[1];
 								int digc1 = zh_g.dig_cells[c1], digc2 = zh_g.dig_cells[c2];
 								if (zh_g.pairs.On_c(c2)){// type 1 UR 
@@ -3864,23 +3882,7 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 									else zhou_solve.CleanCellForDigits(c1, digs);
 									continue;
 								}
-								if (zh_g.triplets.On_c(c1)&& (digc1==digc2)){// one extra digit 
-									int extra_dig = digc1^digs;
-									uint32_t exd; bitscanforward(exd, extra_dig);
-									BF128 clean = cell_z3x[c1]; clean &= cell_z3x[c2];
-									clean &= zh_g.pm.pmdig[exd];
-									if (clean.isNotEmpty()){
-										iret = 1;
-										if (opprint2 & 2)cout << "UR one extra digit " 
-											<< cellsFixedData[tcells[0]].pt << " " << cellsFixedData[tcells[1]].pt  << " " 
-											<< cellsFixedData[tcells[2]].pt << " " << cellsFixedData[tcells[3]].pt << endl;
-										zhou_solve.FD[exd][0] -= clean;
-										continue;
-									}
-								}
 								// not processed here, store it
-								//cout << "stored UR " << tcells[0] << " " << tcells[1] << " " << tcells[2] << " " << tcells[3] << endl;
-								//cout << "startbox1=" << startbox << "startbox2=" << startbox2 << endl;
 								GINT64 & ws = t[nt++];
 								ws.u64 = 0;
 								ws.u8[0] = (uint8_t)c1;
@@ -4194,7 +4196,7 @@ int PM_GO::RateUL_base(STORE_UL & wul){// try to rate the UL table
 	int cell1 = (int)wul.ur2.u8[0], cell2 = (int)wul.ur2.u8[1],
 		digs = wul.ur2.u16[1] , digc1 = zh_g.dig_cells[cell1];
 
-	if (locdiag)cout << "rate_uls plus=" << " wul.type=" << wul.type << " my_plus=" << (int)wul.ur2.u8[4]
+	if (locdiag)cout << "rate_uls base  plus=" << " wul.type=" << wul.type << " my_plus=" << (int)wul.ur2.u8[4]
 		<< " c1=" << cellsFixedData[cell1].pt << " c2=" << cellsFixedData[cell2].pt << endl;
 	switch (wul.type){
 	case 0:{// one cell with digits in excess
@@ -4208,14 +4210,14 @@ int PM_GO::RateUL_base(STORE_UL & wul){// try to rate the UL table
 		zhou_solve.FD[wul.digit_one][0] -= wul.one_digit_elims;
 		if (opprint2 & 2)wul.Print("one active extra digit ");
 		wul.ur2.u16[1] = 0;
-		return 1;;
+		return 1;
 	}
 	case 2:{// 2 cells same unit same as for a UR
 		if (opprint2 & 2)wul.Print("call common process  ");
 		if (Rate2cellsGo(wul.ur2)){
 			if (opprint2 & 2)wul.Print("2 cells one bi-value  ");
 			wul.ur2.u16[1] = 0;
-			return 1;;
+			return 1;
 		}
 		if (!wul.ur2.u16[1])  {
 			if (opprint2 & 2)cout << "killed no digit of the URr in the solution  " << endl;
@@ -4346,7 +4348,7 @@ int PM_GO::Rate46_Find_ULs(){
 						//URUL cells -->  4    6    8   >=10
 						if (ser_ul>2) ser_ul = 5;    // =5 if >= 10
 						STORE_UL &wsul = tul[ntul++];
-						if (locdiag) cout << "loop added" << endl;
+						if (locdiag) cout << "loop added nplus= "<< s->nplus<< " ndigst="<<ndigst << endl;
 						wsul.cells = s->loop;
 						wsul.one_digit_elims = s->bf_one_digit;
 						wsul.ur2.u8[0] = (uint8_t)s->cellfirstplus;
@@ -4361,6 +4363,7 @@ int PM_GO::Rate46_Find_ULs(){
 						BF128 z = cell_z3x[wsul.ur2.u8[0]];
 						z &= cell_z3x[wsul.ur2.u8[1]];
 						if (z.isEmpty())ntul--;// skipped if not same unit
+						if (locdiag) cout << "loop added 2 cells same unit" << endl;
 						wsul.ur2.u16[3] = (zh_g.dig_cells[wsul.ur2.u8[0]]| zh_g.dig_cells[wsul.ur2.u8[1]])
 							^ wsul.ur2.u16[1];
 						wsul.ur2.u8[5] = (uint8_t)_popcnt32(wsul.ur2.u16[3]);
@@ -4396,7 +4399,8 @@ int PM_GO::Rate_ULs(int plus45){// try to rate the UL table
 		{
 		int cell1 = (int)wul.ur2.u8[0], cell2 = (int)wul.ur2.u8[1],
 			digs = wul.ur2.u16[1], ul_plus = wul.ur2.u8[4], digc1 = zh_g.dig_cells[cell1];
-		if(locdiag)cout << "rate_uls plus=" << plus45 << " wul.type=" << wul.type << " my_plus=" << (int)wul.ur2.u8[4] 
+		if(locdiag)cout <<"iul="<<iul<< " rate_uls plus=" << plus45 
+			<< " wul.type=" << wul.type 	<< " my_plus=" << (int)wul.ur2.u8[4] 
 			<< " c1=" << cellsFixedData[cell1].pt << " c2=" << cellsFixedData[cell2].pt << endl;
 		switch (wul.type){
 		case 0:{// one cell with digits in excess

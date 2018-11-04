@@ -77,9 +77,12 @@ void Go_misc_4xx(){
 	case 402: Go_c402(); break;// morph rows cols diag  s1 s2 v1
 	case 440: Go_c440(); break;// parse game submissions  
 	case 445: Go_c445(); break;// split the entry file on int param 
+	case 446: Go_c446(); break;// split on pot hardest flexible criteria 
 
 	case 480: Go_c480(); break;// add compressed clues to entry (game data base)
 	case 481: Go_c480(); break;// check/update game data base
+	case 484: Go_c484(); break;// restore game data base
+	case 485: Go_c485(); break;// find close to entry in base
 	}
 
 }

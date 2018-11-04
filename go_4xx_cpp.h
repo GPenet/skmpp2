@@ -165,7 +165,23 @@ void Go_c400() {// small tasks on entry -v0- is the task
 				if (!rn)fout1 << ze << endl;
 			}
 			break;
+		//====================== split
+		case 32:// split on  nclues 
+			if (sgo.vx[1] < 18 || sgo.vx[1] >30) {
+				cerr << "invalid split nclues value -v1- " << sgo.vx[1] << endl;
+				return;
+			}
+			else {
+				int nc = 0, lim = sgo.vx[1];
+				for (int i = 0; i < 81; i++)if (ze[i] >= '1' && ze[i] <= '9') nc++;
+				if (nc < lim)	fout1 << ze << endl;
+				else if (nc == lim)fout2 << ze << endl;
+				else fout3 << ze << endl;
+				break;
+			}
 		}
+
+
 	}
 }
 void Go_c401() {// .dat to .txt
@@ -293,7 +309,7 @@ void Go_c440(){
 	}
 
 }
-void Go_c445(){
+void Go_c445(){// filter on one integer parameter
 	cout << "Go_445 entry " << sgo.finput_name << " param=" << sgo.bfx[0] << endl;
 	if (_popcnt32(sgo.bfx[0]) != 1) return;//pointer to the  parameter to consider
 	uint32_t ipar; bitscanforward(ipar, sgo.bfx[0]);
@@ -318,6 +334,35 @@ void Go_c445(){
 
 }
 
+void Go_c446() {// split on ER EP ED potential hardest
+	cout << "Go_446 entry " << sgo.finput_name << " file1 pot hardest"  << endl;
+	int er = sgo.vx[0],ep = sgo.vx[1], ed = sgo.vx[2];
+	cout << "er " << er << " ep " << ep << " ed " << ed << endl;
+	//ipar--;// switch to index;
+	char * ze = finput.ze;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	while (finput.GetLigne()) {
+		int ll = (int)strlen(ze);
+		if (ll < 82 || ll > 200) continue;
+		sgo.ParseInt(ze, ';');
+		//cout <<ze <<  " check v=" << sgo.tparse[1] 
+		//	<< " " << sgo.tparse[2] << " " << sgo.tparse[3] << endl;
+		if (sgo.tparse[1] < 100) continue;
+		if (sgo.tparse[1] >=er) goto isok;
+		if (sgo.tparse[2] >= ep) goto isok;
+		if (sgo.tparse[3] >= ed) goto isok;
+		fout2 << ze << endl;
+		continue;
+	isok:
+		fout1 << ze << endl;
+		//break;
+	}
+
+}
 void Go_c480() {//add  compressed clues to entry
 	cout << "Go_481 entry " << sgo.finput_name << " base check" << endl;
 	if (!sgo.foutput_name) {
@@ -462,6 +507,62 @@ void Go_c484() {
 	}
 
 }
+
+
+void Go_c485() {// check close to first entry in data base canonical
+	FINPUT fin2; //data base
+	cout << "Go_485 entry " << sgo.finput_name << " puzzle to check" << endl;
+	if (!sgo.s_strings[0]) {
+		cerr << "missing -s1- database full name " << endl;
+		return;
+	}
+	fin2.open(sgo.s_strings[0]);
+	if (!fin2.is_open()) {
+		cerr << "error open file " << sgo.s_strings[0] << endl;
+		return;
+	}
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	char * ze = finput.ze,*ze2= fin2.ze;
+	char zout[82];
+	int tclues[50], ticlues[50],nclues = 0;
+	while (finput.GetLigne()) {
+		strncpy(zout, ze, 9);// first row un touched
+		strcpy(&zout[9], &empty_puzzle[9]);
+
+		for (int i = 9; i < 81; i++) {
+			int c = ze[i];
+			if (c > '0' && c <= '9') {
+				ticlues[nclues] = i;
+				tclues[nclues++] = c;
+			}
+			if (nclues > 30) {
+				cerr << " too many clues cancel " << endl;
+				return;
+			}
+		}
+		while (fin2.GetLigne()) {
+			if ((int)strlen(ze2) != nclues) {
+				cerr << " wrong clues number data base "
+					<< strlen(ze2) << " expected "<<nclues<< endl;
+				return;
+			}
+			int nm = 0;
+			for (int i = 0; i < nclues; i++) {
+				int iout = ticlues[i], c = tclues[i];
+				zout[iout] = ze2[i];
+				if ((int)ze2[i] != c)nm++;
+			}
+			if (nm <= 5)fout1 << zout << ";" << nm << endl;
+		}
+		break;// only one puzzle per run
+	}
+
+}
+
 
 /*
 
