@@ -64,6 +64,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 		<< " small tasks on entry subtask "<<task << endl;
 	uint64_t npuz = 0;
 	char * ze = finput.ze;
+	char zout[200];
 	finput.open(sgo.finput_name);
 	if (!finput.is_open()) {
 		cerr << "error open file " << sgo.finput_name << endl;
@@ -129,7 +130,7 @@ void Go_c400() {// small tasks on entry -v0- is the task
 					}
 					ze[i] = vec[c];
 				}
-				fout1 << ze << endl; break;
+				fout1 << ze << endl; 
 				break;
 			}
 		case 16:// mintext in output
@@ -143,10 +144,21 @@ void Go_c400() {// small tasks on entry -v0- is the task
 				}
 				ze[i] = vec[c];
 			}
-			fout1 << ze << endl; break;
+			fout1 << ze << endl;  
 			break;
 		}
-
+		case 19:// int ratings to floating ratings pot hardest
+		{	 // default location parameters ,2,3,4
+			strncpy(zout, ze, 84);// puz;nn
+			if(!sgo.bfx[0])sgo.bfx[0] = 2 + 4 + 8; //.111
+			sgo.ParseInt(ze,';');
+			int er = sgo.tparse[1], ep = sgo.tparse[2], ed = sgo.tparse[3];
+			ze[81] = 0;
+			fout1 << ze<<";"<<er/10<<"."<<er%10 
+				<< ";" << ep / 10 << "." << ep % 10
+				<< ";" << ed / 10 << "." << ed % 10 << endl;
+			break;
+		}
 
 		//================= extract  
 		case 21:// extract 81 start sgo.vx[1]
@@ -649,3 +661,633 @@ void GO_MISC::Do_72(){  // find puzzles close to a pattern
 }
 
 */
+
+//================= symmetry analysis
+
+int t_perms_boxes[9][9] = {// 9 boxes perms to have each box central
+	{0,1,2,3,4,5,6,7,8}, // 4 central and start
+	{0,2,1,3,5,4,6,8,7}, // 5 central
+	{1,0,2,7,6,8,4,3,5}, // 6 central
+	{0,1,2,6,7,8,3,4,5}, // 7 central
+	{0,2,1,6,8,7,3,5,4}, // 8 central
+	{4,3,5,1,0,2,7,6,8}, // 0 central
+	{3,4,5,0,1,2,6,7,8}, // 1 central  
+	{3,5,4,0,2,1,6,8,7}, // 2 central
+	{1,0,2,4,3,5,7,6,8}, // 3 central
+};
+int t_perms_boxes_rc[9][6] = {// 9 boxes perms to have each box central
+	{0,1,2,0,1,2}, //4 no morph
+	{0,1,2,0,2,1}, //5 cols 12
+	{0,1,2,1,0,2}, //6 cols 0 1
+	{0,2,1,0,1,2}, //7 rows 12
+	{0,2,1,0,2,1}, //8 rows 12 cols 12
+	{1,0,2,1,0,2}, //0  rows 01 cols 01
+	{1,0,2,0,1,2}, //1 rows 0 1 
+	{1,0,2,0,2,1}, //2 rows 0 1 cols 12
+	{0,1,2,1,0,2}, // 3 cols 01
+};
+int tpermsdiag[6][6] = {// row 1 "3 cases" x cols 2perms
+	{0,1,2,0,1,2},
+	{0,1,2,0,2,1},
+	{1,0,2,0,1,2},
+	{1,0,2,0,2,1},
+	{2,0,1,0,1,2},
+	{2,0,1,0,2,1},
+};
+int diag_remapping_index[6][9];
+struct SYM_SPOT {
+	uint32_t boxes[9],// current boxes bit fields
+		rel_band_stack[6][3],//relatice order (row/col) inside the band/stack
+		band_stack_order[6]; // bands/stack/reordering
+	void Init(uint32_t * bb) {
+		memcpy(band_stack_order, t_perms_boxes_rc, sizeof band_stack_order);
+		memcpy(rel_band_stack[0], t_perms_boxes_rc, sizeof band_stack_order);
+		memcpy(rel_band_stack[2], t_perms_boxes_rc, sizeof band_stack_order);
+		memcpy(rel_band_stack[4], t_perms_boxes_rc, sizeof band_stack_order);
+		memcpy(boxes, bb, sizeof boxes);
+	}
+ 	void MovBandsStacks(SYM_SPOT & e, int ip) {
+		int * perm = t_perms_boxes[ip], *permbs = t_perms_boxes_rc[ip];
+		for (int i = 0; i < 9; i++)boxes[i] = e.boxes[perm[i]];
+		for (int i = 0; i < 6; i++) {
+			band_stack_order[i] = e.band_stack_order[permbs[i]];
+			memcpy(rel_band_stack[i], e.rel_band_stack[permbs[i]],
+				sizeof rel_band_stack[0]);
+		}
+	}
+	void MoveMinirows( int ib, int ip) {
+		int *permbs = t_perms_boxes_rc[ip];
+		register int b = boxes[ib];
+		boxes[ib] = 0;
+		switch (permbs[0]) {
+		case 0:boxes[ib] |= b & 7; break;
+		case 1:boxes[ib] |= (b>>3) & 7; break;
+		case 2: boxes[ib] |= (b >> 6) & 7; break;
+		}
+		switch (permbs[1]) {
+		case 0:boxes[ib] |= (b<<3) & 070; break;
+		case 1:boxes[ib] |= b & 070; break;
+		case 2: boxes[ib] |= (b >> 3) & 070; break;
+		}
+		switch (permbs[2]) {
+		case 0:boxes[ib] |= (b << 6) & 0700; break;
+		case 1:boxes[ib] |= (b << 3) & 0700;  break;
+		case 2: boxes[ib] |= b & 0700; break;
+		}
+	}
+	void MoveMinicols(int ib, int ip) {
+		int *permbs = &t_perms_boxes_rc[ip][3];
+		register int b = boxes[ib];
+		boxes[ib] = 0;
+		switch (permbs[0]) {
+		case 0:boxes[ib] |= b & 0111; break;
+		case 1:boxes[ib] |= (b >> 1) & 0111; break;
+		case 2: boxes[ib] |= (b >> 2) & 0111; break;
+		}
+		switch (permbs[1]) {
+		case 0:boxes[ib] |= (b << 1) & 0222; break;
+		case 1:boxes[ib] |= b & 0222; break;
+		case 2: boxes[ib] |= (b >> 1) & 0222; break;
+		}
+		switch (permbs[2]) {
+		case 0:boxes[ib] |= (b << 2) & 0444; break;
+		case 1:boxes[ib] |= (b << 1) & 0444;  break;
+		case 2: boxes[ib] |= b & 0444; break;
+		}
+
+	}
+
+	void MorphStackToPerm( int stack, int * perm){
+		//cout << "stack to perm " << perm[0] << perm[1] << perm[2] << endl;
+		uint32_t * rstack = rel_band_stack[3 + stack], rrstack[3];
+		memcpy(rrstack, rstack, sizeof rrstack);
+		for (int ib = stack; ib < 9; ib += 3) {
+			int rb = box_col_to_row[boxes[ib]],b=0;
+			for (int ir = 0; ir < 3; ir++) { //rows after diag transpose
+				int rr = perm[ir];
+				rstack[ir] = rrstack[rr];
+				b |= ((rb>>(3*rr)) & 7)<<(3*ir);
+			}
+			boxes[ib]= box_col_to_row[b];
+		}
+	}
+	void MorphBandToPerm(int band, int * perm) {
+		int boxd = band * 3, boxf = boxd + 3;
+		uint32_t * rband = rel_band_stack[band], rrband[3];
+		memcpy(rrband, rband, sizeof rrband);
+		//cout << band << " band to perm " << perm[0] << perm[1] << perm[2]
+		//	<<"\trel rows\t"<< rrband[0] << rrband[1] << rrband[2] << endl;
+		for (int ib = boxd; ib < boxf; ib ++) {
+			int rb = boxes[ib], b = 0;
+			for (int ir = 0; ir < 3; ir++) { //mini rows  
+				int rr = perm[ir];
+				rband[ir] = rrband[rr];
+				b |= ((rb >> (3 * rr)) & 7) << (3 * ir);
+			}
+			boxes[ib] = b;
+		}
+		//cout << band<< " band final rel rows\t" << rband[0] << rband[1] << rband[2] << endl;
+
+	}
+
+	void BandRelativeOrder(int band, int ip) {
+		int old[3];
+		register uint32_t *o = rel_band_stack[band];
+		memcpy(old, o, sizeof old);
+		register int *p = t_perms_boxes_rc[ip];
+		for (int i = 0;  i < 3; i++) {
+			o[i] = old[p[i]];
+		}
+	}
+	void StackRelativeOrder(int band, int ip) {
+		int old[3];
+		register uint32_t *o = rel_band_stack[band+3];
+		memcpy(old, o, sizeof old);
+		register int *p = &t_perms_boxes_rc[ip][3];
+		for (int i = 0; i < 3; i++) {
+			o[i] = old[p[i]];
+		}
+	}	
+
+	void MovBox5(SYM_SPOT * e, int ip) {// reorder rows 345 columns 345 
+		int * perm = t_perms_boxes[ip], *permbs = t_perms_boxes_rc[ip];
+		*this = *e; // start with previous status
+		MoveMinirows(3, ip);		MoveMinirows(5, ip);
+		MoveMinicols(1, ip);		MoveMinicols(7, ip);
+		// adjust central band stack relative order
+		BandRelativeOrder(1, ip); StackRelativeOrder(1, ip);
+		{// and morph central box
+			register int b = boxes[4];
+			boxes[4] = 0;
+			for (int i = 0, bit = 1; i < 9; i++, bit <<= 1) {
+				if (b&bit) boxes[4] |= 1 << perm[i]	;
+			}
+		}
+		//if (1)  Debug("morph b5 after mov");			 
+	}
+	int GoB5Central(SYM_SPOT * e, int ip) {
+		int diag = 0;
+		//if (ip == 7) diag = 1;
+		if (diag) cout << "entry gob5central" << endl;
+		// apply the perm to central band/stack
+		MovBox5(e, ip);
+		{	//check fit minirows 3 5
+			register int b1 = boxes[3], b2 = boxes[5];
+			if (_popcnt32(b1 & 7) != _popcnt32(b2 & 0700))return 0;
+			if (_popcnt32(b1 & 070) != _popcnt32(b2 & 070))return 0;
+			if (_popcnt32(b1 & 0700) != _popcnt32(b2 & 7))return 0;
+		}		 
+		{	//check fit 1 7
+			register int b1 = boxes[1], b2 = boxes[7];
+			if (_popcnt32(b1 & 0111) != _popcnt32(b2 & 0444))return 0;
+			if (_popcnt32(b1 & 0222) != _popcnt32(b2 & 0222))return 0;
+			if (_popcnt32(b1 & 0444) != _popcnt32(b2 & 0111))return 0;
+		}		 
+ 		if (diag) cout << "try align " << endl;
+
+		// Align minicol 1 to minicol 9 in band 3
+		int db3 = box_col_to_row[boxes[3]],
+			db5 = box_col_to_row[boxes[5]],
+			db3_mini1 = db3 & 7,
+			db3_mini2 = (db3 >> 3) & 7;// mini col 1;2 in box 3
+		for (int ip5 = 0; ip5 < 6; ip5++) {// box5 matches to box3
+			int * tp = tperm6[ip5], //column order in box 5
+				cr2 = tp[1], cr3 = tp[2];
+			int mini3 = treverse_mini[(db5 >> (3 * cr3)) & 7];
+			if (mini3 != db3_mini1) continue;
+			int mini2 = treverse_mini[(db5 >> (3 * cr2)) & 7];
+			if (mini2 != db3_mini2) continue;
+			int db1_mini1 = boxes[1] & 7,
+				db1_mini2 = (boxes[1] >> 3) & 7;// mini row 1;2 in box 1
+			if (diag) cout << "band match ip="<<ip5 << endl;
+
+			for (int ip5s = 0; ip5s < 6; ip5s++) {//box7 matches to box1
+				int * tps = tperm6[ip5s], //row order in box 7
+					rr2 = tps[1], rr3 = tps[2];
+				int minis3 = treverse_mini[(boxes[7] >> (3 * rr3)) & 7];
+				if (minis3 != db1_mini1) continue;
+				int minis2 = treverse_mini[(boxes[7] >> (3 * rr2)) & 7];
+				if (minis2 != db1_mini2) continue;
+				if (diag) cout << "stack match ip=" << ip5s << endl;
+				// morph stack3 to perm b5 band 3 to perm b7
+				SYM_SPOT * sn = this; sn++;
+				*sn = *this;
+				if (sn->GoCentralBand3Stack3(tps, tp))// tps for band tp for stack
+					return 1;
+			}
+		}
+		return 0;
+	}
+	int GoCentralBand3Stack3(int *tpb, int *tps) {// morph band3 stack3 final check
+		//if (1)Debug("entry GoCentralBand3Stack3");
+		MorphBandToPerm(2, tpb);
+		MorphStackToPerm(2, tps);
+		//if(1)Debug("morph b5 band/stack morphed");
+		// the four corners must be ok (central symmetry)
+		for (int ib = 0; ib < 3; ib += 2) {// pairing 0 8 and 2 6
+			int b1 = boxes[ib], b2 = boxes[8 - ib];
+			if((b1 & 7)!= treverse_mini[(b2 >> 6) & 7]) return 0;
+			if (((b1>>3) & 7) != treverse_mini[(b2 >> 3) & 7]) return 0;
+			if (((b1 >> 6) & 7) != treverse_mini[(b2 ) & 7]) return 0;
+		}
+		MoveFinal();
+		return 1;
+	}
+
+	int IsNotDiagonal(int ib, int ip) {
+		int * p = diag_remapping_index[ip], v = 0, b = boxes[ib];
+		for (int i = 0, bit = 1; i < 9; i++, bit <<= 1) {
+			int bit2 = 1 << p[i];
+			if (bit2&b) v |= bit;
+		}
+		return (v != box_col_to_row[v]);
+	}
+	int GoMainDiagDet(SYM_SPOT * e, int ip0, int ip4, int ip8) {//morph bans and stacks
+		*this = *e;
+		// morph bands and stacks to ip0 ip4 ip8
+		MorphBandToPerm(0, tpermsdiag[ip0]);
+		MorphBandToPerm(1, tpermsdiag[ip4]);
+		MorphBandToPerm(2, tpermsdiag[ip8]);
+		MorphStackToPerm(0, tpermsdiag[ip0]);
+		MorphStackToPerm(1, tpermsdiag[ip4]);
+		MorphStackToPerm(2, tpermsdiag[ip8]);
+		// return 0 if now not diagonal		
+		if (boxes[1] != box_col_to_row[boxes[3]])return 0;
+		if (boxes[2] != box_col_to_row[boxes[6]])return 0;
+		if (boxes[5] != box_col_to_row[boxes[7]])return 0;
+		MoveFinal();
+		return 1;
+	}
+	int GoMainDiag() {
+		int diag = 0;
+		//if (ip == 7) diag = 1;
+		if (diag)this->Debug("entry gob5 main diag" );
+		// box 0;8 in diagonal mode
+		for (int ip0 = 0; ip0 < 6; ip0++) {// box0 must be diagonal 
+			if (IsNotDiagonal(0, ip0)) continue;
+			for (int ip4 = 0; ip4 < 6; ip4++) {// box0 must be diagonal 
+				if (IsNotDiagonal(4, ip4)) continue;
+				for (int ip8 = 0; ip8 < 6; ip8++) {// box0 must be diagonal 
+					if (IsNotDiagonal(8, ip8)) continue;
+					if (diag) cout << "try diagonal " << endl;
+					SYM_SPOT * sn = this; sn++;
+					if (sn->GoMainDiagDet(this, ip0, ip4, ip8))
+						return 1;
+				}
+			}
+		}
+		return 0;
+	}
+
+	void MoveFinal();
+	BF128 BuilBF128() {
+		BF128 w;	w.bf.u32[3]=0;
+		for (int ib = 0; ib < 3; ib++) {
+			uint32_t b[3],band=0; 
+			memcpy(b, &boxes[3 * ib], sizeof b);
+			for (int ir = 0, shift = 0; ir < 3; ir++) for (int ibx = 0; ibx < 3; ibx++){
+				uint32_t x = b[ibx] & 7;
+				b[ibx] >>= 3;// clear the mini row moved
+				band |= x << shift;
+				shift += 3;
+			}
+			w.bf.u32[ib] = band;
+		}
+		return w;
+	}
+
+	void BuilSwappingTable(int * t) {
+		for (int ib = 0; ib < 3; ib++) {
+			int band = band_stack_order[ib];
+			for (int irow = 0; irow < 3; irow++) {
+				int row = 3 * band + rel_band_stack[ib][irow];
+				for (int is = 0; is < 3; is++) {
+					int stack = band_stack_order[is+3];
+					for (int icol = 0; icol < 3; icol++) {
+						int col = 3 * stack + rel_band_stack[is+3][icol];
+						t[27 * ib + 9 * irow + 3 * is + icol] = 9 * row + col;
+					}
+				}
+			}
+		}
+	}
+
+	void Debug(const char * lib) {
+		char ws[82];
+		BF128 w = BuilBF128();
+		cout << w.String3X(ws) << " "<<lib << endl;
+	}
+}sym_spot_final;
+void SYM_SPOT::MoveFinal() { sym_spot_final = *this; }
+
+
+
+struct PUZC_SYM {
+	SYM_SPOT tsym_spot[5]; 
+	char puz[82],puz2[82], puz3[82]; // normalized puzzle
+	uint32_t boxes[9], wboxes[9],// box pattern //start, after perm
+		ctb[9], wctb[9], // count per box  
+		nclues,cb_parity,sym_boxes;
+	void BuileRemappingIndex();
+	void Init(char * ze);
+	int GetSym();
+	int MorphPatB5(PUZC_SYM & pat);
+	int MorphPatB1S1B2S2(PUZC_SYM & pat,int * pb0,int * ps0);
+
+};
+void PUZC_SYM::BuileRemappingIndex() {
+	// build diag remapping index
+	for (int iperm = 0; iperm < 6; iperm++) {// six perms box1 from stack1
+		// reorder boxes and build pattern
+		int *bs_order = tpermsdiag[iperm], *bs_cells = diag_remapping_index[iperm];
+		for (int ib = 0, i = 0; ib < 3; ib++) {
+			int ibo = bs_order[ib];
+			for (int is = 0; is < 3; is++, i++) {
+				int iso = bs_order[3 + is],
+					io = 3 * ibo + iso;
+				bs_cells[i] = io;
+			}
+		}
+	}
+}
+void PUZC_SYM::Init(char * ze) {
+	nclues = 0;
+	memset(boxes, 0, sizeof boxes);
+	memset(ctb, 0, sizeof ctb);
+	strncpy(puz, ze, 81);
+	for (int i = 0; i < 81; i++) {
+		if (puz[i] < '1' || puz[i] > '9') {
+			puz[i] = '.';
+			continue;
+		}
+		boxes[C_box[i]]|= 1<< C_box_rel[i];
+		ctb[C_box[i]]++;
+		nclues++;
+	}
+	cb_parity = nclues & 1;
+	tsym_spot[0].Init(boxes); 	
+}
+int PUZC_SYM::GetSym() {
+	tsym_spot[1] = tsym_spot[0];
+	int irs = 0, irsym = 0;
+	SYM_SPOT  *so = &tsym_spot[1], *sn = so + 1;
+	for (int iperm = 0; iperm < 9; iperm++) {// start with central symmetry
+	// reorder boxes and build pattern
+		for (int i = 0; i < 9; i++) {
+			wboxes[i] = boxes[t_perms_boxes[iperm][i]];
+			wctb[i] = ctb[t_perms_boxes[iperm][i]];
+		}
+		// central box must have the right parity to be central
+		if (cb_parity != (wctb[4] & 1)) continue;
+		for (int i = 0; i < 5; i++)	if (wctb[i] != wctb[8 - i])continue;
+		// build spot1 to do more checks
+		memcpy(so->band_stack_order, t_perms_boxes_rc[iperm],
+			sizeof so->band_stack_order);
+		memcpy(so->boxes, wboxes, sizeof wboxes);
+		int v0[9], v[9];
+		{	register int B = wboxes[4];// central box at start
+			for (int i = 0; i < 9; i++, B >>= 1) v0[i] = B & 1;
+		}
+		for (int iperm = 0; iperm < 9; iperm++) {// each cell central
+			int *p = t_perms_boxes[iperm];
+			for (int i = 0; i < 9; i++)v[i] = v0[p[i]];
+			if (v[4] != cb_parity)continue; // must be if central
+			for (int i = 0; i < 4; i++)	if (v[i] != v[8 - i])continue;
+			if (sn->GoB5Central(so, iperm))// apply the perm to central band/stack
+				return 1;
+		}
+	}
+	//try now diagonal 6 perm to have box1 b0 or b3 or b6 top left
+	//cout << "trydiagonal" << endl;
+	for (int iperm = 0; iperm < 6; iperm++) {// six perms box1 from stack1
+		// reorder boxes and build pattern
+		int *bs_order = tpermsdiag[iperm],
+			*bs_cells = diag_remapping_index[iperm];
+		for (int i = 0; i < 9; i++) {
+			int io = bs_cells[i];
+			wboxes[i] = boxes[io];
+			wctb[i] = ctb[io];
+		}
+		if (wctb[1] != wctb[3])continue;
+		if (wctb[2] != wctb[6])continue;
+		if (wctb[5] != wctb[7])continue;
+		*sn = *so;
+		memcpy(sn->boxes, wboxes, sizeof wboxes);
+		memcpy(sn->band_stack_order, bs_order, sizeof sn->band_stack_order);
+		if (sn->GoMainDiag()) return 2;
+	}
+	return 0;
+}
+void Go_c490() {
+	cerr << "Go_490 entry " << sgo.finput_name << " extract potential symmetry" << endl;
+	PUZC_SYM psym;
+	psym.BuileRemappingIndex();
+	char * ze = finput.ze;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	int diag = 0;
+	while (finput.GetLigne()) {
+		if(diag)cout << "go" << endl;
+		if (strlen(ze) < 81) continue;
+		if (diag)cout << ze << endl;
+		psym.Init(ze);
+		psym.sym_boxes = psym.GetSym();
+		if (psym.sym_boxes) {
+			char ws[82];
+			BF128 w = sym_spot_final.BuilBF128();
+			if (diag)cout << w.String3X(ws) << "morphed final to" << endl;
+			int rbs[6][3],//relatice order (row/col) inside the band/stack
+				bso[6]; // bands/stack/reordering
+			memcpy(rbs, sym_spot_final.rel_band_stack, sizeof rbs);
+			memcpy(bso, sym_spot_final.band_stack_order, sizeof bso);
+			// reorder the source
+			if (diag)cout << "band_stack_order " << bso[0] << bso[1] << bso[2]
+				<< "\t" << bso[3] << bso[4] << bso[5] << endl;
+			if (diag) {
+				cout << " relative band stack order" << endl;
+				for (int i = 0; i < 6; i++) {
+					int *w = rbs[i];
+					cout << "\t" << w[0] << w[1] << w[2] << "\t";
+				}
+				cout << endl << "reshaped entry" << endl;
+			}
+			for (int ib = 0; ib < 3; ib++) {
+				int band = bso[ib];
+				int * wib = rbs[ib];
+				for (int ir = 0; ir < 3; ir++) {
+					int row = 3 * band + wib[ir];
+					for (int is = 0; is < 3; is++) {
+						int stack = bso[3 + is];
+						int * wis = rbs[3+is];
+						for (int ic = 0; ic < 3; ic++) {
+							int col = 3 * stack + wis[ic];
+							if (diag)cout << ze[9 * row + col];
+							fout1 << ze[9 * row + col];
+						}
+					}
+					if (diag)cout << endl;
+				}
+			}
+			ze[81] = 0;
+			fout1<<";" << ze << ";" << psym.sym_boxes << endl;
+		}
+
+		//strcpy(&zout[n], &ze[104]);
+		//fout1 << zout << endl;
+	}
+
+}
+
+int PUZC_SYM::MorphPatB1S1B2S2(PUZC_SYM & pat, int * pb0, int * ps0) {
+	SYM_SPOT  &s2 = tsym_spot[2], &s3 = sym_spot_final;
+	for (int ipb1 = 0; ipb1 < 6; ipb1++)
+		for (int ips1 = 0; ips1 < 6; ips1++) {
+			int * pb1 = tperm6[ipb1], *ps1 = tperm6[ips1];
+			s2 = tsym_spot[1];
+			s2.MorphBandToPerm(1, pb1);
+			s2.MorphStackToPerm(1, ps1);
+			uint32_t * bx = s2.boxes, *bpx = pat.boxes;
+			if ((bpx[4]!= bx[4])||( bpx[1]!= bx[1])||(bpx[3]!= bx[3])) continue;
+			for (int ipb2 = 0; ipb2 < 6; ipb2++)
+				for (int ips2 = 0; ips2 < 6; ips2++) {
+					int * pb2 = tperm6[ipb2], *ps2 = tperm6[ips2];
+					s3 = s2;
+					s3.MorphBandToPerm(2, pb2);
+					s3.MorphStackToPerm(2, ps2);
+					uint32_t * bx2 = s3.boxes;
+					if (bpx[8]!= bx2[8]) continue;
+					if (bpx[2]!= bx2[2]||bpx[5]!= bx2[5]) continue;
+					if (bpx[6]!= bx2[6]||bpx[7]!= bx2[7]) continue;
+					return 1;
+				}
+		}
+
+	return 0;
+}
+
+
+int PUZC_SYM::MorphPatB5(PUZC_SYM & pat) {
+	for (int iperm = 0; iperm < 9; iperm++) {// start with central symmetry
+	// reorder boxes and build pattern
+		for (int i = 0; i < 9; i++) {
+			wboxes[i] = boxes[t_perms_boxes[iperm][i]];
+			wctb[i] = ctb[t_perms_boxes[iperm][i]];
+		}
+		// central box count must be ==
+		if (pat.ctb[4] != wctb[4]) continue;
+		// do the box perm for the given entry
+		strcpy(puz2, empty_puzzle);
+		for (int i = 0; i < 9; i++)  {// box 4 not moved
+			int i0 = t_perms_boxes[iperm][i];
+			byte *bp = cellsInGroup[18 + i], *bp0 = cellsInGroup[18 + i0];
+			for (int ip = 0; ip < 9; ip++) {
+				puz2[bp[ip]] = puz[bp0[ip]];
+			}
+		}
+		if (0) {
+			SYM_SPOT  &s = tsym_spot[1];
+			tsym_spot[1] = tsym_spot[0];
+			memcpy(s.boxes, wboxes, sizeof wboxes);
+			s.Debug("z2 control");
+			cout << puz2 << endl;
+		}
+		//===========================================================
+		// 8 perms four boxes in top left + diag symmetru
+		int wb2[9], wctb2[9];
+		int p2[8][9] = {
+			{0,1,2,3,4,5,6,7,8},
+			{0,3,6,1,4,7,2,5,8},
+			{2,1,0,5,4,3,8,7,6},
+			{6,3,0,7,4,1,8,5,2},
+			{8,7,6,5,4,3,2,1,0},
+			{8,5,2,7,4,1,6,3,0},
+			{6,7,8,3,4,5,0,1,2},
+			{2,5,8,1,4,7,0,3,6}
+		};
+		for (int ip2 = 0; ip2 < 8; ip2++) {
+			int * pp = p2[ip2];
+			for (int i = 0; i < 9; i++) {
+				wb2[i] = wboxes[pp[i]];
+				wctb2[i] = wctb[pp[i]];
+				if (wctb2[i] != pat.ctb[i]) goto nextip2;
+			}
+			strcpy(puz3, puz2);// copy unchanged
+			for (int i = 0; i < 9; i++) if(i-4){// box 4 not moved
+				int i0 = pp[i];
+				byte *bp = cellsInGroup[18+i],*bp0= cellsInGroup[18 + i0];
+				for (int ip = 0; ip < 9; ip++) {
+					puz3[bp[ip]] = puz2[bp0[ip]];
+				}
+			}
+			if (0) {
+				SYM_SPOT  &s = tsym_spot[1];
+				tsym_spot[1] = tsym_spot[0];
+				memcpy(s.boxes, wb2, sizeof wb2);
+				s.Debug("z3 control");
+				cout << puz3 << endl;
+			}
+			//global count match, try more 
+			for (int ipb0 = 0; ipb0<6;ipb0++)
+				for (int ips0 = 0; ips0 < 6; ips0++) {
+					int * pb0 = tperm6[ipb0], *ps0 = tperm6[ips0];
+					SYM_SPOT  &s = tsym_spot[1];
+					tsym_spot[1] = tsym_spot[0];
+					memcpy(s.boxes, wb2, sizeof wb2);
+					s.MorphBandToPerm(0, pb0);
+					s.MorphStackToPerm(0, ps0);
+					if (pat.boxes[0]!= s.boxes[0]) continue;
+					if (MorphPatB1S1B2S2(pat,pb0,ps0)) return 1;
+				}
+		nextip2:	;
+		}
+	}
+	return 0;
+}
+
+void Go_c491() {// morph entry to a given pattern
+	cout << "Go_490 entry " << sgo.finput_name << " morph to pattern"	<< endl;
+	if (!sgo.s_strings[0]) {
+		cerr << "missing pattern -s0-"  << endl;
+		return;
+	}
+	if (strlen(sgo.s_strings[0]) != 81) {
+		cerr<< sgo.s_strings[0] << "invalid pattern -s0-" << endl;
+		return;
+	}
+	cout << sgo.s_strings[0] << " pattern to use" << endl;
+	//entry must fit with the pattern
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	PUZC_SYM psym,psym_pat; 
+	psym.BuileRemappingIndex();
+	psym_pat.Init(sgo.s_strings[0]);
+	for (int i = 0; i < 9; i++) cout << psym_pat.ctb[i];
+	cout << "  compte par boite" << endl;
+
+	char  ze[82]; ze[81] = 0;
+	while (finput.GetPuzzle(ze)) {
+		cout << ze << endl;
+		psym.Init(ze);// create boxes 
+		if (psym.nclues != psym_pat.nclues)continue; // invalid entry
+		// start with b5 (as in c490 central) count = b5 pat
+		if (psym.MorphPatB5(psym_pat)) {
+			//cout << "retour ok" << endl;
+			int t[81];
+			sym_spot_final.BuilSwappingTable(t);
+			char wout[82]; 
+			strcpy(wout, empty_puzzle);
+			for (int i = 0; i < 81; i++) {
+				if (t[i] < 0 || t[i]>80)continue;
+				int c = psym.puz3[t[i]];
+				wout[i] = c; 			}
+			fout1 << wout  << endl;
+		}
+	}
+
+}

@@ -6,6 +6,7 @@ const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 #include "go_0xx_cpp.h"
 #include "go_1xx_cpp.h"
 #include "go_2xx_cpp.h"
+#include "go_3xx_cpp.h"
 #include "go_4xx_cpp.h"
  void Go_0xx(){
 	 switch (sgo.command) {
@@ -47,6 +48,11 @@ void Go_gen_2xx(){
 	}
 }
 void Go_can_3xx(){
+	cout << "command 3xx command=" << sgo.command << endl;
+	switch (sgo.command) {
+	case 310: Go_c310(); break;// canonical add if -v0- add -s0-
+	case 320: Go_c320(); break;// canonical pattern add if -v0- add -s0-
+	}
 
 }
 /* subtask v0 for task 400
@@ -83,6 +89,8 @@ void Go_misc_4xx(){
 	case 481: Go_c480(); break;// check/update game data base
 	case 484: Go_c484(); break;// restore game data base
 	case 485: Go_c485(); break;// find close to entry in base
+	case 490: Go_c490(); break;// extract sym on box
+	case 491: Go_c491(); break;// morph to pattern -s0-
 	}
 
 }

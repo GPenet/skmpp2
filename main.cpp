@@ -157,7 +157,7 @@ void SGO::ParseInt(char * ze, int  delimiter){
 			if (!(bfx[0] & (1 << nparse))) goto next;
 			strncpy(temp, &w[pos], n); temp[n] = 0;
 			//cout << temp << "parse" << endl;
-			tparse[nparse] = atoi(temp);
+			tparse[nparse] = atoi_nodot(temp);
 		next:
 			if (!w[i]) return;
 			if (++nparse > 7)return;

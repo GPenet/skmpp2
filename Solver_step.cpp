@@ -2311,7 +2311,7 @@ void XYSEARCH::ExpandDynamic(GINT cand){// start with cand on
 	int dind = cand.u16[1];
 	int diag = 0;
 	//if (dcell == 34) diag = 1;
-	//if (pm_go.cycle==2 && ddig ==0  && dcell==36 )		diag = 2;
+	//if (pm_go.cycle==15 && maxpas>10 && ddig ==2  && dcell==30 )		diag = 2;
 	//if (pm_go.cycle == 16 && maxpas>6 &&  ddig == 1 && dcell == 5)diag = 3;
 	nsteps = is_contradiction = 0;// start with 1 step 
 	//if (zh_g.zerobased_sol[c1] == idig)is_contradiction = 2;// skip test if valid
@@ -2328,6 +2328,10 @@ void XYSEARCH::ExpandDynamic(GINT cand){// start with cand on
 		if (diag>1) cout << "step " << nsteps << " ntp=" << ntp << " ntd=" << ntd << endl;
 		for (int i = ntp; i < ntd; i++){
 			cell = t[i].u16[0];		 digit = t[i].u16[1];
+			if (is_contradiction == 1) {// lock expand if on and off
+				if (used_off_digits.On_c(digit, cell)
+					&& used_on_digits.On_c(digit, cell)) continue;
+			}
 			if (diag > 1)cout << "go for " << digit + 1 << cellsFixedData[cell].pt << endl;
 			if (nsteps & 1)		 OnToOff_Dyn(i); 		else OffToOn_Dyn(i);
 			if (nt > 350) break;
@@ -2426,7 +2430,7 @@ void XYSEARCH::SearchDynPass(int nmax){	// try a  pass limited to nmax steps
 	BF128 wp = pairs;
 	uint32_t  dc1,dc2;
 	while ((cell = wp.getFirsCell()) >= 0){
-		if (0 &&opprint){
+		if (opprint){
 			cout << "cells "<<cellsFixedData[cell].pt << endl;
 		}
 		wp.Clear_c(cell);
@@ -2444,6 +2448,7 @@ void XYSEARCH::SearchDynPass(int nmax){	// try a  pass limited to nmax steps
 		//if (nmax > 10)cout << "digit=" << id + 1 << endl;
 		for (int iu = 0; iu < 27; iu++){
 			if (dig_bivsets[id].Off(iu))continue;
+			//if (nmax > 10)cout << "unit=" << iu << endl;
 			BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id];
 			int cell1 = wu.getFirsCell();
 			wu.Clear_c(cell1);
@@ -2598,7 +2603,7 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 
 int XYSEARCH::SearchDyn(int fast){
 	opprint = pm_go.opprint;
-	if (opprint)cout << "85 search dyn fast " << endl;
+	if (opprint)cout << "85 search dyn fast 0/1= "<<fast << endl;
 	SearchInit(fast);
 	InitCandidatesTable();// build the table of candidates 
 	if (fast) {
@@ -2769,6 +2774,22 @@ void XYSEARCH::DynamicSolveContradiction(GINT cand,PM3X cont){// find path and e
 		}
 	}
 }
+void XYSEARCH::DebugDynamicSolveContradiction(const char * lib, GINT cand, GINT targ) {
+	cout << "debug contradiction error " << lib << endl;
+	cout << "start " << cand.u16[1] + 1 << cellsFixedData[cand.u16[0]].pt << endl;
+	cout <<"target " << targ.u16[1] + 1 << cellsFixedData[targ.u16[0]].pt << endl;
+	cout << "n expand=" << nt << " nback="<<nback<< endl;
+	PrintBackCom("back path ", tback, nback, 1);
+	cout << "i\tcand\tsource\tpas" << endl;
+	for (int i = 0; i < nt; i++) {
+		GINT64 w = t[i];
+		int c = w.u16[0], d = w.u16[1], s = w.u16[2], p = w.u16[3];
+		cout << i << "\t" << d + 1 << cellsFixedData[c].pt;
+		if(s & 030000)		cout<< "\t0" << oct << s << dec;
+		else cout <<"\t"<<s;
+		cout << "\t" << p << endl;
+	}
+}
 /* this is for the serate mode x-> ~a and ~x -> � 
    here a bi value at start ~x -> y 
    x is dig1 cell1
@@ -2801,6 +2822,12 @@ void XYSEARCH::DynamicSolveContradiction(int dig1, int cell1, int dig2, int cell
 			if (locdiag) cout << "to elim " << id + 1 << cellsFixedData[elim_cell].pt << endl;
 			if(!ExpandDynamicToElim(p1,target)) continue;// redo expansion should work
 			int n1 = BackDynamicOff(target);
+			if (p1.u16[0] != tback->u8[0]) {
+				cerr << " DynamicSolveContradiction illegal way back p1" << endl;
+				if(opprint)
+				DebugDynamicSolveContradiction("way back p1", p1,target);
+				continue;;
+			}
 			if (locdiag){
 				cout << "n1=" << n1 << endl;
 				PrintBackCom("locdiag on path ", tback, n1, 1);
@@ -2810,13 +2837,21 @@ void XYSEARCH::DynamicSolveContradiction(int dig1, int cell1, int dig2, int cell
 			memcpy(t1b, tback, n1 * 8);
 			if (!ExpandDynamicToElim(p2, target)) continue;// redo expansion should work
 			int n2 = BackDynamicOff(target);
+			if (p2.u16[0] != tback->u8[0]) {
+				cerr << " DynamicSolveContradiction illegal way back p2" << endl;
+				if (opprint)
+					DebugDynamicSolveContradiction("way back p2", p2, target);
+				continue;;
+			}
+			if (!n2) {
+				cerr << "DynamicSolveContradiction pas trouve cible nt=" << nt << endl;
+				if (opprint)
+					DebugDynamicSolveContradiction("way back p2", p2, target);
+				continue;;
+			}
 			if (locdiag){
 				cout << "n2=" << n2 << endl;
 				PrintBackCom("locdiag off path ", tback, n2, 1);
-				if (!n2){
-					cout << "pas trouve cible nt=" << nt << endl;
-					used_off_digits.Print("used off status");
-				}
 			}
 			if (!n2) continue; // should never be
 			int rating = pm_go.hint.ChainLengthAdjusted(85, n1 + n2);
@@ -2908,6 +2943,7 @@ int XYSEARCH::BackDynamic(GINT64 target, GINT64 * tb, int ntb) {
 		for (int j = 0; j < itret; j++) if (tretw[j].u16[3] == ist)
 			tback[nb++] = tretw[j];
 	}
+	nback = nb;
 	return nb;
 }
 int XYSEARCH::BackDynamicOff(GINT target){

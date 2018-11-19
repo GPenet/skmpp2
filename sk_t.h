@@ -177,6 +177,7 @@ extern int * TblBoard_Block; //  i/27  giving cell -> band
 extern int C_To128[81];
 extern int From_128_To_81[128];
 extern int box_col_to_row[512];// Flash transpose a box
+extern int treverse_mini[8];// Flash reverse three bits
 extern int tband_box[6], tband_row[3], tband_box_skrink[3];
 
 extern byte cellsInGroup[27][9];
@@ -245,10 +246,6 @@ public:
 };
 
 //========================== various old struct or UA collection
-struct PUZ {
-	p9x9 gg;
-	void OutGrid();
-};
 
 struct TUA64 {// table outside the struct UA handling 
 	uint64_t * t, wt;
@@ -259,30 +256,6 @@ struct TUA64 {// table outside the struct UA handling
 	void Print(char * lib);
 };
 
-
-class GG {
-public:
-	char g[9][9],	///<The grid
-		filler,		///<a null to terminate 81 char string
-		*pg;		///<a pointer to the beginning of the string
-
-	GG(){ pg = g[0]; }		// constructor
-
-	inline void Copie(const GG & ge) {
-		strcpy_s(pg, 82, ge.pg);
-	}
-
-	inline void Copie(const char * pge) {
-		strcpy_s(pg, 82, pge);
-	}
-
-	inline void operator =(const GG &ge) {
-		strcpy_s(pg, 82, ge.pg);
-	}
-	int NBlancs() const;
-	int Nfix() const;
-	//void Image(FSR * EE, char * lib) const;
-};
 
 /* class VV9 is a small class
 extracting a row or a column   from a GG described puzzle

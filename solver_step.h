@@ -133,7 +133,8 @@ struct XYSEARCH{
 	
 	int idig, digit,  cell, ddig,dcell,dind,
 		nt,ntd,ntp, maxpas,maxrating, npaths,elim_done,
-		nsteps, c1, c2, locdiag, diag, mode,fastmode,opprint;
+		nsteps, c1, c2, nback,
+		locdiag, diag, mode,fastmode,opprint;
 	int dig_sets[9][27];
 	uint32_t d2;
 	BF128 pairs, cells_biv_all, cells_all,cells_biv_true,  	dig_b_true[9];
@@ -200,6 +201,7 @@ struct XYSEARCH{
 	int BackDynamic(GINT64 target, GINT64 * tb, int ntb);
 	int BackDynamicOff(GINT target);
 	void DynamicSolveContradiction(GINT cand,PM3X cont);
+	void DebugDynamicSolveContradiction(const char * lib,GINT cand, GINT targ);
 	void DynamicSolveContradiction(int dig1, int cell1, int dig2, int cell2, PM3X cont);
 	void PrintTback();
 	void PrintBackMulti(int elim_dig, int elim_cell);
@@ -460,8 +462,6 @@ public:
 	GINT gintbuffer[GINTBUFSIZE1];
 	GINTBUF gintbuf;
 	BUILDSTRING * bdsp[2];  //pointers to builstring main and nested
-	GG		gg,gr,        // puzzle normalized 
-			gsolution;   // final result if valid (one solution)
 
 	int opprint, opprint2, stop_rating,
 		ntr0logic,r0logictype,logictype,
