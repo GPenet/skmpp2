@@ -14,7 +14,8 @@ funtions have been added to work in generation mode
    bits 0-8 9-17 18-26 for the rows 27-29 for unsolved rows
 */
 //#include "t_128GP.h"
-// tables specific to the brute force located in zh4_tables
+// tables specific to the brute force zh_tables
+const extern int TblRowUnsolved[8];
 const extern int TblRowMask[8];// rows where single  found  000 to 111
 const extern int  Tblstartblock[27]; // (i%3) * 27 in zhou brute force
 const extern int TblShrinkMask[512];// existing minirows 000 to 111
@@ -47,7 +48,7 @@ struct ZH_GLOBAL { // global variables for the game table
 	char * zsol, *puzfinal, *pat, 
 		stdfirstsol[82],
 		zerobased_sol[81];
-
+#ifdef SKMPPV2
 	// switching to solver mode
 	PM3X pm, pmdiag,pmelims;
 	BF128  cells_unsolved_e, cells_unsolved_diag,// pm status direct and diagonal
@@ -62,7 +63,9 @@ struct ZH_GLOBAL { // global variables for the game table
 	int row_col_x2[9][2], dig_unsolved_col[9], oldcount;
 	BF128 digits_cells_pair_bf[9]; 
 	ZHOU * zhou_current;
-
+	// specific to symmetry of given generation
+	USHORT * ptcor;
+#endif
     //=================== floor analysis (one digit)
 	int current_digit,active_floor;
 	BF128  or_floor[9], elim_floor[9];
@@ -70,13 +73,15 @@ struct ZH_GLOBAL { // global variables for the game table
 	// specific to the attempt to optimize the X+Y+27 process
 	char *entry_base0, zdebug[82];
 	int * grid0; // using a process with known solution grid
-	// specific to symmetry of given generation
-	USHORT * ptcor;
+
+#ifdef SEARCH17SOL
 	// specific to the search 17 process
 	int s2_ind, naddtable;// see go_17sol
 	BF128 * addtable;
 	int band3digits[9], band3nextua;// specific to 17 search
 	uint64_t * digsols, b12nextua; // pointer to solution grid per digit
+#endif
+
 	ZH_GLOBAL();
 	inline void InitCount(int elim){
 		memset(cpt, 0, sizeof cpt);
@@ -95,6 +100,7 @@ struct ZH_GLOBAL { // global variables for the game table
 	int Go_InitSolve(GINT16 * td, int nc);
 	void ValidPuzzle(ZHOU * z);
 	void Debug();
+#ifdef SKMPPV2
 	// located in go_0xxcpp
 	inline void Init_Assign(){ nsingles = 0; cells_assigned.SetAll_0(); }
 	void Pm_Status(ZHOU * z);
@@ -102,10 +108,9 @@ struct ZH_GLOBAL { // global variables for the game table
 	void AddSingle(int band, int vband);
 	void AddSingleDiag(int band, int vband);
 	void Build_digits_cells_pair_bf();
-
-
 	// located in solver step
 	void DebugNacked();
+#endif
 
 };
 /* 2 BF 128 per digit
@@ -210,6 +215,7 @@ struct ZHOU{// size 32 bytes
 	int FullUpdateAtStart();
 	int CheckStatus();// located in solver_step 
 
+#ifdef SKMPPV2
 	// located in go_0xx.cpp
 	int Rate10_LastInUnit();
 	int Rate12_SingleBox();
@@ -256,8 +262,28 @@ struct ZHOU{// size 32 bytes
 	void AssignSolver(int print = 0);
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
+#endif
 
-	
+#ifdef SEARCH17SOL
+	inline void ComputeNextB3() { if (FullUpdate())GuessB3(); }
+	inline void ComputeNextB12() { if (FullUpdate())GuessB12(); }
+	// located in go_17sol_bs.cpp 
+	void SetUab3();
+	void SetUab12();
+	void InitBand3PerDigit(int * grid0b3);
+	int PartialInitSearch17(int * t, int n);
+	int EndInitSearch17(ZHOU & o, int * t, int n);
+	void GuessB12();// band 3 filled false, look for a valid band 1+2 
+	void GuessB3();// band 12 is a valid sub puzzle find small ua
+	void GuessCellB3(int field);
+	int GuessTripletInCellB3();
+	int GetNextUaB3x();
+	int CallMultipleB3(ZHOU & o, int bf);
+	int MultipleB3(int bf);// 17 search check know small uas in bloc
+	int MultipleB3loop(int bf);// 17 search check know small uas in bloc
+	int MultipleTrial();
+#endif
+
 	/*
     inline void SetPat(char * pat, char * zsol, char * puzfinal){
 		zh_g.pat = pat; zh_g.zsol = zsol; zh_g.puzfinal = puzfinal;
@@ -289,7 +315,7 @@ struct ZHOU{// size 32 bytes
 	int CollectFinal(BF128 *td,int &lim10);
    */
  };
-
+ /* see Zh1b2b.h
  struct ZHBAND{// similar to  ZHOU for one band
 	 int FD[9][2],cells_unsolved;
 	 int ndigits, index, unsolved_digits;
@@ -317,4 +343,5 @@ struct ZHOU{// size 32 bytes
 	 int GetAllDigits(int cell);
 	 void ImageCandidats();
 	 void ImageCandidats_b3();
- };
+ };*/
+ 

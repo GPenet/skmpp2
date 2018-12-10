@@ -1,5 +1,6 @@
 
 #define _CRT_SECURE_NO_DEPRECATE
+#define SKMPPV2
 //#define ZHOU_OLD
 #include <sys/timeb.h>
 #include "main.h"  // tab0  

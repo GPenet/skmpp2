@@ -4,9 +4,6 @@ ZhouSolver.h
 Based on code posted to <http://forum.enjoysudoku.com/3-77us-solver-2-8g-cpu-testcase-17sodoku-t30470.html>
 by user zhouyundong_2012.
 The copyright is not specified.
-
-this is a remorphing of the code to work in recursive mode and in a 128 bit field
-funtions have been added to work in generation mode
 */
 
 /* the BIT_SET_30 pattern is defined in a band for a digit
@@ -26,24 +23,21 @@ const extern int TblShrinkSingle[512]; // keep only rows with single
 const extern int TblRowUniq[512]; // 1 is row not defined in block  mode  to 111
 const extern T128 AssignMask_Digit[81];
 //const extern T128 AssignMask_OtherDigits[81];
+// tables for UA collectors
+extern int floors_2d[36];
+extern int floors_3d[84]; // 84 3d  
+extern int floors_4d[126];
+extern int subsets_2d_3d[84][3];
+extern int subsets_3d_4d[126][4];
+extern int subsets_2d_4d[126][6];
+extern int perm_0_8_size3[84][3];
+extern int perm_0_8_size4[126][4];
+//int * floors_3d_4d = floors_2d; // 84 3d   126 4d/5d
+
+
 struct ZHOU;
 
-struct UA23ALL {
-	GINT64 bf;
-	int n, filler;
-	int Compare(UA23ALL & x);
-	int SupersetOf(UA23ALL & x);// assumed *this > x
-};
-#define TUA23ALLSIZE 400
-struct TUA23ALL {
-	UA23ALL t[TUA23ALLSIZE], wt;
-	int nua;
-	int AddUA();
-	inline void AddUA_lim(int lim) {
-		AddUA();
-		if (nua > lim)nua = lim;
-	}
-};
+
 
 
 /* class encapsulating the brute force with one known band
@@ -55,92 +49,38 @@ second 4x6bits for digits 5-8
 
 */
 struct ZH2B_GLOBAL { // global variables for the game table
-/*
-	struct GLOBAL { // global variables for the game table
-		int nsol,lim,icount,ntsol,single_applied ,new_single_in_Update,
-			rdigit,nctlg,go_back,
-			 test;
-		int * puz0;// pointer to band 1+2 solution grid
-		uint64_t * digsols; // pointer to solution grid per digit
-		uint64_t ua_ret;
-		//GINT64 val_init1_81, pairs, triplets;
-		//GINT64 Digit_cell_Assigned_init[9];
-
-		BF64 val_init1_81, pairs,triplets;
-		BF64 Digit_cell_Assigned_init[9];
-		ZH2B * mytable;
-		char * zsol,  	out54[55];// bands 12 in output mode
-		char zdebug[82];
-		GLOBAL();
-	};*/
-
-	uint64_t cpt[10],cptg[10],npuz;
-	// morphing a puzzle at the start
-	int x3_dmap_inv[9];// digit map 3 bands (start)
-	int x3_cmap[81];// cells map at start
-	char puz[82]; // the solved puzzle (after morph)
-	//given and singles found
-	GINT16 tgiven[81];
-	int ngiven, tsingles[40], nsingles;
-
-	BF128 digit_sol[9]; // final solution per digit original sort sequence
 	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
-		go_back, goadduas,// usually 0, special treatment for a solution
-		rdigit, loop, diag, modeguess,maxindex;
-	BF128 Digit_cell_Assigned[9];
-	BF128 init_3x, init_digit, pairs,triplets, pairs_naked;
-	char * zsol, *puzfinal, *pat, 
-		stdfirstsol[82],
-		zerobased_sol[81];
+		rdigit, nctlg, go_back,
+		test;
+	uint64_t * digsols; // pointer to solution grid per digit
+	uint64_t ua_ret;
+	BF64 val_init1_81, pairs, triplets;
+	BF64 Digit_cell_Assigned_init[9];
+	char * zsol, out54[55];// bands 12 in output mode
+	char zdebug[82];
 
-	// switching to solver mode
-	PM3X pm, pmdiag,pmelims;
-	BF128  cells_unsolved_e, cells_unsolved_diag,// pm status direct and diagonal
-		cells_assigned;// to avoid redundancy in new assignments 
-	// in locked.. column "[2]" is in diagonal mode 
-	BF128 locked_nacked_brc_seen[3],// seen nacked in row; column; box (priority box)
-		locked_nacked_brc_done[3];// same cleaning done  nacked in row; column; box (priority box)
-	int  dig_rows[9][9], dig_cols[9][9];//rows cols in 9 bits mode
-	int  dig_boxes[9][9];// box in 9 bits mode
-	int dig_cells[81], cells_count[81];//cells digits  in 9 bits mode
-	int unsolved_r_count[9], unsolved_c_count[9]; // pm status unsolved rows columns per digit
-	int row_col_x2[9][2], dig_unsolved_col[9], oldcount;
-	BF128 digits_cells_pair_bf[9]; 
-	ZHOU * zhou_current;
+	// band UA collection active band pointers and UA table to build
+	int modeguess;
+	uint64_t *tuaold,tua;// old floors uas /  fresh uas
+	uint32_t nuaold, nua,ndigits;;
+	int  puz0[54], gangster[9];
+	BF64 fd_sols[2][9];//start puzzle/ solution
+	BF64 fdsw[3][9];//morphed digits puzzle/ solution rev
+	BF64 previous_ua_status[6];// index 0 is for digit 3
+	// bands sols handling
+	BF64 sols_buffer[3000], ua_buffer[3000],*tsolw,*tuaw,
+		mysol,mystart,andsol,myandsol;
+	int nsolw;
 
-    //=================== floor analysis (one digit)
-	int current_digit,active_floor;
-	BF128  or_floor[9], elim_floor[9];
-
-	// specific to the attempt to optimize the X+Y+27 process
-	char *entry_base0, zdebug[82];
-	int * grid0; // using a process with known solution grid
-	// specific to symmetry of given generation
-	USHORT * ptcor;
-	// specific to the search 17 process
-	int s2_ind, naddtable;// see go_17sol
-	BF128 * addtable;
-	int band3digits[9], band3nextua;// specific to 17 search
-	uint64_t * digsols, b12nextua; // pointer to solution grid per digit
 	ZH2B_GLOBAL();
-	inline void InitCount(int elim){
-		memset(cpt, 0, sizeof cpt);
-		nsol = 0;
-		lim = elim;
+	inline void InitsGetSols(int i,int ibuf){
+		mystart = fdsw[1][i];
+		mysol = fdsw[0][i];
+		tsolw =&sols_buffer[ibuf];
+		tuaw = &ua_buffer[ibuf];
 	}
-	void MorphPat(char * ze);
-	void Morph_digits(int morph);
-	void Morph_digits(GINT16 * td, int nc);
-	//void Map_Morph_digits(GINT16 * td, int nc);
-	void NoMorph();
-	int InitSudoku();
-	int Go_InitSudoku(char * ze);
-	int Go_InitSudoku_NoMorph(char * ze);
-	int Go_InitSolve(char * ze);
-	int Go_InitSolve(GINT16 * td, int nc);
-	void ValidPuzzle(ZHOU * z);
-	void Debug();
-	
+	void GetBands(int * g1, int * g2);
+	void Genuas2();
 
 };
 /* 2 BF 128 per digit
@@ -149,281 +89,171 @@ struct ZH2B_GLOBAL { // global variables for the game table
 	Last 32 bits in FD[1]] contain  digit mapped
 */
 // class encapsulating the brute force 
+struct ZH2B {// size 32 bytes 
+	BF64 FD[9], CompFD[9], cells_unsolved, rows_unsolved;
 
-/*
-	BF64 FD[9], CompFD[9], Cells_unsolved, Rows_unsolved;
-	int index, filler; // total size aligned on a 8 bytes
+	void Init_std_bands(); // after getbands in zh2b_g
+	void DebugSol();
 
-	inline void Copy(ZHXY27 & o)	{ int rind = index; *this = o; index = rind; }
 
-	inline void Assign(int digit,int cell,int xcell){
-		FD[digit] &= AssignMask_Digit[cell].m128i_u64[0];
-		Cells_unsolved.Clear(xcell);
-		int ddig=6*digit;
+	inline void Copy(ZH2B & o) { *this = o; }
+	inline void Assign(int digit, int cell, int xcell) {
+		FD[digit] &= AssignMask_Digit[cell].u64[0];
+		cells_unsolved.Clear(xcell);
+		int ddig = 6 * digit;
 		if (digit > 4) ddig += 2;// second bloc of 32 bits
-		Rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
+		rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
 	}
-	inline int Unsolved_Count(){ return Rows_unsolved.Count(); }
-	int ApplySingleOrEmptyCells();
-
-	void Init_x_(GINT64 t,int n);
+	inline int Unsolved_Count() { return rows_unsolved.Count(); }
+	inline void ComputeNext() { if (FullUpdate())Guess(); }
+	inline void ComputeNextFalse() { if (FullUpdate())GuessFalse(); }
+	int Isvalid();
+	int IsvalidNoUpdate(int debug = 0); // usually after init 2 steps
+	uint64_t GetUa();
+	void Init_x_(GINT64 t, int n);
 	uint64_t Init_y_(GINT64 t, int n);
-	uint64_t CheckUa(uint64_t ua);
-	void Init_xy(ZHXY27 & o,GINT64 tx, int nx, GINT64 ty, int ny);
+	void Init_xy(ZH2B & o, GINT64 tx, int nx, GINT64 ty, int ny);
 
 	int Update();
 	int FullUpdate();
 	int FullUpdateNoGuess();
 	void Guess();
 	void GuessFalse();
+	int ApplySingleOrEmptyCells();
+	uint64_t CheckUa(uint64_t ua);
 	char * SetKnown(char * zs);
-	int Seta(int digit,int xcell);
-	inline int SetaC(int digit, int cell){ return Seta(digit, C_To128[cell]); }
-	inline void ComputeNext(){
-		if (FullUpdate())
-		{
-//			cout << "end full update" << endl;
-			//Debug();
-//			ImageCandidats();
-			Guess();
-		}
-//		else cout << " return 0 from full update" << endl;
-	}
-	inline void ComputeNextFalse(){	if (FullUpdate())GuessFalse();	}
-	inline uint64_t GetUa(){
-		glb.ua_ret = 0;
-		glb.go_back = 0;
-		ComputeNextFalse();
-		return glb.ua_ret;
-	}
+	int Seta(int digit, int xcell);
+	inline int SetaC(int digit, int cell) { return Seta(digit, C_To128[cell]); }
+	inline void ClearCandidate(int dig, int xcell) { FD[dig].Clear(xcell); }
 	int GetFreeDigits(int cell);
-	inline void ClearCandidate(int dig, int xcell){	FD[dig].Clear(xcell);}
-	inline int Isvalid(){ // usually after init 2 steps
-		glb.nsol=glb.go_back=0;glb.lim=1;ComputeNext();  return glb.nsol;}
-	inline int IsvalidNoUpdate(int debug=0){ // usually after init 2 steps
-		glb.nsol = glb.go_back = 0; glb.lim = 1; Guess();  return glb.nsol;
-	}
-
 	int GetAllDigits(int cell);
 	void Debug(int all=0);
 	void DebugDigit(int digit);
 	void ImageCandidats();
-	// located in zhxy27_uacollector.cpp  generation of UAs on a multi floor
-	void InitGenUas(int * zpuz);
-	void InitUas2();
-	void GenUas( int floors);
-	void GenUasBands12LessMinirow(int floors,int c1,int c2,int c3);
-	void GenUAs2_minirowpair(int c1, int c2, int dig1, int dig2,int i_81);
-	int GenMoreGUAs2(int c1, int c2, int dig1, int dig2);
-	void GenUAs2_minirowtriplet(int c1, int c2, int c3, int dig1, int dig2, int dig3, int i_81);
-	void GenUas2();	void GenUas3();	void GenUas4();	void GenUas5();
-	int Update2();	int Update3();	int Update4();	int Update5();
-	void Guess2();	void Guess3();	void Guess4();	void Guess5();
-	void CollectFinal(TUA64 & mt);
-	int CollectFinalua2s(uint64_t *td, int maxt,int n0);
-	void DebugFloors(int nfloors, int all = 0);
-*/
-struct ZH2B{// size 32 bytes 
-	BF128 FD[9][2];
-	//ZHOUDIG zhd[9];
-	BF128 cells_unsolved;
-	//ZHOUDIG * dlast;//pointer to last unsolved
-	int ndigits,index,unsolved_digits,box_hidden_pair;
-
-	inline void Copy(ZHOU & o);
-	inline void Assign(int digit, int cell, int xcell);
-	int Upd1(int digit);
-	int Update();
-	int InitSudoku(GINT16 * t, int n);
-	int InitSudoku(char * zpuz,int morph=1);
-	char * SetKnown(char * zs);
-	int ApplySingleOrEmptyCells_Band3();
-	int ApplySingleOrEmptyCells_B12();
-	int ApplySingleOrEmptyCells();
-	int FullUpdate();
-	void SetaCom(int digit, int cell, int xcell);
-	inline void SetFloor(int cell){ FD[0][0] &= AssignMask_Digit[cell]; }
-	inline void Seta_c(int digit, int cell){ SetaCom(digit, cell, C_To128[cell]); }
-	inline void SetG(GINT16 x){ Seta_c(x.u8[1], x.u8[0]); }
-	void Setcell(int cell);
-	inline void GuessBivalueInCell(BF128 & wc);
-	inline int GuessHiddenBivalue();
-	int SolveHiddenPair_Box_Row();
-	int SolveHiddenPair_BoxB();
-	int SolveHiddenTriplet_Box_Row();
-	int GuessHiddenTriplet();
-	void Guess();
-	// located in zh4_doc_debug
-
-	//inline void Copy(ZHOU & o)	{ int rind = index; *this = o; index = rind; }
-
-	inline int Unsolved_Count(){ return cells_unsolved.Count(); }
-	// standard calls
+	int DebugCheckUa(uint64_t ua);
 
 
-	inline void ComputeNext(){ 
-		if (FullUpdate()){
-			Guess();
-		} 
-	}
+
+// located in go_17sol_zx_UaCollector_cpp  generation of UAs on a multi floor
+	void Guess2(); void GenUas3();
+//void InitGenUas(int * zpuz);
+	//void InitUas2();
+	//void GenUas(int floors);
+	//void GenUasBands12LessMinirow(int floors, int c1, int c2, int c3);
+	//void GenUAs2_minirowpair(int c1, int c2, int dig1, int dig2, int i_81);
+	//int GenMoreGUAs2(int c1, int c2, int dig1, int dig2);
+	//void GenUAs2_minirowtriplet(int c1, int c2, int c3, int dig1, int dig2, int dig3, int i_81);
+	//void GenUas2();		void GenUas4();	void GenUas5();
+	//int Update2();	int Update3();	int Update4();	int Update5();
+	//	void Guess3();	void Guess4();	void Guess5();
+	//void CollectFinal(TUA64 & mt);
+	//int CollectFinalua2s(uint64_t *td, int maxt, int n0);
+	//void DebugFloors(int nfloors, int all = 0);
 
 
-	// other calls and functions in Zh4_calls_variants
-	int CheckValidityQuick(char *puzzle);
-	int GetSol(char *puzzle);
-	int CheckOneStep(char *puzzle, char * zs);
-	inline int StatusValid(GINT16 * t, int n){
-		InitSudoku(t, n); return Isvalid();
-	}
-
-	int StartOneStep(GINT * t, int n);
-
-	int PartialInitSudoku(GINT16 * t, int n);
-	int EndInitSudoku( GINT16 * t, int n);
-	int EndInitNextUa(ZHOU & o, int bf);// 17 search check know small uas in bloc
-
-	int IsMinimale(GINT16 * t, int n);
-	int IsMinimale(char * ze);
-	void PatFinal();
-	int GetFreeDigits_c(int cell){ return GetFreeDigits(C_To128[cell]); }
-	int GetFreeDigits(int xcell);
-	int GetSolvedDigitForCell(int cell);
-
-	// inline small functions
-	inline int IsOffCandidate_c(int dig, int cell){return FD[dig][0].Off_c(cell); }
-	inline int IsOnCandidate_c(int dig, int cell){ return FD[dig][0].On_c(cell); }
-	inline void ClearCandidate_x(int dig, int xcell){ FD[dig][0].clearBit(xcell); }
-	inline void ClearCandidate_c(int dig, int cell){ FD[dig][0].clearBit(C_To128[cell]); }
-	void CleanCellForDigits(int cell, int digits);
-	int CleanCellsForDigits(BF128 &  cells, int digits);
-	int Clean(PM3X &elims);
-	int Isvalid();
-	inline int CountDigs(){
-		int n =0;
-		for (int i = 0; i < 9; i++)
-			n += FD[i][0].Count96();
-		return n;
-	}
-	//================== find active floors
-	void StartFloor(int digit, ZHOU & o);
-	int  UpdateFloor();
-	void GuessFloor();
-
-	// debugging code or print code
-	void Debug(int all = 0);
-	void DebugDigit(int digit);
-	void DebugActiveDigits();
-	int GetAllDigits(int cell);
-	void ImageCandidats();
-	void ImageCandidats_b3();
-	int FullUpdateAtStart();
-	int CheckStatus();// located in solver_step 
-
-	// located in go_0xx.cpp
-	int Rate10_LastInUnit();
-	int Rate12_SingleBox();
-	int Rate15_SingleRow();
-	int Rate15_SingleColumn();
-	int RateSingle(GINT64 * t, int nt);
-	int RateSingleBox(GINT64 * t, int nt);
-	int RateSingleRow(GINT64 * t, int nt);
-	int RateSingleCol(GINT64 * t, int nt);
-	int RateSingleDiag(GINT64 * t, int nt);
-	int CollectHiddenPairsBox(GINT64* tp, int & np,int lim=4);
-	int CollectHiddenPairsRow(GINT64* tp, int & np, int lim = 4);
-	int CollectHiddenPairsCol(GINT64* tp, int & np, int lim = 4);
-	int Rate17_lockedBox_Assign();
-	void FindNakedPairsTriplets_NoSingle();
-	int Rate20_HiddenPair_Assign();
-	int Rate23_SingleInCell_Assign();
-	int CollectHiddenTripletsBox(GINT64* tp, int & np);
-	int CollectHiddenTripletsRow(GINT64* tp, int & np);
-	int CollectHiddenTripletsCol(GINT64* tp, int & np);
-	int Rate25_HiddenTriplet_Assign();
-	int Rate26_lockedBox();
-	int Rate28_lockedRowCol();
-	int CleanNake(int & naked, int unit, int iband,int modebr);
-	int CleanNakeColumn(int & naked, int unit, int iband);
-	int Rate30_NakedPair();
-	int Rate32_XWing();
-
-	int ApplyHidden(GINT64 * t, int nt,int mode);
-	int ApplyHiddenColumn(GINT64 * t, int nt);
-
-	int Rate34_HiddenPair();
-	int Rate36_FindClean_NakedTriplet(int unit_triplet_cells,int unit,int iband,int mode);
-	int Rate36_FindClean_NakedTripletCol(int unit_triplet_cells, int unit, int iband);
-	int Rate36_NakedTriplet();
-	int Rate38_SwordFish();
-	int Rate40_HiddenTriplet();
-	int Rate42_XYWing();
-	int Rate44_XYZWing();
-	int Rate50_NakedQuad();
-	int Rate52_JellyFish();
-	int Rate54_HiddenQuad();
-
-	void AssignSolver(int print = 0);
-	void XW_template(int idig);
-	void Naked_Pairs_Seen();
 
 	
 	/*
-    inline void SetPat(char * pat, char * zsol, char * puzfinal){
-		zh_g.pat = pat; zh_g.zsol = zsol; zh_g.puzfinal = puzfinal;
-	};
-    // located in zh_uacollector.cpp  generation of UAs on a multi floor
+ 
+ // located in zh_uacollector.cpp  generation of UAs on a multi floor
 	void InitGenUas(char * zpuz);
 	void GenUas( int floors);
 	void GenUasBands12(int floors);
-	void GenUasBands12LessMinirow(int floors,int c1,int c2,int c3);
-	void GenUas2();
-	void GenUas3();
-	void GenUas4();
-	void GenUas5();
 	void GenUas6();
 	void GenMinirows2();
 	void GenMinirows3();
-	int Update2();
-	int Update3();
-	int Update4();
-	int Update5();
 	int Update6();
-	void Guess2();
-	void Guess3();
-	void Guess4();
 	void Guess6();
-	void Guess5();
 	void Guess5_4();
 	void Guess5_3();
 	int CollectFinal(BF128 *td,int &lim10);
    */
  };
+ /* class encapsulating the brute force for one band
+initial is a solved band giving the clues in each column
+each bit map per digit is a 32 bit field
+as in the original code, unknown rows per digit are located in bits 28-29-30 of the bit map
+remaining clues are given in a 0-26 "cells" space
 
- struct ZHBAND{// similar to  ZHOU for one band
-	 int FD[9][2],cells_unsolved;
-	 int ndigits, index, unsolved_digits;
+*/
+struct ZHONE_GLOBAL { // global variables for the game table
+	int diag;
+	int nsol, lim, icount, ntsol, single_applied,
+		new_single_in_Update,
+		type,//gocatmode,    
+		rdigit, nctlg, go_back;
+	int pairs, triplets;
+	char * zsol, out27[28];// band1 in output mode 
 
-	 inline void Copy(ZHBAND & o);
-	 inline void Assign(int digit, int cell, int xcell);
-	 int Update();
-	 char * SetKnown(char * zs);
-	 int ApplySingleOrEmptyCells_Band3();
-	 int ApplySingleOrEmptyCells_B12();
+	// band UA collection active band pointers and UA table to build
+	uint32_t *tua, nua;//   maximum 81  
+	int * band0,*gangster;
+	int floors_mini_row, digmap[9];// to adjust pm
+	uint32_t fd_sols[2][9];//start puzzle/ solution
+	uint32_t fdsw[3][9];//morphed digits puzzle/ solution rev
+	uint32_t ndigits;
+	uint32_t previous_ua_status[6];// index 0 is for digit 3
+
+	ZHONE_GLOBAL();
+	void GetBand(int * b, uint32_t * t);
+	inline void SetPat(char * pat, char * zsol, char * puzfinal) {
+		pat = pat; zsol = zsol; puzfinal = puzfinal;
+	};
+	inline void InitIsvalid() { // usually after init 2 steps
+		nsol = go_back = type = 0; lim = 1;
+	}
+	void ValidPuzzle(uint32_t * sol);
+	void AddUA(uint32_t ua);
+	void PrintTua();
+	void FindMissingUAs();
+};
+struct ZH2B_1D {// size 32 bytes
+	BF64 FD, CompFD; 
+	int GetSols( int ru);
+	inline void Assign( int cell) {
+		FD &= AssignMask_Digit[cell].u64[0];
+	}
+	void ComputeNext(int ru);
+	int Update(int &ru);
+	void Guess(int ru);
+	int IsValid(uint64_t v);
+};
+
+ struct ZHONE {
+	 uint32_t FD[9], CompFD[9], cells_unsolved;
+
+	 // standard calls and basic process
+	 inline void Assign(int digit, int cell) {
+		 FD[digit] &= AssignMask_Digit[cell].u32[0];
+		 cells_unsolved &= ~(1 << cell);
+		 FD[digit] &= ~(1 << (27 + C_row[cell]));//9*digit + row
+	 }
+	 inline int Unsolved_Count() { return __popcnt(cells_unsolved); }
 	 int ApplySingleOrEmptyCells();
+	 void InitOne_std_band(); // after getband in zh1b_g
+	 int InitSudokux(GINT * t, int n);
+	 void AddMissingUAs(int * tcells,int ncells);
+	 int Update();
 	 int FullUpdate();
-	 void SetaCom(int digit, int cell);
-	 void Setcell(int cell);
-	 inline void GuessBivalueInCell(BF128 & wc);
-	 inline int GuessHiddenBivalue();
-	 int GuessHiddenTriplet();
 	 void Guess();
-	 inline void ComputeNext(){	 if (FullUpdate())	 Guess();	 	 }
-	 int GetFreeDigits_c(int cell){ return GetFreeDigits(C_To128[cell]); }
-	 int GetFreeDigits(int xcell);
-	 int GetSolvedDigitForCell(int cell);
-	 // debugging code or print code
-	 void Debug(int all = 0);
+	 inline void ComputeNext() { if (FullUpdate())	Guess(); }
+	 char * SetKnown(char * zs);
+	 void Seta(int digit, int xcell);
+	 int Isvalid();
 	 int GetAllDigits(int cell);
+	 void Debug(int all = 0);
+	 void DebugDigit(int digit);
 	 void ImageCandidats();
-	 void ImageCandidats_b3();
+	 //==================================================
+	 // uacollector 
+	 void Checkstart();
+	 int  Start_nFloors(int floors);
+	 void Start_Uas_Mini(int floors, int floors_mini_row);
+	 void ApplyGangsterChanges(int * g0, int * g1);
+	 void InitGuess();
+	 int UpdateDigit(int digit);
+	 void Guess2();	void Guess3();	void Guess4();
+	 void Guess5(); void Guess6();  void Guess7();
+	 void Set2(int cell);
  };
+

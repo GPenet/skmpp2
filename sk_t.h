@@ -81,6 +81,7 @@ typedef unsigned __int64  uint64_t;
 #define BIT_SET_27         0777777777
 #define BIT_SET_30         07777777777
 #define BIT_SET_64         0xffffffffffffffff
+#define BIT_SET_2X		   0x07ffffff07ffffff	
 #define Zhoucol 01001001
 #define Zhoubox 07007007
 

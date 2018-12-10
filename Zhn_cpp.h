@@ -178,8 +178,10 @@ int ZH_GLOBAL::Go_InitSolve(char * ze){
 	zhou[0].ComputeNext();
 	if (nsol != 1) return 1;
 	for (int i = 0; i < 81; i++)zerobased_sol[i] = (char)(stdfirstsol[i] - '1');
+#ifdef SKMPPV2
 	memset(locked_nacked_brc_done, 0, sizeof locked_nacked_brc_done);
 	memset(row_col_x2, 0, sizeof row_col_x2);
+#endif
 	return 0;
 }
 
@@ -198,8 +200,10 @@ int ZH_GLOBAL::Go_InitSolve(GINT16 * td, int nc){
 	zhou[0].ComputeNext();
 	if (nsol != 1) return 1;
 	for (int i = 0; i < 81; i++)zerobased_sol[i] =(char)( stdfirstsol[i] - '1');
+#ifdef SKMPPV2
 	memset(locked_nacked_brc_done, 0, sizeof locked_nacked_brc_done);
 	memset(row_col_x2, 0, sizeof row_col_x2);
+#endif
 	return 0;
 }
 void ZH_GLOBAL::ValidPuzzle(ZHOU * z){
@@ -438,11 +442,6 @@ char * ZHOU::SetKnown(char * zs){
 }
 
 void ZHOU::SetaCom(int digit, int cell, int xcell){ // single in cell
-//cout<<"index"<<(int)index << "setacom d;c;xc\t" << digit + 1 << "\t" << cell << "\t" << xcell << endl;
-if (zh_g.diag){
-cout << zh_g.cpt[0] << "setacom digit=" << digit + 1 << " cell=" << cell << endl;
-ImageCandidats();
-}
 BF128 *Fd = FD[digit];
 *Fd &= AssignMask_Digit[cell];
 cells_unsolved.Clear(xcell);
