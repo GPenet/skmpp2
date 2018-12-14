@@ -84,6 +84,7 @@ typedef unsigned __int64  uint64_t;
 #define BIT_SET_2X		   0x07ffffff07ffffff	
 #define Zhoucol 01001001
 #define Zhoubox 07007007
+#define Zhoucol64 01001001
 
 typedef unsigned char byte;
 typedef unsigned short word;

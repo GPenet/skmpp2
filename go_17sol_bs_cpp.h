@@ -9,21 +9,48 @@ G17B::G17B() {
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
 	memset(p_cpt, 0, sizeof p_cpt);// used in debugging sequences only
 	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
-	if (++p_cpt1g[0] > 1)	return; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
+	if (p_cpt1g[0] ++)	return; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
 	int * zs0 = genb12.grid0;
 	myband2.DoExpandBand(27);// expand band2
 	if (!(myband1.n5| myband2.n5)) return; // no 656 no 566
-
-
 	int nb3 = genb12.nband3;
 	//=========================== collect UAs (still room for improvement)
-	genb12.InitGangsterBand3(); // prepare the gangster band 3 data
-	genb12.BuildGUA4_6_();//look for possible patterns GUA4s GUA6s in bands 3
 	genuasb12.Initgen();
-//	genb12.CollectUA2s();// collect GUA2s
-//	genb12.CollectUA3s();//collect GUA3s
-//	genb12.CollectMore();// Add more medium size UAs bands 1+2 with special patterns 
+	genb12.BuildGang9x3();
+	if (0) {
+		cout << "end gen UAs bands 1+2 nb3="<<nb3<<" nua="<< genuasb12.nua << endl;
+		zh2b[0].Init_std_bands();
+		zh2b[0].ImageCandidats();
+		cout << "controle de solution bande 1 2 par digit" << endl;
+		zh2b[0].DebugSol();
+		cout << "gangster band 3" << endl;
+		for (int i = 0; i < 9; i++) {
+			int * w = genb12.gang[i];
+			cout << w[0] + 1 << w[1] + 1 <<w[2] + 1<<" ";
+		}
+		cout << endl;
+		cout << "start collect gua2s gua3s" << endl;
+	}
+	if (1) {// print first uas in the global table for debugging
+		cout << "first uas in the global table" << endl;
+		for (uint32_t i = 0; i < genuasb12.nua; i++){
+			if (i == 6) break;
+			cout << Char2Xout(genuasb12.tua[i]) << endl;
+		}
 
+	}
+
+
+	genb12.SecondSockets2Setup();// collect GUA2s 
+	if (0) {// check bands 
+		for (int i = 0; i < 1; i++)
+			genb12.bands3[i].PrintB3Status();
+		return;
+	}
+	if (1) return;
+	//	genb12.CollectUA2s();// collect GUA2s
+	//	genb12.CollectUA3s();//collect GUA3s
+	//	genb12.CollectMore();// Add more medium size UAs bands 1+2 with special patterns 
 	Go();// standard entry point for all 
 	if (p_cpt1g[0])g17b.PrintEndPuz();
 }
@@ -107,11 +134,11 @@ void G17B::GoAddNewGUas(){// end step include small more guas in the guas tables
 
 }
 
-void G17B::InsertGua(uint64_t * tu, int & ntu, uint64_t gu){
+void G17B::InsertGua(uint64_t * tu, uint32_t & ntu, uint64_t gu){
 	GINT64 guw; guw.u64 = gu;
 	if (guw.u8[7] >= 81)guw.u8[7] -= 81;
 	register uint64_t w = guw.u64;
-	for (int iua = 0; iua < ntu; iua++){
+	for (uint32_t iua = 0; iua < ntu; iua++){
 		register uint64_t r = tu[iua];
 		if (w > r) continue;
 		if (w == r) return;
@@ -657,7 +684,6 @@ void G17XY::Go_Guas_collect(){// collect guas still active
 	// setup XY guas status
 	for (int i = 0; i < indexstep.n64vgua; i++)		vw[i] = vxg[i] & vyg[i];
 	if (imore)for (int i = 0; i < 3; i++)		vw1[i] = vm1xg[i] & vm1yg[i];
-
 	bands_active_pairs.SetAll_0();
 	bands_active_triplets.SetAll_0();
 	more_active_pairs.SetAll_0();
@@ -668,7 +694,6 @@ void G17XY::Go_Guas_collect(){// collect guas still active
 		//x &= indexstep.vaguas[i]; //already done
 		while (bitscanforward64(iua, x)){
 			register uint64_t uaid = (indexstep.tgua[iua + 64 * i]) >> 56;
-
 			uint64_t *tv = indexstep.vid81[uaid];// clear all same id iv vectors
 			x &= tv[i];// clear bit and other bits same id
 			vw[i + 1] &= tv[i + 1];// clear id in next block 
@@ -676,13 +701,11 @@ void G17XY::Go_Guas_collect(){// collect guas still active
 				uint64_t *tmv = indexstep.vmid81[uaid];
 				for (int j = 0; j < 3; j++)vw1[j] &= tmv[j];
 			}
-
 			if (uaid <81)bands_active_pairs.setBit(C_To128[uaid]);
 			else bands_active_triplets.setBit(C_To128[uaid - 81]);
 		}
 	}
-	if (!imore) return;
-	// if imore, look for missing ids add them in "or" mode 
+	if (!imore) return;	//  look for missing ids add them in "or" mode 
 	uint64_t * tx = vw1; 
 	G17TMORE * tm = g17moreg0;		
 	for (int i = 0; i < 3; i++){//scan used  blocks 
@@ -852,8 +875,9 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 	if (zhou[0].PartialInitSearch17(tcluesb3, ntb3a))return;// would be  bug 
 	for (int i3 = 0; i3 < ntb3; i3++){
 		wg3 = g17tb3go[i3];
-		__movsd((unsigned long *)&genb12.grid0[54], (unsigned long*)genb12.tband3[wg3.ib3], 27);
-		zhou[0].InitBand3PerDigit(genb12.tband3[wg3.ib3]);
+		__movsd((unsigned long *)&genb12.grid0[54], 
+			(unsigned long*)genb12.bands3[wg3.ib3].band0, 27);
+		zhou[0].InitBand3PerDigit(genb12.bands3[wg3.ib3].band0);
 		if (more3 && Rebuild())continue;
 		g17hh0.Init(wg3);
 
@@ -971,7 +995,7 @@ void G17XY::FoutValid17(int bf3, int ib3){
 	for (int i = 0; i < 54; i++, bit <<= 1)if (w&bit)
 		zs[i] = g[i] + '1';
 	bit = 1;
-	g = genb12.tband3[ib3];
+	g = genb12.bands3[ib3].band0;
 	for (int i = 0; i < 27; i++, bit <<= 1)if (bf3&bit)
 		zs[i + 54] = g[i] + '1';
 	fout1 << zs << ";" << genb12.nb12 / 64 << ";" << genb12.i1t16 << ";" << genb12.i2t16 << endl;

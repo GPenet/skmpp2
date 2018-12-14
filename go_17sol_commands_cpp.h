@@ -2,13 +2,40 @@
 //========================================
 char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
+
+
+void Go_c17_00( ) {// p2 process
+	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;
+	cout << sgo.vx[0] << " -v0- band 0_415" << endl;
+	cout << sgo.vx[2] << " -v2- skip first nnn restart after batch failure" << endl;
+	cout << sgo.vx[3] << " -v3- last entry number for this batch must be > vx[2]" << endl;
+	int it16_start = sgo.vx[0];
+	genb12.skip = sgo.vx[2];
+	genb12.last = sgo.vx[3];
+	if (sgo.vx[2] < 0) {
+		cerr << "invalid value for skip" << endl;
+		return;
+	}
+	if (sgo.vx[3] < sgo.vx[2]) {
+		cerr << "invalid value for last to process" << endl;
+		return;
+	}
+	memset(p_cpt, 0, sizeof p_cpt);// band2 and band 3 count
+	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
+	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
+	memset(p_cpt1g, 0, sizeof p_cpt1g);// used in debugging sequences only
+	memset(p_cpt2g, 0, sizeof p_cpt2g);// used in debugging sequences only
+	genb12.Start(0);
+	genb12.NewBand1(sgo.vx[0]);
+}
+//=========================== regressive tests
+
 void Go_c17_91_go() {
 	if (p_cptg[0] > 1) return;
 	myband1.PrintStatus();
 	myband2.PrintStatus();
 	genuasb12.Initgen();
 }
-
 void Go_c17_80() {// enumeration test
 	cout << "Go_c17_20 phase 2a enumeration test " << endl;
 	cout << sgo.vx[0] << " -v0- first id 0_415" << endl;
@@ -21,8 +48,6 @@ void Go_c17_80() {// enumeration test
 		cerr << "invalid it16_start it16_end" << endl;
 		return;
 	}
-
-	fout1.open(sgo.foutput_name);
 	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
 	genb12.Start(11);
 	for (int i1t16 = it16_start; i1t16 <= it16_end; i1t16++) {
@@ -34,47 +59,9 @@ void Go_c17_80() {// enumeration test
 		p_cptg[0] += p_cpt[0];
 		p_cptg[1] += p_cpt[1];
 	}
-	cout <<  "total\t\t" << p_cptg[0]
+	cout << "total\t\t" << p_cptg[0]
 		<< "\t" << p_cptg[1] << endl;
 }
-
-
-void Go_c17_21(char * foutput_name) {// p2 process
-	cout << "M10_S17 search batch 17 clues 656 566 " << endl;
-	cout << sgo.vx[0] << " -v0- first id 0_415" << endl;
-	cout << sgo.vx[1] << " -v1- second id 0_415" << endl;
-	cout << sgo.vx[2] << " -v2- skip first nnn restart after batch failure" << endl;
-	cout << sgo.vx[3] << " -v3- last entry number for this batch must be > vx[2]" << endl;
-	int it16_start = sgo.vx[0], it16_end = sgo.vx[1];
-	genb12.skip = sgo.vx[2];
-	genb12.last = sgo.vx[3];
-
-	if (it16_start > 415 || it16_end > 415 || it16_start > it16_end) {
-		cerr << "invalid it16_start it16_end" << endl;
-		return;
-	}
-	if (sgo.vx[2] < 0) {
-		cerr << "invalid value for skip" << endl;
-		return;
-	}
-	if (sgo.vx[3] < sgo.vx[2]) {
-		cerr << "invalid value for last to process" << endl;
-		return;
-	}
-
-	fout1.open(foutput_name);
-	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
-	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
-	memset(p_cpt1g, 0, sizeof p_cpt1g);// used in debugging sequences only
-	genb12.Start();
-	for (int i1t16 = it16_start; i1t16 <= it16_end; i1t16++) {
-		memset(p_cpt, 0, sizeof p_cpt);// band2 and band 3 count
-		genb12.NewBand1(i1t16);
-
-		if ((genb12.nb12 >> 6) >= genb12.last) return;// limit reached
-	}
-}
-//=========================== regressive tests
 void Go_c17_90() {// creating band UAs
 	//the table exists, this is somehow a regressive test  
 	//or to rebuild the table
@@ -140,7 +127,6 @@ void Go_c17_90() {// creating band UAs
 		cout << "ua count equal" << endl;
 	}
 }
-
 void Go_c17_91() {// UAs collector 2 bands
 	cout << "Go_11 test UAs collector 2 ba,ds" << endl;
 	cout << sgo.vx[0] << " -v0- id bande low order 0_415" << endl;
@@ -150,8 +136,6 @@ void Go_c17_91() {// UAs collector 2 bands
 	genb12.Start(10);
 	genb12.NewBand1(sgo.vx[0]);
 }
-
-
 /* sample used for Go_c17_92()
 1 0     0       0       0       0       729     18225
 28 27   0       38      2025    26285   157845  610977

@@ -1,146 +1,147 @@
-
-#include "go_17sol_tables.h"
-
-struct GEN_BANDES_12{// encapsulating global data 
-	STD_B416 bands3[256];
-	//STD_B1_2 band1s, band2s;
-	int modeb12,aigstop, ndiag, 
-		it16, it16_2, imin16_1, imin16_2, imin16_3; 
-	int i1t16, i2t16, i3t16,maxnb3; // index 416 ordered in increasing size of valid clues 6
-	char zsol[82], rband2[28];
-	int grid0[82],tc[6],ntc;
-	int skip,last;// restart point; last entry in the batch
-	uint64_t   nb12;
-	BANDMINLEX::PERM t_auto_b1[108], // maxi is 107excluding start position
-		t_auto_b1b2[108], t_auto_b2b1[108],
-		pband2,pband3; 
-	int n_auto_b1, n_auto_b1b2, n_auto_b2b1;
-	int cold[9], rowd[6], boxd[6],rowdb3[3],boxdb3[3]; //free digits 
-	//================== bands 3 and gangster band 3 analysis
-	int tband3[256][27], nband3;
-	int gangcols[9], gang[9][3], *gang27, gang_digits_cols[9][3],
-		tcolok[2], ncolok;
-	BF128 bands_pairs, tbands_pairs[256];// 81 bits in 3x27 mode
-	BF128 tbands_UA4_6s[256];// 81 bits in 3x27 mode
-	int tbands_UA4_6s_pat[256][81];
-	BF128 bands_triplets, tbands_triplets[256];// 81 bits in 3x27 mode
-	GINT64 tipairs[256][96];
-	int tindexUA4s[256][96];// pair id_81 (3x27) to bit 0_8 in the band
-	int tindextriplets[256][96];// triplet id_81 (3x27) to bit 0_8 in the band
-	int pairs_cols_digits[81][4];
-	int triplets_mini_digits[81][4];
-	// __________________________  primary UAs tables and creation of such tables
-	//TUA64 mtua;// using tua as table
-	uint64_t  tua2[3000], tua3[2000];
-	int  ntua2, ntua3;// , nyuas_2y;
-	//================ A creating a catalogue for the 17 search 
-	//sorted increasing number of valid bands 6 clues
-	//================================= functions
-	void GetStartB2(int i); // one of the 20 starts 
-	void Start(int mode=0);
-	void NewBand1(int iw);
-	void Find_band2B();
-	int ValidBand2();
-	void M10Find_band3B(int m10=1);
-	int FindBand3Unique();//test or  debugging code see the corresponding file
-	//================ B creating a catalogue for the 17 search 
-	//same as A exchanging bands 2/3
-
-	//================= UA and GUAs collection
-	int Get_I_81(int c1, int d1, int c2, int d2){// c1,c2 same box
-		int stack = C_box[c1], col1 = c1 - 3 * stack, col2 = c2 - 3 * stack;
-		int p1 = 0, p2 = 0;
-		for (int i = 0; i < 3; i++) if (gang[c1][i] == d1){ p1 = i; break; }
-		for (int i = 0; i < 3; i++) if (gang[c2][i] == d2){ p2 = i; break; }
-		int i_81 = 27 * stack + 3 * p1 + p2;
-		if (col1)i_81 += 18;
-		else i_81 += 9 * (col2 - 1);
-		return i_81;
-	}
-
-	inline void BuildGang9x3(){
-		gang27 = gang[0];
-		for (int i = 0; i < 9; i++){// 9 cols to build out of gangcols
-			int istack = C_box[i];
-			int * d = gang[i], c = gangcols[i];
-			uint32_t bit;
-			bitscanforward(bit, c);
-			c ^= (1 << bit);	
-			d[0] = bit;
-			gang_digits_cols[bit][istack] = i;
-			bitscanforward(bit, c);
-			c ^= (1 << bit);	
-			d[1] = bit;
-			gang_digits_cols[bit][istack] = i;
-			bitscanforward(bit, c);
-			d[2] = bit;
-			gang_digits_cols[bit][istack] = i;
+void GEN_BANDES_12::SGUA2::Debug(const char * lib) {
+	cout << lib << " gua2 \t" << i_81 << " cols " << col1 + 1 << col2 + 1
+		<< " digs " << dig1 + 1 << dig2 + 1 << endl;
+}
+void GEN_BANDES_12::InitialSockets2Setup() {//load permanent data
+	for (int i = 0; i < 81; i++) {// initial socket 2
+		SGUA2 & w= tsgua2[i];
+		w.i_81 = i;
+		register int i9 = i/9;
+		int tpcol[3][2] = { {1,2},{0,2},{0,1} };
+		int rdcol = i9 % 3,dcol=3*(i9/3),*p=tpcol[rdcol];
+		w.i9 = i9;
+		w.col1 = dcol + p[0];
+		w.col2 = dcol + p[1];
+		int rd1 = i - 9 * w.i9;//relative d1;d2		
+		w.id1 = rd1 / 3 + 3 * w.col1;
+		w.id2 = rd1 % 3 + 3 * w.col2;
+		if (0) {
+			cout << "sua2=" << w.i_81 << " i9=" << w.i9 + 1
+				<< " cols12 " << w.col1 + 1 << w.col2 + 1
+				<< " id1;id2 " << w.id1 << ";" << w.id2 << endl;
 		}
-
 	}
-	inline int Where3(int * t, int v){// extract digit gangster index
-		if (*t == v) return 0;
-		t++;
-		if (*t == v) return 1;
-		return 2;
-	}
-
-	int GetSocket(int bf, int i3){// UA; band 3 index
-		register int cc = __popcnt(bf);
-		if (cc > 3) return -1; // can not be a mini row
-		if (cc <2) return -1; // can not be a mini row
-		register int mask = 7;
-		for (int i = 0; i < 9; i++, mask <<= 3){
-			if ((bf&mask) == bf){
-				int ibox = i % 3, irow = i / 3;
-				int * mybox = &gang27[9 * ibox],
-					*tcol1 = mybox, *tcol2 = mybox + 3, *tcol3 = mybox + 6;
-				int *bb = tband3[i3], v1, v2, v3, cell1;
-				uint32_t cell;
-				register int x = bf;
-				bitscanforward(cell, x);		x ^= 1 << cell;		v1 = bb[cell];
-				cell1 = cell % 3;
-				bitscanforward(cell, x);		x ^= 1 << cell;		v2 = bb[cell];
-				if (cc == 3){// triplet 
-					bitscanforward(cell, x);		v3 = bb[cell];
-					return 27 * ibox + 9 * Where3(tcol1, v1) +
-						3 * Where3(tcol2, v2) + Where3(tcol3, v3);
-				}
-				// now a pair
-				if (cell1)// it is relative cols 1 2
-					return 27 * ibox + 18
-					+ 3 * Where3(tcol2, v1) + Where3(tcol3, v2);
-				if ((cell % 3)<2)// it is relative cols 0 1
-					return 27 * ibox + 3 * Where3(tcol1, v1) + Where3(tcol2, v2);
-				return 27 * ibox + 9  // it is relative cols 0 2
-					+ 3 * Where3(tcol1, v1) + Where3(tcol3, v2);
-			}
+}
+void GEN_BANDES_12::SecondSockets2Setup() {
+	ntua2 = 0; nactive2 = 0;
+	for (int i = 0; i < 81; i++) {// initial socket 2
+		SGUA2 & w = tsgua2[i];
+		w.dig1 = gang27[w.id1];
+		w.dig2 = gang27[w.id2];
+		w.digs = (1 << w.dig1) | (1 << w.dig2);
+		w.valid = 0;
+		//skip if no band3 uses it gua2 gua4 gua6 / build guas 
+		for (int iband3 = 0; iband3 < nband3; iband3++) {
+			if(bands3[iband3].IsGua(i))// setup guas in band
+				w.valid=1;
 		}
-		return-1;// not a guA2 GUA3 socket
+		if (!w.valid)continue;
+		// build revised gangster
+		memcpy(w.gangcols, gangcols, sizeof gangcols);
+		w.gangcols[w.col1] ^= w.digs;
+		w.gangcols[w.col2] ^= w.digs;
+		// find guas of the socket
+		zh2b_g.InitGangster(gangcols, w.gangcols);
+		zh2b5_g.sizef5 = UALIMSIZE - 2;
+		zh2b5_g.modevalid = 0;
+		w.nua_start = ntua2;
+		//if (p_cpt2g[0] ++>2)	continue; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
+		ptua2 = &tua2[ntua2];
+		nua2 = nua3 = 0;
+
+		//================== GUA collector 2 bands 
+		for (int i = 0; i < 36; i++) {// find UAs 2 digits
+			GuaCollect(floors_2d[i]);
+		}
+		for (int i = 0; i < 84; i++) {// find UAs 3 digits
+			GuaCollect(floors_3d[i]);
+		}
+		for (int i = 0; i < 126; i++) {// find UAs 4 digits
+			GuaCollect(floors_4d[i]);
+		}
+		for (int i = 0; i < 126; i++) {// find UAs 5digits
+			//GuaCollect(0x1f^floors_4d[i]);
+		}
+		if (nua2) {
+			tactive2[nactive2++]=i;
+			ntua2 += nua2;
+		}
+		w.nua_end = ntua2;// store the final count
+	}
+	cout << "endSecondSockets2Setup ntua2=" << ntua2
+		<< " nactive i81=" << nactive2 << endl;
+}
+void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
+	uint64_t solved_cells = zh2b5_g.FindUAsInit(fl, 1);
+	if (!solved_cells) return;// one digit solved true
+	zh2b5_g.CollectUas5();// collect uas for this set of floors
+	if (!zh2b5_g.nuaf5) return;
+	if (diag)cout << "collect floors=0" << oct << fl << dec
+		<< " nuaf5=" << zh2b5_g.nuaf5 << endl	;
+	if (diag > 1) {
+		for (int i = 0; i < zh2b5_g.nuaf5; i++) {
+			cout<<Char2Xout(zh2b5_g.tuaf5->bf.u64)<<endl;
+		}
+	}
+	// now collect UAs not hit by solved cells  
+	genuasb12.nuaold = 0;
+	{	register uint64_t R = solved_cells;
+	for (uint32_t i = 0; i < genuasb12.nuab1b2; i++)
+		if (!(R & genuasb12.tuab1b2[i]))
+			genuasb12.tuaold[genuasb12.nuaold++] = genuasb12.tuab1b2[i];
+	for (uint32_t i = 0; i < genuasb12.nua; i++)
+		if (!(R & genuasb12.tua[i]))
+			genuasb12.tuaold[genuasb12.nuaold++] = genuasb12.tua[i];
+	}
+	if (diag) {
+		cout << " nuaold=" << genuasb12.nuaold << endl;
+		for (uint32_t i = 0; i < genuasb12.nuaold; i++) {
+			cout << Char2Xout(genuasb12.tuaold[i]) << "old" << endl;
+		}
+	}
+	// check subsets and add to main table
+	for (int i = 0; i < zh2b5_g.nuaf5; i++) {
+		genuasb12.ua = zh2b5_g.tuaf5->bf.u64;
+		if (genuasb12.CheckOld()) continue;// superset of a previous ua
+		uint64_t cc = _popcnt64(genuasb12.ua);
+		genuasb12.ua |= cc << 59;
+		if (genuasb12.AddUA64(ptua2, nua2)) {
+			//cout << Char2Xout(genuasb12.ua) << "added nua2="<<nua2 << endl;
+		}
 	}
 
-	void InitGangsterBand3();
+}
 
-	void BuilPairinBox(int ib);
-	void BuilTripletinBox(int ib);
-	void BuildGUA4_6_();
-	void Build_GUA4_6s_Band(int iband);
+void GEN_BANDES_12::BuildGang9x3() {
+	gang27 = gang[0];
+	for (int i = 0; i < 9; i++) {// 9 cols to build out of gangcols
+		int istack = C_box[i];
+		int * d = gang[i], c = gangcols[i];
+		uint32_t bit;
+		bitscanforward(bit, c);
+		c ^= (1 << bit);
+		d[0] = bit;
+		gang_digits_cols[bit][istack] = i;
+		bitscanforward(bit, c);
+		c ^= (1 << bit);
+		d[1] = bit;
+		gang_digits_cols[bit][istack] = i;
+		bitscanforward(bit, c);
+		d[2] = bit;
+		gang_digits_cols[bit][istack] = i;
+	}
 
-	//void GenUABands12(int limsize);// collect the base set fof UAs for ba,ds 1+2
-	//void CollectUA2s();// collect GUA2s
-	//void CollectUA2sBox(int ibox);
-	//void CollectUA3s();//collect GUA3s
-	//void CollectUA3sBox(int ibox);
+}
 
-	//============= loops control for UAs 5;6;7 digits collection (collect more=
-	int iband, ibox, iminirow, ibox2, iminirow2, pat1, pat2, ncells;
-	int tcells[6], tcols[6];
-	int bcols[2][9], mycols[9], myfloors;
-	uint64_t mybf;
-	// debugging code special call
-	//int Afterb1b2(int option = 0);
-
-}genb12;
+void GEN_BANDES_12::InitialSockets3Setup() {//load permanent data
+	for (int i = 0; i < 81; i++) {// initial socket 3
+	}
+}
+void GEN_BANDES_12::SecondSockets3Setup() {
+	for (int i = 0; i < 81; i++) {// initial socket 2
+		SGUA2 w = tsgua2[i];
+	}
+}
 void GEN_BANDES_12::GetStartB2(int ip) {//set  rows 3_9 column 1
 	char const *tp[20] = {// 3 out of 6 ordered 
 		"012345", "345012", "013245", "245013", "014235", "235014", "015234", "234015",
@@ -283,13 +284,14 @@ int GEN_BANDES_12::ValidBand2() {
 	myband2.InitBand2_3(i2t16, &zsol[27], pband2);
 	//_______________________ std process
 	if (modeb12 < 10) {
+		if (p_cpt2g[10]++)return 1;//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
 		if ((nb12 >> 6) < skip) return 0;// here restart value, kept untouched if no band 3 found
 		for (int i = 0; i < 9; i++) {// init columns status
 			cold[i] = 0x1ff;
 			for (int j = 0; j < 6; j++)	cold[i] ^= 1 << grid0[i + 9 * j];
 		}
 		memcpy(gangcols, cold, sizeof gangcols);
-		M10Find_band3B();
+		Find_band3B();
 		if (0) cout << "band12=" << nb12 << "\tnband3=" << nband3 << endl;
 		{// print a restart point every 64 bands 1+2 seen
 			uint64_t w = genb12.nb12, w1 = w >> 6;
@@ -313,7 +315,7 @@ int GEN_BANDES_12::ValidBand2() {
 			for (int j = 0; j < 6; j++)	cold[i] ^= 1 << grid0[i + 9 * j];
 		}
 		memcpy(gangcols, cold, sizeof gangcols);
-		M10Find_band3B(11);
+		Find_band3B(11);
 		if (nband3) {
 			p_cpt[0]++;
 			p_cpt[1] += nband3;
@@ -324,7 +326,7 @@ int GEN_BANDES_12::ValidBand2() {
 	}
 	return 0;
 }
-void GEN_BANDES_12::M10Find_band3B(int m10) {
+void GEN_BANDES_12::Find_band3B(int m10) {
 	BANDMINLEX::PERM pout;
 	register int  *crcb, bit;
 	nband3 = 0;
@@ -435,9 +437,8 @@ next_first:
 
 exit_diag:
 	//genb12.B3add(pout.i416);
-	bands3[nband3++].InitBand2_3(i3t16,&zs[54],pout);
+	bands3[nband3++].InitBand3(i3t16,&zs[54],pout);
 	//valid_bands.bands3[nband3].Init(zs0);
-	//memcpy(tband3[nband3++], zs0, 27 * sizeof zs0[0]);
 	goto next;
 back:
 	if (--ii >= 0) goto next;
@@ -446,190 +447,9 @@ back:
 }
 
 
-void GEN_BANDES_12::InitGangsterBand3() {//depending on the list of valid band 3
-	BuildGang9x3();
-	bands_pairs.SetAll_0();  bands_triplets.SetAll_0();
-	memset(tbands_pairs, 0, sizeof tbands_pairs);// nb3 * sizeof bm128);
-	memset(tbands_triplets, 0, sizeof tbands_triplets);//, nb3 * sizeof bm128);
-	for (int ib = 0; ib < 3; ib++) {
-		BuilPairinBox(ib); BuilTripletinBox(ib);
-	}
-}
-void GEN_BANDES_12::BuilPairinBox(int ibox) {
-	int cols[3][2] = { { 0, 1 }, { 0, 2 }, { 1, 2 } };
-	int * mybox = &gang27[9 * ibox];
-	for (int ipcol = 0; ipcol < 3; ipcol++) {
-		int col1 = cols[ipcol][0], col2 = cols[ipcol][1];
-		int *tcol1 = &mybox[3 * col1], *tcol2 = &mybox[3 * col2];
-		for (int d1 = 0; d1 < 3; d1++) {
-			for (int d2 = 0; d2 < 3; d2++) {
-				int dig1 = tcol1[d1], dig2 = tcol2[d2],
-					i_27 = 9 * ipcol + 3 * d1 + d2,
-					i_81c = i_27 + 27 * ibox;
-				pairs_cols_digits[i_81c][0] = col1 + 3 * ibox;
-				pairs_cols_digits[i_81c][1] = col2 + 3 * ibox;
-				pairs_cols_digits[i_81c][2] = dig1;
-				pairs_cols_digits[i_81c][3] = dig2;
-				uint32_t	&boxpairs = bands_pairs.bf.u32[ibox],
-					bit = 1 << i_27;
-				for (int iband3 = 0; iband3 < nband3; iband3++) {
-					int *bb = &tband3[iband3][3 * ibox], r1, r2;
-					if (bb[col1] == dig1)r1 = 0;
-					else if (bb[col1 + 9] == dig1) r1 = 1;
-					else r1 = 2;
-					if (bb[col2] == dig2)r2 = 0;
-					else if (bb[col2 + 9] == dig2) r2 = 1;
-					else r2 = 2;
-					if (r1 == r2) {//valid pair for that minirow
-						boxpairs |= bit;
-						tbands_pairs[iband3].bf.u32[ibox] |= bit;
-						int i_81 = i_27 + 32 * ibox,
-							start_minirow = 9 * r1 + 3 * ibox,
-							bit1 = 1 << (start_minirow + 2 - ipcol);
-						tipairs[iband3][i_81].u32[0] = bit1;
-						tipairs[iband3][i_81].u32[1] = (7 << start_minirow) ^ bit1;
-					}
-				}
-			}
-		}
-	}
 
 
-}
-void GEN_BANDES_12::BuilTripletinBox(int ibox) {
-	int * mybox = &gang27[9 * ibox],
-		*tcol1 = mybox, *tcol2 = mybox + 3, *tcol3 = mybox + 6;
-	for (int d1 = 0; d1 < 3; d1++) {
-		for (int d2 = 0; d2 < 3; d2++) {
-			for (int d3 = 0; d3 < 3; d3++) {
-				int dig1 = tcol1[d1], dig2 = tcol2[d2], dig3 = tcol3[d3],
-					digs = (1 << dig1) | (1 << dig2) | (1 << dig3),
-					i_27 = 9 * d1 + 3 * d2 + d3;
-				uint32_t	&boxtriplets = bands_triplets.bf.u32[ibox],
-					bit = 1 << i_27;
-				ncolok = 0;
-				for (int iband3 = 0; iband3 < nband3; iband3++) {
-					int *bb = &tband3[iband3][3 * ibox], r1, r2, r3;
-					if (bb[0] == dig1)r1 = 0;
-					else if (bb[9] == dig1) r1 = 1;
-					else r1 = 2;
-					if (bb[1] == dig2)r2 = 0;
-					else if (bb[10] == dig2) r2 = 1;
-					else r2 = 2;
-					if (bb[2] == dig3)r3 = 0;
-					else if (bb[11] == dig3) r3 = 1;
-					else r3 = 2;
-					if (r1 == r2 && r1 == r3) {//valid pair for that minirow
-						boxtriplets |= bit;
-						tbands_triplets[iband3].bf.u32[ibox] |= bit;
-						tindextriplets[iband3][i_27 + 32 * ibox] =
-							1 << (3 * r1 + ibox);// directly the minirow
-					}
-				}
-			}
-		}
-	}
-}
 
-void GEN_BANDES_12::BuildGUA4_6_() {
-	for (int iband3 = 0; iband3 < nband3; iband3++) {
-		//for (int i = 0; i < 27; i++) cout << tband3[iband3][i] + 1;
-		//cout << " band 3 studied" << endl;
-		Build_GUA4_6s_Band(iband3);
-		bands_pairs |= tbands_UA4_6s[iband3];
-	}
-}
-/* GUA4 GUA6
-.x. .y.
-..y .x.
-
-.x. ... .y.   c2a=c2b c3a=c3b
-..y .x. ...   3 rows
-... .y. .x.
-
-.x. .y. .z.   2 rowssame third
-..y .z. .x.
-*/
-void GEN_BANDES_12::Build_GUA4_6s_Band(int iband) {
-	int * tuas46 = tbands_UA4_6s_pat[iband];
-	BF128 & ti81 = tbands_UA4_6s[iband];
-	ti81.SetAll_0();
-	int tdigits[9][3][2]; // temp status for a band, 3 times a digit in three boxes
-	int *bb = tband3[iband];
-	for (int i = 0; i < 27; i++) {
-		int istack = C_box[i], irow = C_row[i], icol = C_col[i], digit = bb[i];
-		tdigits[digit][istack][0] = irow;
-		tdigits[digit][istack][1] = icol;
-	}
-	// test the 81 i_81
-	int b2[3] = { 1, 2, 0 }, b3[3] = { 2, 0, 1 }; // other boxes
-	for (int d1 = 0; d1 < 8; d1++)for (int d2 = d1 + 1; d2 < 9; d2++) {// a pair of digits
-		for (int ibox = 0; ibox < 3; ibox++) {
-			int * rc1 = tdigits[d1][ibox], *rc2 = tdigits[d2][ibox], i_81;
-
-			if (rc1[0] == rc2[0] || rc1[1] == rc2[1]) continue;
-			int ua = 0;
-			if (rc1[1] < rc2[1])    i_81 = Get_I_81(rc1[1], d1, rc2[1], d2);
-			else                    i_81 = Get_I_81(rc2[1], d2, rc1[1], d1);
-
-			int * rc1_b = tdigits[d1][b2[ibox]], *rc1_c = tdigits[d1][b3[ibox]],
-				*rc2_b = tdigits[d2][b2[ibox]], *rc2_c = tdigits[d2][b3[ibox]];
-			if (rc1_b[1] == rc2_b[1]) {// can be GUA4 or GUA6 first type
-				if (rc1[0] == rc2_b[0] && rc2[0] == rc1_b[0]) {// it is a GUA4
-					ua |= 1 << (9 * rc1_b[0] + rc1_b[1]);
-					ua |= 1 << (9 * rc2_b[0] + rc2_b[1]);
-					goto guaok;
-				}
-				else if (rc1_c[1] == rc2_c[1]) {// it is a GUA6 first type
-					ua |= 1 << (9 * rc1_b[0] + rc1_b[1]);
-					ua |= 1 << (9 * rc2_b[0] + rc2_b[1]);
-					ua |= 1 << (9 * rc1_c[0] + rc1_c[1]);
-					ua |= 1 << (9 * rc2_c[0] + rc2_c[1]);
-					goto guaok;
-
-				}
-				continue;
-			}
-			else if (rc1_c[1] == rc2_c[1]) {// can be GUA4
-				if (rc1[0] == rc2_c[0] && rc2[0] == rc1_c[0]) {// it is a GUA4
-					ua |= 1 << (9 * rc1_c[0] + rc1_c[1]);
-					ua |= 1 << (9 * rc2_c[0] + rc2_c[1]);
-					goto guaok;
-
-				}
-				continue;
-			}
-			// check now GUA6 second type  first type excluded
-			int * cell1, *cell2;
-			if (rc1[0] == rc2_b[0]) {// select cells in same rows
-				cell1 = rc2_b;
-				cell2 = rc1_c;
-			}
-			else {
-				cell1 = rc2_c;
-				cell2 = rc1_b;
-			}
-			if (rc2[0] != cell2[0]) continue; //must be same row
-			// and must be same digit filling missing 2 cells
-			int diga = bb[9 * cell1[0] + cell2[1]], digb = bb[9 * cell2[0] + cell1[1]];
-			if (diga == digb) {//this is a GUA6 type 2
-				ua |= 1 << (9 * cell1[0] + cell1[1]);
-				ua |= 1 << (9 * cell2[0] + cell2[1]);
-				ua |= 1 << (9 * cell1[0] + cell2[1]);
-				ua |= 1 << (9 * cell2[0] + cell1[1]);
-				goto guaok;
-			}
-			continue;
-		guaok:// a ua has been seen, finish the task
-			{
-				ua |= 1 << (9 * rc1[0] + rc1[1]);
-				ua |= 1 << (9 * rc2[0] + rc2[1]);
-				ti81.setBit(C_To128[i_81]);
-				tuas46[i_81] = ua;
-			}
-		}
-	}
-}
 /*
 void GEN_BANDES_12::GenUABands12(int limsize) {
 	if (limsize > 2000)limsize = 2000;

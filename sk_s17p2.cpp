@@ -8,8 +8,6 @@
 //#define MODE66_ON
 #define GTEST17_ON 0
 #define UALIMSIZE 20
-
-
 #define UA32_10 0xffc00000
 #define UA64_54 0x3fffffffffffff
 #define TUA64_12SIZE 2000
@@ -33,16 +31,26 @@
 #include <sys/timeb.h>
 #include "main.h"  // main and main tables and basic brute force
 #include "go_17sol_tables.h"     
-#include "Zh1b2b.h"  // brute force 2 bands   
+#include "Zh1b2b.h"  // brute force 2 bands  
+//_________________ brute force handling 1 2 3 bands 
 extern ZHOU    zhou[50],zhou_i;// , zhou_i, zhou_solve;
 extern ZH_GLOBAL zh_g;
 extern SGO sgo;
-extern ZH2B zh2b[50], zh2b_i, zh2b_i1;
+
 extern ZH2B_GLOBAL   zh2b_g;
+extern ZH2B5_GLOBAL   zh2b5_g;   // 2_5 digits 2 bands
+extern ZH2B_1D_GLOBAL zh2b1d_g;  // one digit 2 bands
+
+extern ZH2B zh2b[40], zh2b_i, zh2b_i1;
+extern ZH2B5 zh2b5[10]; // solved digit per digit
 extern ZH2B_1D zh2b1d[6]; // maxi 6 guesses, one per row
-extern ZHONE zhone[50];
-extern ZHONE zhone_i;
+
 extern ZHONE_GLOBAL   zh1b_g;
+extern ZHONE zhone[20];
+extern ZHONE zhone_i;
+
+
+
 //extern GENUAS_1B genuas1b;
 
 ofstream  fout1, fout2;
@@ -59,10 +67,13 @@ int a_17_found_here;
 FINPUT finput;
 
 #include "go_17_bands.h"  
+#include "go_17_genb12.h"     
+#include "go_17sol_tables.h"
 
-STD_B416 mytband3[256];
+//STD_B3 mytband3[256];
 STD_B1_2 myband1, myband2;
 GENUAS_B12 genuasb12;
+GEN_BANDES_12 genb12;
 #include "go_17_bands_cpp.h"  
 
 #include "go_17_genb12_cpp.h"     
@@ -90,6 +101,7 @@ void Go_0() {
 	}
 	cerr << "running command " << sgo.command << endl;
 	switch (sgo.command) {
+	case 0: Go_c17_00(); break; // search one band1
 
 	case 80: Go_c17_80(); break; // enumeration test 
 	case 90: Go_c17_90(); break; // regressive test uas one band	

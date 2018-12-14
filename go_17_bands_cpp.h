@@ -123,7 +123,7 @@ uint32_t  STD_B1_2::GetMiniData(int index, uint32_t & bcells, STD_B1_2 *bb) {
 	bb->revised_g[dcol + pcol[1]] ^= digs;
 	return digs;
 }
-void STD_B1_2 ::DoExpandBand(int dband) {// find all 5 and 6 clues solutions
+void STD_B1_2::DoExpandBand(int dband) {// find all 5 and 6 clues solutions
 	struct SPB3 {// spots to find band 3 minimum valid solutions
 		// ====================== constant after initialization
 		int  possible_cells, all_previous_cells, active_cells, iuab3;
@@ -253,63 +253,149 @@ void STD_B1_2::DebugIndex(int ind6) {
 		cout << oct << w[0] << dec << "\t" << w[1] << "\t" << w[2] << endl;
 	}
 }
+void STD_B3::InitBand3(int i16, char * ze, BANDMINLEX::PERM & p) {
+	InitBand2_3(i16, ze, p);
+	memset(&guas, 0, sizeof guas);
+}
+/* GUA4 GUA6
+.x. .y.
+..y .x.
+
+.x. ... .y.   c2a=c2b c3a=c3b
+..y .x. ...   3 rows
+... .y. .x.
+
+.x. .y. .z.   2 rowssame third
+..y .z. .x.
+*/
+int STD_B3::IsGua(int i81) {
+	GEN_BANDES_12::SGUA2 w81 = genb12.tsgua2[i81];
+	int * d10 = &band0[w81.col1], *d20 = &band0[w81.col2];
+	int d1 = w81.dig1, d2 = w81.dig2,r1,r2,r3,ua,cell1,cell2;
+	for (int irow = 0; irow < 3; irow++) {
+		int c1 = d10[9 * irow], c2 = d20[9 * irow];
+		if (c1 == d1 && c2 == d2) {// gua2
+			r1 = r2 = irow;		cell1 = 9 * irow+ w81.col1;
+			cell2 = 9 * irow + w81.col2;			break;
+		}
+		if (c1 == d1) {	r1 = irow; cell1 = 9 * irow + w81.col1;		}
+		else if (c2 == d2) {r2 = irow; cell2 = 9 * irow + w81.col2;	}
+		else r3 = irow;
+	}
+	ua = (1 << cell1) | (1 << cell2);
+	if (r1 == r2) {// gua2
+		guas.ua_pair[i81] = ua;
+		int i27 = 9 * r1 + w81.i9;// index 0-26 of the pair
+		guas.pairs[i27] = i81;
+		guas.isguasocket2.setBit(i81);
+		return 1;
+	}
+	// is it a gua4 gua6 catch data to use
+	int tc[2], ntc = 0,digs=w81.digs;//colums with the 2 digits
+	int col1, col2, *p1 = &band0[9 * r1], *p2 = &band0[9 * r2];
+	for (int i = 0; i < 9; i++) if ((gangster[i] & digs) == digs)
+		tc[ntc++] = i;
+	for (int icol = 0; icol < 9; icol++, p1++, p2++) {
+		if (*p1 == d2)col1 = icol;
+		if (*p2 == d1)col2 = icol;
+	}
 
 
+	if (ntc == 2) {// gua6 first type find and store ua
+		int cella = 9 * r1 + col1, cellb = 9 * r2 + col2,
+			cellc = 9 * r3 + col1, celld = 9 * r3 + col2;
+		ua |= (1 << cella) | (1 << cellb) | (1 << cellc) | (1 << celld);
+		guas.ua_pair[i81] = ua;
+		guas.isguasocket4.setBit(i81);
+		return 4;
+	}
+	if (ntc) {
+		int c = band0[9 * r3 + tc[0]];
+		if (c != d1 && c != d2) {// gua4 
+			int cella = 9 * r1 + col1, cellb = 9 * r2 + col2;
+			ua |= (1 << cella) | (1 << cellb);
+			guas.ua_pair[i81] = ua;
+			guas.isguasocket4.setBit(i81);
+			return 2;
+		}
+	}
+	// last  is gua6 with d1,r2 ; d2,r1
+	if (band0[9 * r1 + col2] == band0[9 * r2 + col1]) {// gua6 second type
+		int cella = 9 * r1 + col1, cellb = 9 * r2 + col2,
+			cellc = 9 * r2 + col1, celld = 9 * r1 + col2;
+		ua |= (1 << cella) | (1 << cellb) | (1 << cellc) | (1 << celld);
+		guas.ua_pair[i81] = ua;
+		guas.isguasocket4.setBit(i81);
+		return 8;
+	}
+	return 0;
+}
 
+void STD_B3::PrintB3Status() {
+	cout << "band3 status" << endl;
+	for (int i = 0, ij = 0; i < 3; i++) {
+		for (int j = 0; j < 9; j++, ij++) cout << band0[ij] + 1;
+		cout << endl;
+	}
+	cout << endl<<"gua2 gua4 gua6s" << endl;
+	for (int i = 0; i < 81; i++){
+		int w = guas.ua_pair[i];
+		if (w) cout << Char27out(w) << " i81=" << i << endl;
+	}
+	cout  << "gua3s" << endl;
+	for (int i = 0; i < 81; i++) {
+		int w = guas.ua_triplet[i];
+		if (w) cout << Char27out(w) << " i81=" << i << endl;
+	}
+	char ws[129];
+	char* w3 = "123456789...---...123456789";
+	cout << w3 << w3 << w3 << endl;;
+	cout << guas.isguasocket2.String128(ws) << " sock2" << endl;
+	cout << guas.isguasocket4.String128(ws) << " sock4" << endl;
+	cout << guas.isguasocket3.String128(ws) << " sock3" << endl;
+}
 
-//================== UA collector 2 bands 
-
+//==================== sockets UA2s UA3s control
+int GENUAS_B12::CheckSocket2(int isocket) {// one of the 81 sockets
+	int dcol = isocket % 9, *cols = &gangbf[dcol];
+	return 0;
+}
 /*
-		for (int i = 0; i < 84; i++) {// find UAs 3 digits
-			if (zhone[0].Start_nFloors(floors_3d[i])) continue;
-			zhone[0].InitGuess();
-			zhone[0].Guess3();
-		}
-		if (t16_nua[i416] == zh1b_g.nua)goto ok;
-		for (int i = 0; i < 126; i++) {// find UAs 4 digits
-			if (zhone[0].Start_nFloors(floors_4d[i])) continue;
-			zhone[0].InitGuess();
-			zhone[0].Guess4();
-		}
-		for (int i = 0; i < 126; i++) {// find UAs 5 digits
-			if (zhone[0].Start_nFloors(0x1ff ^ floors_4d[i])) continue;
-			zhone[0].InitGuess();
-			if (0 && floors_4d[i] == 0113) {
-				zhone[0].ImageCandidats();
-				zh1b_g.diag = 1;
-			}
-			else zh1b_g.diag = 0;
-			zhone[0].Guess5();
-		}
-		for (int i = 0; i < 84; i++) {// find UAs 6 digits
-			if (zhone[0].Start_nFloors(0x1ff ^ floors_3d[i])) continue;
-			zhone[0].InitGuess();
-			zhone[0].Guess6();
-		}
-		if (t16_nua[i416] == zh1b_g.nua)goto ok;
+		for (int imini = 0, cell = 0; imini < 9; imini++, cell += 3) {
+			//if (imini != 7) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			int dcol = cell % 9, *cols =& bb->gangster[dcol];
+			int * minip = &ba->mini_pairs[cell];
+			int pcol[3][2] = { {1,2},{0,2},{0,1} };// cols for each relative pair
+			for (int ip = 0; ip < 3; ip++) {// 3 pairs in mini row
+				//if (ip != 2) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-		//if(1)zh1b_g.PrintTua();
+				int col1= pcol[ip][0],col2= pcol[ip][1],
+					g1= cols[col1],g2= cols[col2];
+				digp = minip[ip];
+				if ((!(g1&digp))|| (!(g2&digp)))continue;
 
-		zh1b_g.FindMissingUAs();
+				// must not be a 4 cells UA (all subsets)check pairs in band bb
+				int * bpairs = &bb->mini_pairs[dcol + ip]; //first pair
+				if ((bpairs[0] == digp) || (bpairs[9] == digp) || (bpairs[18] == digp)) continue;
 
-		if (t16_nua[i416] == zh1b_g.nua)goto ok;
-		cout << "uas final table" << endl;
-		zh1b_g.PrintTua();
-		cout << "uas known table" << endl;
-		int id = t16_indua[i416], iff = id + t16_nua[i416];
-		for (int i = id; i < iff; i++)
-			cout << i - id << "\t"
-			<< Char27out(t16_UAs[i]) << "\t" << _popcnt32(t16_UAs[i]) << endl;
-		continue;
-	ok:
-		cout << "ua count equal" << endl;
+				// this is a pair in minirow to test for UAs in band bb
+				ba->valid_pairs |= 1 << (cell+ip); //mark it for later
+
+				// ______________________need the 2 cells to assign in band bb
+				int cell1 = cell + pcol[ip][0], cell2 = cell + pcol[ip][1];
+				int dig1 = ba->band0[cell1], dig2 = ba->band0[cell2];
+				uint32_t  R0 = ((1 << cell1) | (1 << cell2));
+				w0 = R0;
+				if (ib) w0 <<= 32; // 2 cells each ua
+				BuilOldUAs(R0);
 */
 
-
 void GENUAS_B12::Initgen() {// buil start myband1 myband2
-	int diag = 1;
-	cout << "start GENUAS_B12::Initgen()" << endl;
+	int diag = 0;
+	if (diag)cout << "start GENUAS_B12::Initgen()" << endl;
 	limsize = UALIMSIZE;
+	zh2b5_g.sizef5= UALIMSIZE;
+	zh2b5_g.modevalid = 0;
 	// prepare zh2b_g___________________________________________
 	memcpy(zh2b_g.puz0, myband1.band0, sizeof myband1.band0);
 	memcpy(&zh2b_g.puz0[27], myband2.band0, sizeof myband2.band0);
@@ -320,7 +406,7 @@ void GENUAS_B12::Initgen() {// buil start myband1 myband2
 	for (int i = 0; i < 9; i++)
 		zh2b_g.gangster[i] = myband1.gangster[i] | myband2.gangster[i];
 	zh2b_g.GetBands(myband1.gangster, myband2.gangster);// set sol/pm
-	if (diag) {
+	if (0) {
 		zh2b[0].Init_std_bands();
 		zh2b[0].ImageCandidats();
 		cout << "controle de solution bande 1 2 par digit" << endl;
@@ -341,29 +427,30 @@ void GENUAS_B12::Initgen() {// buil start myband1 myband2
 
 	//___________________________ Start collection of uas
 	zh2b_g.nua = 0;// new uas 
-	if (diag)cout << "build2" << endl;
+	if (diag>1)cout << "build2" << endl;
 	for (int i = 0; i < 36; i++) {// find UAs 2 digits
+		//int fl = floors_2d[i];
+		//if(fl==050 || fl==0140  )
 		BuildFloorsAndCollectOlds(floors_2d[i]);
 	}
-	if (diag)cout << "build3" << endl;
+
+	if (diag>1)cout << "build3" << endl;
 	for (int i = 0; i < 84; i++) {// find UAs 3 digits
 		//cout << " digits 0" << oct << floors_3d[i] << dec << endl;
 		BuildFloorsAndCollectOlds(floors_3d[i]);
 	}
-	if (diag)cout << "build4" << endl;
+	if (diag>1)cout << "build4" << endl;
 	for (int i = 0; i < 126; i++) {// find UAs 3 digits
 		//cout << " digits 0" << oct << floors_3d[i] << dec << endl;
 		BuildFloorsAndCollectOlds(floors_4d[i]);
 	}
-	if (diag)cout << "build5" << endl;
+	if (diag>1)cout << "build5" << endl;
 	for (int i = 0; i < 126; i++) {// find UAs 3 digits
-		//cout << " digits 0" << oct << floors_3d[i] << dec << endl;
 		BuildFloorsAndCollectOlds(0x1ff ^ floors_4d[i]);
 	}
-
-	if (1) {
+	if (diag) {
 		cout << "final UAs added table after buid 2/5 nua="<<nua << endl;
-		for (uint32_t i = 0; i < nua; i++)
+		if (diag > 1)for (uint32_t i = 0; i < nua; i++)
 			cout << Char2Xout(tua[i])<< " " <<(tua[i]>>59) << endl;
 	}
 
@@ -371,250 +458,47 @@ void GENUAS_B12::Initgen() {// buil start myband1 myband2
 	CollectMore();
 	CollectTriplets();
 	CollectMore2minirows();
-	if (1) {
+	if (diag) {
 		cout << "final UAs added table after collect triplets  nua=" << nua << endl;
-		for (uint32_t i = 0; i < nua; i++) {
-		int ir = zh2b[0].DebugCheckUa(tua[i]);
-		cout << Char2Xout(tua[i]) << " " << (tua[i] >> 59) << " ir=" << ir << endl;
+		if (diag > 1) {
+			for (uint32_t i = 0; i < nua; i++) {
+				int ir = zh2b[0].DebugCheckUa(tua[i]);
+				cout << Char2Xout(tua[i]) << " " << (tua[i] >> 59) << " ir=" << ir << endl;
+			}
 		}
 	}
 }
-int GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
-	int diag = 2;
-	if (diag<2) {
+void GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
+	int diag = 0;
+	if (diag == 1) {
 		cout << "entry GENUAS_B12::BuildFloorsAndCollectOlds(int fl)" << endl;
-		cout << "floors 0"<<oct << fl <<dec<< endl;
+		cout << "floors 0" << oct << fl << dec << endl;
 	}
 	floors = fl;// for debugging only
-	// collect active floors and setup unsolved cells
-	BF64 solved_cells, FD[9]; solved_cells.bf.u64 = 0;
-	uint32_t nd = 0;
-	BF64 fdsw[3][9];//morphed digits puzzle/ solution rev
-	GINT zsort[9];
-	for (uint32_t idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
-		if (fl & bit) {
-			fdsw[0][nd] = zh2b_g.fd_sols[0][idig];
-			fdsw[2][nd].bf.u64 = (~fdsw[0][nd].bf.u64) & BIT_SET_2X;
-			zsort[nd].u8[0] = (uint8_t)idig;
-			FD[nd++] = zh2b_g.fd_sols[1][idig];
-		}
-		else solved_cells |= zh2b_g.fd_sols[0][idig];
-	}
-	nfloors = nd;
-	zh2b_g.ndigits = nd;
-	// apply unsolved cells and prepare sort in decreasing count of candidates
-	BF64 unsolved_cells;
-	unsolved_cells.bf.u64 = (~solved_cells.bf.u64) & BIT_SET_2X;
-	for (uint32_t i = 0; i < nd; i++) {
-		FD[i] &= unsolved_cells;
-		zsort[i].u8[1] = (uint8_t)i;
-		uint64_t nc= _popcnt64(FD[i].bf.u64);
-		if (nc <= 6) return 1;// solved digit
-		zsort[i].u16[1] = (uint16_t)nc;
-
-	}
-
-	// sort and move final to zh2b_g
-	for(uint32_t i=0;i<nd-1;i++) for(uint32_t j=i+1;j<nd;j++)
-		if (zsort[i].u16[1] < zsort[j].u16[1]) {// to reorder 
-			GINT temp = zsort[i];
-			zsort[i]= zsort[j];
-			zsort[j]=temp;
-		}
-
-	if (diag<2) {
-		cout << "status after sort" << endl;
-		for (uint32_t i = 0; i < nd; i++) {
-			GINT w = zsort[i];
-			int wio = w.u8[0] + 1, wi = w.u8[1] + 1, wn = w.u16[1];
-			cout << i << " zsort " << wio << " " << wi << " " << wn << endl;
-			cout << Char2Xout(FD[w.u8[1]].bf.u64) << endl;
-		}
-	}
-
-	zh2b[0].rows_unsolved.bf.u64=0;
-	uint64_t ru =077;
-	for (uint32_t i = 0; i < nd; i++) {// i is the sorted floor number
-		GINT w = zsort[i];
-		int d0 = w.u8[0], d1 = w.u8[1];// original digit an raw floor
-		register uint64_t R = zh2b_g.fd_sols[0][d0].bf.u64;
-		zh2b_g.fdsw[0][i].bf.u64 = R;
-		zh2b_g.fdsw[2][i].bf.u64 =( ~ R) & BIT_SET_2X;;
-		zh2b_g.fdsw[1][i] = FD[d1];
-		zh2b[0].FD[i] = FD[d1];
-		zh2b[0].rows_unsolved.bf.u64 |= ru;
-		if (i != 5) ru <<= 6; else ru <<= 8;// next digit 
-	}
-	zh2b[0].cells_unsolved= unsolved_cells;
-	memset(zh2b_g.previous_ua_status, 0,
-		sizeof zh2b_g.previous_ua_status);
+	uint64_t solved_cells= zh2b5_g.FindUAsInit(fl, 0); 
+	//cout << Char2Xout(solved_cells) << " solved cells" << endl;
+	if (!solved_cells) return;// one digit solved true
 	// now collect UAs not hit by solved cells  
-	nuaold =  0;
-	{	register uint64_t R = solved_cells.bf.u64;
-		for (uint32_t i = 0; i < nuab1b2; i++)
-			if (!(R & tuab1b2[i])) tuaold[nuaold++] = tuab1b2[i];
-		for (uint32_t i = 0; i < nua; i++)
-			if (!(R & tua[i])) tuaold[nuaold++] = tua[i];
+	nuaold = 0;
+	{	register uint64_t R = solved_cells ;
+	for (uint32_t i = 0; i < nuab1b2; i++)
+		if (!(R & tuab1b2[i])) tuaold[nuaold++] = tuab1b2[i];
+	for (uint32_t i = 0; i < nua; i++)
+		if (!(R & tua[i])) tuaold[nuaold++] = tua[i];
 	}
-	if (diag<2) {
-		cout<<Char2Xout(solved_cells.bf.u64) << " olds UAs status nuaold="<< nuaold << endl;
-		for (uint32_t i = 0; i < nuaold; i++)
-			cout << Char2Xout(tua[i]) << endl;
-	}
-	return CollectNews();
-}
-int GENUAS_B12::CollectNews() {
-	int diag = 1,nd=zh2b_g.ndigits;
-	if (nd > 5) return 0; // this code is limited to 5 digits active
-	// Find all partial solution last  digit
-	zh2b_g.myandsol = BIT_SET_2X;
-	zh2b_g.InitsGetSols(nd - 1, 0);
-	int n1 = zh2b1d[0].GetSols(077);
-	if (diag>1)cout << "return from zh2b_g.InitsGetSols n1=" << n1 << endl;
-	if (!n1)return 0;
-	if (nd == 2) {// this is the final collection status
-		EndCollectNewUAs();
-		return 1;
-	}
-	//======================================================================
-	//________________________ now 3 digits or more
-	if (diag>1)cout<< Char2Xout(zh2b_g.myandsol.bf.u64) << "andsols" << endl;
-	int i2=nd - 2;
-	BF64 andsol1= zh2b_g.myandsol;
-	zh2b_g.fdsw[1][i2] -= andsol1;
-	zh2b_g.InitsGetSols(i2, n1);
-	zh2b_g.myandsol = BIT_SET_2X;
-	int n2 = zh2b1d[0].GetSols(077);
-	if (diag>1)cout << "return from zh2b_g.InitsGetSols n2=" << n2 << endl;
-	if (!n2)return 0;
-	if (diag>1)cout << Char2Xout(zh2b_g.myandsol.bf.u64) << "andsols 2" << endl;
-	// combine sol1 and sol2 if disjoints
-	BF64 tsm2[500], tum2[500],and_d1d2; // 2 digits table
-	and_d1d2.bf.u64 = BIT_SET_2X;
-	BF64 *ts1= zh2b_g.sols_buffer,* ts2 = zh2b_g.tsolw,
-		*tu1= zh2b_g.ua_buffer,*tu2= zh2b_g.tuaw;
-	zh2b_g.tsolw = tsm2;// merged table 
-	zh2b_g.tuaw = tum2;// merged table 
-	int nm = 0;
-	for (int j1 = 0; j1 < n1; j1++) {
-		register uint64_t R1 = ts1[j1].bf.u64;
-		for (int j2 = 0; j2 < n2; j2++) {
-			register uint64_t R2 = ts2[j2].bf.u64;
-			if (R1&R2) continue; // not disjoint
-			tum2[nm]= tu1[j1]| tu2[j2];
-			R2|= R1;
-			if (diag > 1)cout << Char2Xout(R1 | R2) << " valid 1+2 n=" << nm << endl;
-			if (diag > 1)cout << Char2Xout(tum2[nm].bf.u64) << " \t and ua" << endl;
-			tsm2[nm++].bf.u64 = R2;
-			and_d1d2.bf.u64 &= R2;
-		}
-	}
-	if (i2==1) {// this is the final collection status 3 digits
-		zh2b_g.nsolw = nm;
-		EndCollectNewUAs();
-		return 1;
-	}
-	//=================================================================== 
-	//____________________more than 3 digits apply "and" in valid 1+2 to 3
-	int i3 = i2 - 1;
-	//cout << Char2Xout(and_d1d2.bf.u64) << " and_d1d2 to apply" << endl;
-	zh2b_g.fdsw[1][i3] -= and_d1d2;
-	zh2b_g.InitsGetSols(i3, n1+n2);
-	zh2b_g.myandsol = BIT_SET_2X;
-	int n3 = zh2b1d[0].GetSols(077);
-	if (!n3)return 0;
-	if (diag>1 ) {
-		cout << "return from zh2b_g.InitsGetSols n3=" << n3 
-			<<" n2="<<n2<<" n1="<<n1 << " nm=" << nm <<" digits 0"
-			<<oct<<floors<<dec<< endl;
-	}
-	// combine solm (1+2)  and sol3 if disjoints
-	BF64 tsm3[500], tum3[500], and_d1d2d3; // 3 digits table
-	and_d1d2d3.bf.u64 = BIT_SET_2X;
-	BF64 *ts31 = tsm2, *ts32 = zh2b_g.tsolw,
-		*tu31 = tum2, *tu32 = zh2b_g.tuaw;
-	zh2b_g.tsolw = tsm3;// merged table 
-	zh2b_g.tuaw = tum3;// merged table 
-	int nm3 = 0;
-	for (int j1 = 0; j1 < nm; j1++) {
-		register uint64_t R1 = ts31[j1].bf.u64;
-		for (int j2 = 0; j2 < n3; j2++) {
-			register uint64_t R2 = ts32[j2].bf.u64;
-			if (R1&R2) continue; // not disjoint
-			tum3[nm3] = tu31[j1] | tu32[j2];
-			R2 |= R1;
-			if (diag > 1) {
-				cout << Char2Xout(R1 | R2) << " valid 1+2+3 n=" << nm << endl;
-				cout << Char2Xout(tum2[nm].bf.u64) << " \t and ua" << endl;
-			}
-			tsm3[nm3++].bf.u64 = R2;
-			and_d1d2d3.bf.u64 &= R2;
-		}
-	}
-	if (i3 == 1) {// this is the final collection status 4 digits
-		zh2b_g.nsolw = nm3;
-		EndCollectNewUAs();
-		return 1;
-	}
-	//===========================================================
-	//============= final step 5 digits apply "and" in valid 1+2+3 to 4
-	int i4 = i3 - 1;
-	zh2b_g.fdsw[1][i4] -= and_d1d2d3;
-	zh2b_g.InitsGetSols(i4, n1 + n2 + n3);
-	zh2b_g.myandsol = BIT_SET_2X;
-	int n4 = zh2b1d[0].GetSols(077);
-	if (!n4)return 0;
-	if (diag > 1 ) {
-		cout << "return from zh2b_g.InitsGetSols n4=" << n4 << "\tn3=" << n3
-			<< " n2=" << n2 << " n1=" << n1 << " nm=" << nm << " digits 0"
-			<< oct << floors << dec << endl;
-		//cout << Char2Xout(and_d1d2d3.bf.u64) << " and_d1d2d3 to apply" << endl;
-	}
-	// combine solm (1+2+3)  and sol4 if disjoints
-	BF64 tsm4[500], tum4[500]; // 4 digits tables
-	BF64 *ts41 = tsm3, *ts42 = zh2b_g.tsolw,
-		*tu41 = tum3, *tu42 = zh2b_g.tuaw;
-	zh2b_g.tsolw = tsm4;// merged table
-	zh2b_g.tuaw = tum4;// merged table
-	int nm4 = 0;
-	for (int j1 = 0; j1 < nm3; j1++) {
-		register uint64_t R1 = ts41[j1].bf.u64;
-		for (int j2 = 0; j2 < n4; j2++) {
-			register uint64_t R2 = ts42[j2].bf.u64;
-			if (R1&R2) continue; // not disjoint
-			tum4[nm4] = tu41[j1] | tu42[j2];
-			tsm4[nm4++].bf.u64 = R2 | R1;
-		}
-	}
-	zh2b_g.nsolw = nm4;
-	EndCollectNewUAs();
-	return 1;
-}
-void GENUAS_B12::EndCollectNewUAs() {// UA n-1 digits in zh2b_g.tsolw
-	uint64_t tw[500];// relay table to collect new uas of this cycle
-	uint32_t nw = 0;
-	for (int itf = 0; itf < zh2b_g.nsolw; itf++) {
-		register uint64_t Rpm = zh2b_g.fdsw[1][0].bf.u64 
-			& (~ zh2b_g.tsolw[itf].bf.u64);
-		if (_popcnt64(Rpm) != 6) continue;// must be the right count 
-		if(!zh2b1d[0].IsValid(Rpm))continue;// must be a valid solution
-		// now new ua to check for subsets 
-		Rpm &= ~zh2b_g.fdsw[0][0].bf.u64; // clear valid cells not UA
-		if (!Rpm)continue; // previously searched less digits
-		Rpm |= zh2b_g.tuaw[ itf].bf.u64;// combine with previous digits
-		uint64_t cc = _popcnt64(Rpm);
+	if(diag)cout <<  " nuaold="<<nuaold << endl;
+	zh2b5_g.CollectUas5();// collect uas for this set of floors
+	//if (1) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< first test
+	// check subsets and add to main table
+	for (int i = 0; i < zh2b5_g.nuaf5; i++) {
+		ua = zh2b5_g.tuaf5->bf.u64;
+		uint64_t cc = _popcnt64(ua);
 		if (cc > limsize) continue;
-		Rpm |= cc << 59;
-		ua = Rpm;
 		if (CheckOld()) continue;// superset of a previous ua
-		if (AddUA64(tw, nw)) {// add to the cycle interim table
-		}
+		ua |= cc << 59;
+		AddUA64(tua, nua);
 	}
-	//and add all cycle uas to the final table
-	for (uint32_t i = 0; i < nw; i++) {
-		ua = tw[i];
-		AddUA64(tua, nua );
-	}
+	if (diag)cout << " nua =" << nua << endl;
 
 }
 void GENUAS_B12::BuilOldUAs( uint32_t r0) {
@@ -633,10 +517,8 @@ int GENUAS_B12::CheckOld(  ) {// ua 2x27  + 5 bit length
 	register uint64_t ua2x = ua & BIT_SET_2X;
 	for (uint32_t iua = 0; iua < nuaold; iua++) {
 		register uint64_t R = t[iua];
-		if (R < ua) {// is it subset
-			R &= BIT_SET_2X;
-			if ((R&ua2x) == R)		return 1;// we have a subset
-		}
+		R &= BIT_SET_2X;
+		if ((R&ua2x) == R)		return 1;// we have a subset
 	}
 	return 0;
 }
@@ -648,6 +530,7 @@ int GENUAS_B12::AddUA64(uint64_t * t, uint32_t & nt) {// ua 2x27  + 5 bit length
 			R &= BIT_SET_2X;
 			if ((R&ua2x) == R) return 0;// we have a subset
 		}
+		else if (R == ua) return 0;
 		else {
 			for (uint32_t jua = nt; jua > iua; jua--)t[jua] = t[jua - 1];
 			t[iua] = ua;// new inserted
@@ -801,7 +684,7 @@ void GENUAS_B12::CollectMore2minirows() {
 	for (int ib = 0; ib < 2; ib++) {
 		STD_B1_2 *ba = mybx[ib], *bb = mybx[1 - ib];
 		int vpairs = ba->valid_pairs,rrgang[9];
-		cout << Char27out(vpairs) << " vpairs status" << endl;
+		//cout << Char27out(vpairs) << " vpairs status" << endl;
 		uint32_t bcells1, bcells2;
 		//_______________________ get 2  pairs
 		for (int ibox = 0; ibox <3; ibox++) {
@@ -813,7 +696,7 @@ void GENUAS_B12::CollectMore2minirows() {
 						int cell2 = cellsInGroup[18 + ibox2][ic2];
 						if (!(vpairs & (1 << cell2))) continue;
 						// now 2 pairs index cell1 cell2 to try
-						cout << "2 pairs go ib=" << ib << " "
+						if(0)cout << "2 pairs go ib=" << ib << " "
 							<< cellsFixedData[cell1].pt << " "
 							<< cellsFixedData[cell2].pt << endl;
 						bb->InitRevisedg();
@@ -841,7 +724,7 @@ void GENUAS_B12::CollectMore2minirows() {
 							digp = ba->ReviseG_triplet(imini, ip, bb);
 							if (!digp)continue;// not a possible perm
 							digp |= ba->GetMiniData(cell1, bcells1, bb);
-							cout << "possible pair + triplet imini=" << imini
+							if(0)cout << "possible pair + triplet imini=" << imini
 								<< " ib=" << ib << " cell1=" << cell1
 								<< " digp=0" << oct << digp << dec << endl;
 							// ______________________need the cells to assign in band bb
@@ -899,7 +782,37 @@ void GENUAS_B12::CollectMore2minirows() {
 		}
 	}
 }
+//=============== ua cillector socket 2
 
+void GENUAS_B12::ProcessSocket2(int i81) {
+	GEN_BANDES_12::SGUA2 &wi81 = genb12.tsgua2[i81];
+	zh2b_g.InitGangster(genb12.gangcols, wi81.gangcols);
+
+}
+
+/*
+	//___________________________ Start collection of uas
+	zh2b_g.nua = 0;// new uas
+	if (diag)cout << "build2" << endl;
+	for (int i = 0; i < 36; i++) {// find UAs 2 digits
+		BuildFloorsAndCollectOlds(floors_2d[i]);
+	}
+	if (diag)cout << "build3" << endl;
+	for (int i = 0; i < 84; i++) {// find UAs 3 digits
+		//cout << " digits 0" << oct << floors_3d[i] << dec << endl;
+		BuildFloorsAndCollectOlds(floors_3d[i]);
+	}
+	if (diag)cout << "build4" << endl;
+	for (int i = 0; i < 126; i++) {// find UAs 3 digits
+		//cout << " digits 0" << oct << floors_3d[i] << dec << endl;
+		BuildFloorsAndCollectOlds(floors_4d[i]);
+	}
+	if (diag)cout << "build5" << endl;
+	for (int i = 0; i < 126; i++) {// find UAs 3 digits
+		//cout << " digits 0" << oct << floors_3d[i] << dec << endl;
+		BuildFloorsAndCollectOlds(0x1ff ^ floors_4d[i]);
+	}
+*/
 /* GUA4 GUA6
 .x. .y.
 ..y .x.
@@ -1308,7 +1221,44 @@ void GEN_BANDES_12::Build_GUA4_6s_Band(int iband){
 	}
 }
 
+	void Collectua2s(int i_81){//store and reset temp to ull
+		for (int i = 0; i <= limsize; i++)if (ntemp[i])
+			for (int j = 0; j < ntemp[i]; j++){
+				register uint64_t w = ztemp[i][j], nw = ~w;
+				for (int k = 0; k < ntsubsets; k++)// look for subsets 2 floors
+					if (!(tsubsets[k]&nw))goto subsetfound;
+				// morph w to a pure 54 bits field and set last bits to i_81
+				register uint64_t w1 = w & 0xffffffff;
+				w >>= 32;
+				w1 |= (w << 27);
+				w = i_81;
+				w1 |= w << 56;//
+				if (nftemp[i]<1000)
+					zftemp[i][nftemp[i]++] = w1;// store to final temporary location per size
+			subsetfound:{}
+			}
+		memset(ntemp, 0, sizeof ntemp);// interim count to 0
+	}
 
+int ZHXY27::CollectFinalua2s(uint64_t *td, int maxt,int n0){// must clear subsets
+	// done for a specific
+	int n = n0,istart;
+	for (int i = 0; i <= genuasb12.limsize; i++){
+		istart = n;
+		if (genuasb12.nftemp[i])
+			for (int j = 0; j < genuasb12.nftemp[i]; j++){
+				if (n >= maxt)return maxt;
+				register uint64_t w = genuasb12.zftemp[i][j],wn=~w;
+				for (int k = n0; k < istart; k++){// clear subsets
+					if (!(wn&td[k])) goto next;// subset found
+				}
+				td[n++] = w;
+			next:{}
+			}
+	}
+	memset(genuasb12.nftemp, 0, sizeof genuasb12.nftemp);
+	return n;
+}
 //=========================== collect UAs (still room for improvement)
 	genb12.BuildGUA4_6_();//look for possible patterns GUA4s GUA6s in bands 3
 	genb12.CollectUA2s();// collect GUA2s

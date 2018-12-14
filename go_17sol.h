@@ -269,7 +269,7 @@ struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
 	void Go();
 	void GoAddNewUas();
 	void GoAddNewGUas();
-	void InsertGua(uint64_t * tu, int & ntu, uint64_t gu);
+	void InsertGua(uint64_t * tu, uint32_t & ntu, uint64_t gu);
 	//================ debugging code
 	void PrintEndPuz();
 	int Godebug17_1(int i1);

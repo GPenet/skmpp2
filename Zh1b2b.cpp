@@ -6,16 +6,23 @@ The copyright is not specified.
 #include "main.h"   
 #include "Zh1b2b.h"
 
-ZH2B_1D zh2b1d[6]; // maxi 6 guesses, one per row
 
 //========================= global variable and working areas 
-ZH2B zh2b[50]; // must host main brute force plus minimality analysis and recursive generation
-ZH2B zh2b_i, zh2b_i1;
-ZH2B_GLOBAL   zh2b_g;   // global variables for the class GAME
-ZHONE zhone[50]; // must host main brute force plus minimality analysis and recursive generation
-ZHONE zhone_i;//================== initial for a GAME
-ZHONE_GLOBAL zh1b_g;
 extern ZH_GLOBAL zh_g;
+ZH2B zh2b[40]; //  
+ZH2B zh2b_i, zh2b_i1;
+ZH2B_GLOBAL   zh2b_g;   // 2 bands 9 digits
+ZH2B5_GLOBAL   zh2b5_g;   // 2_5 digits 2 bands
+ZH2B_1D_GLOBAL zh2b1d_g;  // one digit 2 bands
+
+ZH2B_1D zh2b1d[6]; // maxi 6 guesses, one per row
+ZH2B5 zh2b5[10]; // solved digit per digit
+
+ZHONE_GLOBAL zh1b_g;
+ZHONE zhone[20]; // one band 9 digits 
+ZHONE zhone_i; 
+
+
 #include "go_17sol_zx_UaCollector_cpp.h"
 //GENUAS_1Bx genuas1b;
 //============================= ZH_GLOBAL code
@@ -52,10 +59,35 @@ void ZH2B_GLOBAL::GetBands(int * g1, int * g2) {
 	}
 }
 
-void ZH2B_GLOBAL::Genuas2() {// 2 digits
+void ZH2B_GLOBAL::InitGangster(int * g0, int * g1) {
+	uint64_t col64 = Zhoucol;
+	col64 |= ((uint64_t)Zhoucol) << 32;
+	memcpy(fd_revised, fd_sols[1], sizeof fd_revised);
+	for (int i = 0; i < 9; i++) {
+		if (g0[i] == g1[i])continue;
+		int changes = g0[i] ^ g1[i]; // one added one cleared
+		for (int d = 0, bit = 1; d < 9; d++, bit <<= 1) {// check digits
+			if (!(changes & bit)) continue;
+			if (g0[i] & bit)fd_revised[d] &= ~col64;
+			else fd_revised[d] |= col64;
+		}
+		col64 <<= 1;
+	}
 
 }
 
+
+
+//============= zh2B code for uas 2 bands and validity 2 bands puzzle
+/*
+void ZH2b::Start_nFloors(int floors, BF64 * mypm) {
+	cells_unsolved;bf.u64=BIT_SET_2X^ solved_cells;
+	for (uint32_t i = 0; i < nd; i++) {
+		myfd[i] &= cells_unsolved;
+		if (myfd[i].count == 6)return ;
+	}
+	
+}*/
 //============================================ ZH2B code
 void ZH2B::Init_std_bands() {//init after zh1b_g getband
 	zh2b_g.ndigits = 9;
@@ -63,6 +95,13 @@ void ZH2B::Init_std_bands() {//init after zh1b_g getband
 	memcpy(FD, zh2b_g.fd_sols[1], sizeof FD);
 	memset(CompFD, 0, sizeof CompFD);
 }
+void ZH2B::Init_gang() {//init after zh1b_g getband
+	zh2b_g.ndigits = 9;
+	*this = zh2b_i;
+	memcpy(FD, zh2b_g.fd_revised, sizeof FD);
+	memset(CompFD, 0, sizeof CompFD);
+}
+
 void ZH2B::DebugSol() {//init after zh1b_g getband
 	zh2b_g.ndigits = 9;
 	memset(this, 0, sizeof this);
@@ -84,6 +123,11 @@ CompFD[I].bf.u32[J] = FD[I].bf.u32[J] = A;
 cells_unsolved.bf.u32[I] &= cl; \
 wcl[P]&= cl;wcl[Q]&= cl;wcl[R]&= cl;wcl[T]&= cl;\
 wcl[U]&= cl;wcl[V]&= cl;wcl[W]&= cl;wcl[X]&= cl;
+
+#define UPWCL5(I,P,Q,R,T)cl = ~(A & TblRowMask[S]); \
+cells_unsolved.bf.u32[I] &= cl; \
+wcl[P]&= cl;wcl[Q]&= cl;wcl[R]&= cl;wcl[T]&= cl;
+
 
 #define UPDN1(I,P,Q,R,T,U,V,W,X)Shrink = (TblShrinkMask[A & 0x1FF] | \
 TblShrinkMask[ (A>>9) & 0x1FF]<<3 | \
@@ -248,8 +292,6 @@ int ZH2B::Seta(int digit, int xcell) { // single in cell
 	Fd->Set(xcell); // restore bit for digit assigned
 	return 0;
 }
-
-
 
 int ZH2B::Update(){
 	int Shrink = 1;
@@ -1326,7 +1368,6 @@ void ZH2B::ImageCandidats() {
 	cout << endl;
 
 }
-
 int  ZH2B::DebugCheckUa(uint64_t ua) {
 	Init_std_bands();
 	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
@@ -1346,51 +1387,316 @@ int  ZH2B::DebugCheckUa(uint64_t ua) {
 	//ImageCandidats();
 	return Isvalid();
 }
+
+
+
+//============================= ZH2B5 uas guas creation
+
 /*
-	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
-	*this= zh2b_i;
-	for (int icell = 0; icell < n; icell++) {
-		int cell = t.u8[icell], digit = zh2b_g.puz0[cell];
-		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
-		Assign(digit, cell, xcell);
-		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
+process using as source
+	fd_sols[1] is pm if source=0  fd_revised if  source=1
+the solution is known and is fd_sols[0]
+all digits not in bitfield fl are known (usualy fl 2-4 digits)
+internal myfd as initial value  cleaned in zb2b_1d step by step
+
+*/
+uint64_t  ZH2B5_GLOBAL::FindUAsInit(int fl, int source) {
+	BF64 * mypm = zh2b_g.fd_sols[1];
+	if (source) mypm = zh2b_g.fd_revised;
+	uint64_t solved_cells = 0;
+	uint32_t nd = 0;
+	for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
+		if (fl & bit) {
+			fdsw[0][nd] = zh2b_g.fd_sols[0][idig];
+			fdsw[2][nd].bf.u64 = (~fdsw[0][nd].bf.u64) & BIT_SET_2X;
+			myfd[nd++] = mypm[idig];
+		}
+		else solved_cells |= zh2b_g.fd_sols[0][idig].bf.u64;
 	}
-	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | zh2b_g.Digit_cell_Assigned_init[i];
-void ZH2B::Guess2() {	// note if all 1 are settled, the puzzle is solved
-	int v = FD[0], vr = v >> 27;
-	vr = (-vr)&vr; // catch last bit
-	v &= TblRowUnsolved[vr];// unknown rows
-	//cout << Char27out(v) << " v guess2" << endl;
-	uint32_t cell;
-	while (bitscanforward(cell, v)) {// first cell
-		v ^= 1 << cell; // clear bit
-		ZH2B * mynext = this + 1; // start next guess
-		*mynext = *this;
-		mynext->Set2(cell);
-		if (mynext->UpdateDigit(0)) {// update digit 1/0
-			if (mynext->FD[0] >> 27) {
-				mynext->Guess2();
-			}
-			else {// all digit 0 solved this is a solution
-				//cout << Char27out(mynext->FD[0]) << " solution digit 0 " << endl;
-				register uint32_t w0 = mynext->FD[0] & zh1b_g.fdsw[2][0],
-					w1 = mynext->FD[1] & zh1b_g.fdsw[2][1] & mynext->cells_unsolved;
-				if ((!w0) || (!w1)) continue;
-				w0 |= (w1 | zh1b_g.previous_ua_status[0]);
-				w0 |= _popcnt32(w0) << 27;
-				if (zh1b_g.diag)
-					cout << Char27out(w0) << " ua added guess2" << endl;
-				zh1b_g.AddUA(w0);
+	ndigits = nd;
+	cells_unsolved.bf.u64 = BIT_SET_2X ^ solved_cells;
+	for (uint32_t i = 0; i < nd; i++) {
+		myfd[i] &= cells_unsolved;
+		if (myfd[i].Count() == 6)return 0;
+	}
+	return solved_cells;
+	// first cleaning return unsolved cells in bits 	
+}
+void ZH2B5_GLOBAL::CollectUas5() {
+	nuaf5 = 0;
+	memset(&zh2b5[0], 0, sizeof zh2b5[0]);
+	memcpy(zh2b5[0].FD, myfd, sizeof myfd);
+	zh2b5[0].cells_unsolved = cells_unsolved;
+	uint32_t t[5] = { 077,07777,0777777,077777777,07777777777 };
+	zh2b5[0].rows_unsolved.bf.u32[0] = t[ndigits-1];
+	//if(ndigits>4)zh2b5[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<
+	zh2b5[0].ComputeNext5();
+}
+void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
+	uint64_t ua = 0, *s0 = &fdsw[0][0].bf.u64;
+	for (uint32_t i = 0; i < ndigits; i++) {
+		uint64_t w = sol[i] & ~s0[i];// digit ua
+		if (!w) return; //a subset exists
+		ua |= w;
+	}
+	if (!modevalid) {// not gua mode must be 1n both bands
+		register uint64_t R = BIT_SET_27;
+		if (!(ua&R))return;; // ua in band2
+		R <<= 32;
+		if (!(ua&R))return; // ua in band1
+	}
+	int  cc = (int)_popcnt64(ua);
+	if (cc > sizef5) return;
+	//cout << Char2Xout(ua) << " ua found" << endl;
+	tuaf5[nuaf5++] = ua;
+}
+
+//======================== ZH2B5  2-5 digits
+int ZH2B5::Update5() {
+	if(zh2b5_g.ndigits>5)return 0; // force false if bad use
+	int Shrink = 1;
+	register int S, A;
+	register unsigned int cl, *wcl = FD[0].bf.u32;
+	while (Shrink) {
+		Shrink = 0;
+		if (!rows_unsolved.bf.u32[0])return 1;// solved
+
+		{register unsigned int  AR = rows_unsolved.bf.u32[0];// valid for digits 0,1,2,3,4
+		if (!(AR & 077))goto digit1;
+
+		//=digit 0
+		if (FD[0].bf.u32[0] == CompFD[0].bf.u32[0])goto digit0b;
+		UPDN(0, 0)	if ((AR & 7) != S) {
+			AR &= 07777777770 | S;	UPWCL5(0, 2, 4, 6, 8)
+		}
+
+	digit0b:if (FD[0].bf.u32[1] == CompFD[0].bf.u32[1])goto digit1;
+		UPDN(0, 1)	if (((AR >> 3) & 7) != S) {
+			AR &= 07777777707 | (S << 3);	UPWCL5(1, 3, 5, 7, 9)
+		}
+
+	digit1:	if (!(AR & 07700))goto digit2;
+
+		if (FD[1].bf.u32[0] == CompFD[1].bf.u32[0])goto digit1b;
+		UPDN(1, 0)	if (((AR >> 6) & 7) != S) {
+			AR &= 07777777077 | (S << 6); UPWCL5(0, 0, 4, 6, 8)
+		}
+
+	digit1b:if (FD[1].bf.u32[1] == CompFD[1].bf.u32[1])goto digit2;
+		UPDN(1, 1)		if (((AR >> 9) & 7) != S) {
+			AR &= 07777770777 | (S << 9); UPWCL5(1, 1, 5, 7, 9)
+		}
+
+	digit2:	
+		if (zh2b5_g.ndigits < 3) goto end01234;
+		if (!(AR & 0770000))goto digit3;
+
+		if (FD[2].bf.u32[0] == CompFD[2].bf.u32[0])goto digit2b;
+		UPDN(2, 0)	if (((AR >> 12) & 7) != S) {
+			AR &= 07777707777 | (S << 12);	UPWCL5(0, 0, 2, 6, 8)
+		}
+
+	digit2b:if (FD[2].bf.u32[1] == CompFD[2].bf.u32[1])goto digit3;
+		UPDN(2, 1)	if (((AR >> 15) & 7) != S) {
+			AR &= 07777077777 | (S << 15);	UPWCL5(1, 1, 3, 7, 9)
+		}
+
+	digit3: 
+		if (zh2b5_g.ndigits < 4) goto end01234;
+		if (!(AR & 077000000))goto digit4;
+
+		if (FD[3].bf.u32[0] == CompFD[3].bf.u32[0])goto digit3b;
+		UPDN(3, 0)	  if (((AR >> 18) & 7) != S) {
+			AR &= 07770777777 | (S << 18); UPWCL5(0, 0, 2, 4, 8)
+		}
+
+	digit3b:  if (FD[3].bf.u32[1] == CompFD[3].bf.u32[1])goto digit4;
+		UPDN(3, 1)if (((AR >> 21) & 7) != S) {
+			AR &= 07707777777 | (S << 21); UPWCL5(1, 1, 3, 5, 9)
+		}
+
+	digit4:if (zh2b5_g.ndigits < 5) goto end01234;
+		if (!(AR & 07700000000))goto end01234;
+
+		if (FD[4].bf.u32[0] == CompFD[4].bf.u32[0])goto digit4b;
+		UPDN(4, 0)if (((AR >> 24) & 7) != S) {
+			AR &= 07077777777 | (S << 24);  UPWCL5(0, 0, 2, 4, 6)
+		}
+
+	digit4b:if (FD[4].bf.u32[1] == CompFD[4].bf.u32[1])goto end01234;
+		UPDN(4, 1)if (((AR >> 27) & 7) != S) {
+			AR &= 0777777777 | (S << 27);  UPWCL5(1, 1, 3, 5, 7)
+		}
+
+	end01234: rows_unsolved.bf.u32[0] = AR;
+		}// end of validity for AR 01234
+
+	}// end while
+	return 1;
+}
+int ZH2B5::FullUpdate5() {
+	while (1) {
+		if (!Update5()) return 0; // game locked in update
+		if (!Unsolved_Count()) return 2;
+		if (zh2b5_g.ndigits > 3) {
+			if (ApplySingleOrEmptyCells5())	return 0; // locked 
+			if (zh2b5_g.single_applied) continue;
+		}
+		break;
+	}
+	return 1;
+}
+int ZH2B5::ApplySingleOrEmptyCells5() {
+#define NAKED5(X) Map=map[X];R2|=R1&Map;R1|=Map 
+	zh2b5_g.single_applied = 0;
+	unsigned _int64 * map = &FD[0].bf.u64;
+	unsigned _int64 unsolved = cells_unsolved.bf.u64;
+	register unsigned _int64 R2 = map[0] & map[1],
+		R1 = (map[0] | map[1]), Map;// digits 12
+	if (zh2b5_g.ndigits > 2)NAKED5(2);
+	if (zh2b5_g.ndigits > 3)NAKED5(3);
+	if (zh2b5_g.ndigits > 4)NAKED5(4);
+	if (unsolved & (~R1)) return 1; // locked
+	R1 &= ~R2;
+	R1 &= unsolved; // forget solved seen as singles
+	if (!R1) return 0;
+	zh2b5_g.single_applied = 1;
+
+	while (R1) {// usually a very small number of cells to assign
+		uint32_t  res;
+		if (!bitscanforward64(res, R1)) break;
+		uint64_t bit = (uint64_t)1 << res; // switch to the bit value
+		R1 &= ~bit;  // clear the bit
+		// call Seta(int digit, int xcell) so find digit
+		for (uint32_t idig = 0; idig < zh2b5_g.ndigits; idig++) {
+			if (map[idig] & bit) {// this is the digit
+				if (FD[idig].Off(res))  return 1; // invalid, gane locked
+				Seta5(idig, res);
+				goto nextr1;// finished for that cell
 			}
 		}
+		return 1; //conflict with a previous cell assugn
+	nextr1: {}
 	}
+	return 0;// not locked
+}
+int ZH2B5::Seta5(int digit, int xcell) { // single in cell
+	int cell = From_128_To_81[xcell],
+		block = TblBoard_Block[cell];
+	if (FD[digit].Off(xcell)) return 1; // not valid
+	//Assign(digit, cell, xcell);
+	BF64 *Fd = &FD[digit];
+	*Fd &= AssignMask_Digit[cell].u64[0];
+	int ddig = 6 * digit;
+	rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
+	cells_unsolved.Clear(xcell);
+	BF64 * RF = &FD[zh2b5_g.ndigits - 1];//last used digit
+	for (; RF >= FD; RF--)RF->Clear(xcell);
+	Fd->Set(xcell); // restore bit for digit assigned
+	return 0;
+}
+void  ZH2B5::Guess5() {// solve in table digit with lowest count
+	if (0 &&zh2b5_g.ndigits==5) {
+		cout << oct << rows_unsolved.bf.u64 << dec << " unsolved guess5" << endl;
+		ImageCandidats();
+	}
+	if (!rows_unsolved.bf.u64) {// this is a solution
+		//cout << "valid sol" << endl;
+		zh2b5_g.ValidSol5(&FD[0].bf.u64);
+		return;
+	}
+	int mincount = 100, digmin,ncount=0;
+	for (uint32_t idig = 0; idig < zh2b5_g.ndigits; idig++) {
+		int cc = FD[idig].Count();
+		if (cc < 7) continue;
+		ncount++;
+		if (cc < mincount) {
+			mincount = cc;
+			digmin = idig;
+		}
+	}
+	// put in table all digmin valid solutions 
+	BF64 tuaw[50], tsolw[50];
+	//cout << "call solve 1 digit for digitw=" << digmin+1 << endl;
+	int nuaw=zh2b1d_g.Go(zh2b5_g.fdsw[0][digmin], FD[digmin], tsolw, tuaw,
+		(rows_unsolved.bf.u32[0]) >> (6 * digmin) & 077);
+	rows_unsolved.bf.u32[0] &= ~(077 << (6 * digmin));// clear unsolved
+	if (0 &&zh2b5_g.ndigits == 5)cout << "return nuaw=" << nuaw << " digmin="<<digmin<< endl;
+	//try each digit full solution if not fully true (subset would exist)
+	for (int i = 0; i < nuaw; i++) {
+		if (0 &&zh2b5_g.ndigits == 5)cout << i << " digmin=" << digmin << endl;
+		ZH2B5 * nextz = this + 1;// open a new zh2b
+		*nextz = *this;
+		{// clear the solution for other digits
+			register uint64_t R = tsolw[i].bf.u64, nR = ~R;
+			uint64_t * RF = &nextz->FD[zh2b5_g.ndigits - 1].bf.u64;
+			for (; RF >= &nextz->FD->bf.u64; RF--)*RF &= nR;
+			nextz->FD[digmin].bf.u64 = R;// restore the solution for digit
+		}	
+		// if ncount=2 it is a solution
+		if(ncount==2)zh2b5_g.ValidSol5(&nextz->FD[0].bf.u64);
+		else nextz->ComputeNext5();// continue solving
+	}
+}
+int ZH2B5::GetAllDigits(int cell) {
+	int ir = 0, xcell = C_To128[cell];;
+	for (uint32_t i = 0; i < zh2b5_g.ndigits; i++) if (FD[i].On(xcell))ir |= (1 << i);
+	return ir;
+}
+void ZH2B5::ImageCandidats() {
+	int dig_cells[81]; for (int i = 0; i < 54; i++) dig_cells[i] = GetAllDigits(i);
+	int i, j, l, lcol[9], tcol = 0, ncand = 0;
+	cout << "PM map " << endl << endl;
+	for (i = 0; i < 9; i++) {  // attention ici i indice colonne
+		lcol[i] = 2;    // 2  mini tous chiffres imposés
+		for (j = 0; j < 6; j++) {
+			l = _popcnt32(dig_cells[9 * j + i]);
+			if (l > lcol[i])       lcol[i] = l;
+		}
+		tcol += lcol[i];
+	}
+	for (i = 0; i < 9; i++) {
+		if ((i == 3) || (i == 6))cout << "|";
+		cout << (char)('A' + i) << Blancs(lcol[i], 1);
+	}
+	cout << endl;
+	for (i = 0; i < 6; i++) { // maintenant indice ligne
+		if ((i == 3) || (i == 6)) {
+			for (int ix = 0; ix < (tcol + 10); ix++)       cout << (char)'-';
+			cout << endl;
+		}
+		for (j = 0; j < 9; j++) {
+			if ((j == 3) || (j == 6))cout << "|";
+			int cell = 9 * i + j, digs = dig_cells[cell],
+				ndigs = _popcnt32(digs);
+			ncand += ndigs;
+			for (int id = 0; id < 9; id++)if (digs & (1 << id))
+				cout << id + 1;
+			cout << Blancs(lcol[j] + 1 - ndigs, 1);
+		} // end for j
+		cout << endl;
+	} // end for i
+	cout << endl;
+
 }
 
 
-*/
-
-
 //======================== ZH2B1B one digit 2 bands table of solutions
+
+int ZH2B_1D_GLOBAL::Go(BF64 & sol, BF64 & fde, BF64 *tsol, BF64 *tua,int ru) {
+	tsolw = tsol;
+	tuaw = tua;
+	mysol = sol;
+	nsolw = 0;
+	myandsol.bf.u64 = BIT_SET_2X;
+	zh2b1d[0].FD = fde;
+	zh2b1d[0].CompFD.bf.u64 = 0;
+	//cout << Char2Xout(mysol.bf.u64) << "valid sol for digit" << endl;
+	if (0 &&zh2b5_g.ndigits == 5)
+		cout << Char2Xout(fde.bf.u64) << " start go ru=0" << oct << ru << dec << endl;
+	zh2b1d[0].ComputeNext(ru);
+	return nsolw;
+}
 int ZH2B_1D::GetSols( int ru) {
 	CompFD.bf.u64 = 0;
 	FD = zh2b_g.mystart &zh2b_g.myandsol;
@@ -1400,16 +1706,24 @@ int ZH2B_1D::GetSols( int ru) {
 	ComputeNext(ru);
 	return zh2b_g.nsolw;
 }
+int ZH2B_1D::GetAllSols(BF64 & fde, int ru, BF64 & fdsol) {
+	zh2b_g.mystart = FD = fde;
+	zh2b_g.mysol = fdsol;
+	zh2b_g.myandsol.bf.u64 = BIT_SET_2X;
+	zh2b_g.nsolw = 0;
+	ComputeNext(ru);
+	return zh2b_g.nsolw;
+}
 void ZH2B_1D::ComputeNext(int ru) {
+	//if(zh2b5_g.ndigits==5)
+	// cout << Char2Xout(FD.bf.u64) << " cnext ru=0" << oct << ru << dec << endl;
 	if (Update(ru)) {
 		if (!ru) {// new sol put it in table
-			if (FD != zh2b_g.mysol) {
-				//cout << Char2Xout(FD.bf.u64) << "store it" << endl;
-				//cout << Char2Xout((FD - zh2b_g.mysol).bf.u64) << "store ua" << endl;
-
-				zh2b_g.tuaw[zh2b_g.nsolw] = FD- zh2b_g.mysol;// partial ua
-				zh2b_g.tsolw[zh2b_g.nsolw++] = FD;// partial solution
-				zh2b_g.myandsol &= FD;
+			//cout << Char2Xout(FD.bf.u64) << "found in zh2b1d" << endl;
+			if (FD != zh2b1d_g.mysol) {
+				//cout  << "store it" << endl;
+				zh2b1d_g.tuaw[zh2b1d_g.nsolw] = FD- zh2b1d_g.mysol;// partial ua
+				zh2b1d_g.tsolw[zh2b1d_g.nsolw++] = FD;// partial solution
 			}
 		}
 		else Guess(ru);
@@ -1457,6 +1771,8 @@ int ZH2B_1D::Update(int &ru) {// solve as much as possible
 }
 void ZH2B_1D::Guess(int ru) {//
 	//cout << Char2Xout(FD.bf.u64) << "guess ru =0" << oct << ru << dec << endl;
+	//cout << Char2Xout(FD.bf.u64) << " guess ru=0" << oct << ru << dec << endl;
+
 	int dcell = 0,v,ruw=ru;
 	{
 		register uint32_t a = FD.bf.u32[0], b = FD.bf.u32[1];
@@ -1470,7 +1786,7 @@ void ZH2B_1D::Guess(int ru) {//
 		dcell = 27;
 		ruw=ru >> 3;
 		ruw = (-ruw) &ruw;
-		v = FD.bf.u32[0] & TblRowUnsolved[ruw];// unknown in last unknown row
+		v = FD.bf.u32[1] & TblRowUnsolved[ruw];// unknown in last unknown row
 		ruw <<= 3; //relocate bit to the right place
 	}
 gogo:;
@@ -1485,7 +1801,6 @@ gogo:;
 		mynext->ComputeNext(ru);
 	}
 }
-
 int ZH2B_1D::IsValid(uint64_t v) {
 	CompFD.bf.u64 = 0;
 	FD.bf.u64 = v;
@@ -1493,10 +1808,10 @@ int ZH2B_1D::IsValid(uint64_t v) {
 	return Update(ru);
 }
 
+//=================================== ZHONE
 
-
-//================================================
 //===================== now ZHone code 
+
 ZHONE_GLOBAL::ZHONE_GLOBAL() {
 	zsol  = 0; // no solution unless required buy the user
 }

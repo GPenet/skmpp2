@@ -49,28 +49,32 @@ second 4x6bits for digits 5-8
 
 */
 struct ZH2B_GLOBAL { // global variables for the game table
-	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
-		rdigit, nctlg, go_back,
-		test;
 	uint64_t * digsols; // pointer to solution grid per digit
 	uint64_t ua_ret;
 	BF64 val_init1_81, pairs, triplets;
 	BF64 Digit_cell_Assigned_init[9];
-	char * zsol, out54[55];// bands 12 in output mode
-	char zdebug[82];
+	BF64 fd_sols[2][9];//start puzzle/ solution
+	BF64 fd_revised[9];// gangster revision of the solution
+	BF64 fdsw[3][9];//morphed digits puzzle/ solution rev
+	BF64  myfd[9], cells_unsolved;// final Init5 status
+	BF64 previous_ua_status[6];// index 0 is for digit 3
+	uint64_t *tuaold, tua;// old floors uas /  fresh uas
+	// ==============bands sols handling
+	// sols collection ZH2B_1D
+	BF64 *tsolw, *tuaw; // belong to the caller 
+	BF64 mysol, mystart, andsol, myandsol;
+	BF64 sols_buffer[3000], ua_buffer[3000];
 
+	uint32_t nuaold, nua, ndigits;;
+	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
+		rdigit, nctlg, go_back,
+		test;
 	// band UA collection active band pointers and UA table to build
 	int modeguess;
-	uint64_t *tuaold,tua;// old floors uas /  fresh uas
-	uint32_t nuaold, nua,ndigits;;
 	int  puz0[54], gangster[9];
-	BF64 fd_sols[2][9];//start puzzle/ solution
-	BF64 fdsw[3][9];//morphed digits puzzle/ solution rev
-	BF64 previous_ua_status[6];// index 0 is for digit 3
-	// bands sols handling
-	BF64 sols_buffer[3000], ua_buffer[3000],*tsolw,*tuaw,
-		mysol,mystart,andsol,myandsol;
 	int nsolw;
+	char * zsol, out54[55];// bands 12 in output mode
+	char zdebug[82];
 
 	ZH2B_GLOBAL();
 	inline void InitsGetSols(int i,int ibuf){
@@ -80,8 +84,7 @@ struct ZH2B_GLOBAL { // global variables for the game table
 		tuaw = &ua_buffer[ibuf];
 	}
 	void GetBands(int * g1, int * g2);
-	void Genuas2();
-
+	void InitGangster(int * g0, int * g1);//common ot both GUA2s GUA3s
 };
 /* 2 BF 128 per digit
 	equivalent to F and Fcomp in Zhou
@@ -91,8 +94,8 @@ struct ZH2B_GLOBAL { // global variables for the game table
 // class encapsulating the brute force 
 struct ZH2B {// size 32 bytes 
 	BF64 FD[9], CompFD[9], cells_unsolved, rows_unsolved;
-
 	void Init_std_bands(); // after getbands in zh2b_g
+	void Init_gang(); // after getbands in zh2b_g
 	void DebugSol();
 
 
@@ -125,50 +128,81 @@ struct ZH2B {// size 32 bytes
 	int Seta(int digit, int xcell);
 	inline int SetaC(int digit, int cell) { return Seta(digit, C_To128[cell]); }
 	inline void ClearCandidate(int dig, int xcell) { FD[dig].Clear(xcell); }
-	int GetFreeDigits(int cell);
 	int GetAllDigits(int cell);
 	void Debug(int all=0);
 	void DebugDigit(int digit);
 	void ImageCandidats();
 	int DebugCheckUa(uint64_t ua);
-
-
-
-// located in go_17sol_zx_UaCollector_cpp  generation of UAs on a multi floor
-	void Guess2(); void GenUas3();
-//void InitGenUas(int * zpuz);
-	//void InitUas2();
-	//void GenUas(int floors);
-	//void GenUasBands12LessMinirow(int floors, int c1, int c2, int c3);
-	//void GenUAs2_minirowpair(int c1, int c2, int dig1, int dig2, int i_81);
-	//int GenMoreGUAs2(int c1, int c2, int dig1, int dig2);
-	//void GenUAs2_minirowtriplet(int c1, int c2, int c3, int dig1, int dig2, int dig3, int i_81);
-	//void GenUas2();		void GenUas4();	void GenUas5();
-	//int Update2();	int Update3();	int Update4();	int Update5();
-	//	void Guess3();	void Guess4();	void Guess5();
-	//void CollectFinal(TUA64 & mt);
-	//int CollectFinalua2s(uint64_t *td, int maxt, int n0);
-	//void DebugFloors(int nfloors, int all = 0);
-
-
-
 	
-	/*
- 
- // located in zh_uacollector.cpp  generation of UAs on a multi floor
-	void InitGenUas(char * zpuz);
-	void GenUas( int floors);
-	void GenUasBands12(int floors);
-	void GenUas6();
-	void GenMinirows2();
-	void GenMinirows3();
-	int Update6();
-	void Guess6();
-	void Guess5_4();
-	void Guess5_3();
-	int CollectFinal(BF128 *td,int &lim10);
-   */
  };
+
+/* ZH2B5 same as ZH2B, limited to 5 digits
+dedicated to UAs generati
+*/
+struct ZH2B5_GLOBAL { // global variables for the game table
+	BF64 fdsw[3][5];//morphed digits puzzle/ solution rev
+	BF64  myfd[5], cells_unsolved;// final Init5 status
+	BF64 tuaf5[300];// collect uas for the cycle
+	int nuaf5, // nuas found in the cycle
+		sizef5,// size limit for new uas
+		single_applied, // loop control in full update
+	    modevalid;// 0 base 1 gua mode
+	uint32_t  ndigits,filler;
+	//_______________________
+	uint64_t FindUAsInit(int fl, int source = 1);
+	void CollectUas5();//FindInit done
+	void ValidSol5(uint64_t * sol);
+};
+
+struct ZH2B5 {
+	BF64 FD[5], CompFD[5], cells_unsolved, rows_unsolved;
+	inline void Assign(int digit, int cell, int xcell) {
+		FD[digit] &= AssignMask_Digit[cell].u64[0];
+		cells_unsolved.Clear(xcell);
+		int ddig = 6 * digit;
+		rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
+	}
+	inline int Unsolved_Count() { return rows_unsolved.Count(); }
+	//char * SetKnown(char * zs);
+	int GetAllDigits(int cell);
+	void ImageCandidats();
+
+	//================== UA collector GUA mode
+	int Update5();
+	int FullUpdate5();
+	int ApplySingleOrEmptyCells5();
+	int Seta5(int digit, int xcell);
+	inline void ComputeNext5() { if (FullUpdate5())Guess5(); }
+	void Guess5();
+
+
+
+};
+
+/*ZH2B_1D class to solve one digit 2 bands
+all valid solutions except the "all true" are stored in table
+the table is supplied by the caller 
+*/
+struct ZH2B_1D_GLOBAL {
+	BF64 *tsolw, *tuaw; // belong to the caller 
+	BF64 mysol,  myandsol;
+	int nsolw;
+	//___________________
+	int Go(BF64 & sol, BF64 & fde, BF64 *tsol, BF64 *tua,int ru);
+};
+struct ZH2B_1D {// size 32 bytes
+	BF64 FD, CompFD;
+	int GetSols(int ru);
+	int GetAllSols(BF64 & fde, int ru, BF64 & fdsol);
+	inline void Assign(int cell) {
+		FD &= AssignMask_Digit[cell].u64[0];
+	}
+	void ComputeNext(int ru);
+	int Update(int &ru);
+	void Guess(int ru);
+	int IsValid(uint64_t v);
+};
+
  /* class encapsulating the brute force for one band
 initial is a solved band giving the clues in each column
 each bit map per digit is a 32 bit field
@@ -207,17 +241,7 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	void PrintTua();
 	void FindMissingUAs();
 };
-struct ZH2B_1D {// size 32 bytes
-	BF64 FD, CompFD; 
-	int GetSols( int ru);
-	inline void Assign( int cell) {
-		FD &= AssignMask_Digit[cell].u64[0];
-	}
-	void ComputeNext(int ru);
-	int Update(int &ru);
-	void Guess(int ru);
-	int IsValid(uint64_t v);
-};
+
 
  struct ZHONE {
 	 uint32_t FD[9], CompFD[9], cells_unsolved;

@@ -37,13 +37,38 @@ struct STD_B1_2 :STD_B416 {
 	void DebugIndex(int ind6 = 0);
 };
 
+struct STD_B3 :STD_B416 {// data specific to bands 3
+	struct GUAs {
+		BF128 isguasocket2, isguasocket3, isguasocket4;// active i81
+		int pairs[27] ;// gua2s i81 and bf of active
+		int triplet[9] ;//same gua3s
+		int ua_pair[81], ua_triplet[81]; // storing ua bitfields
+	}guas;
+	//int ti81_pairs[27];// index to the relevant tsgua2 (genb12)
+	//int ti81_triplet[9];//index to the relevant tsgua3
+	//BF128 tbands_UA4_6s, tbands_pairs, tbands_triplets;
+	//int tuas46[81];
+	//GINT64 tipairs[96];
+	//int tindexUA4s[96];// pair id_81 (3x27) to bit 0_8 in the band
+	//int tindextriplets[96];// triplet id_81 (3x27) to bit 0_8 in the band
+	//_______________________
+	void InitBand3(int i16, char * ze, BANDMINLEX::PERM & p);
+	int IsGua(int i81);
+	void PrintB3Status();
+};
+
 //================== UA collector 2 bands 
 
 struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force 
 	int dig_cells[9][9],
 		gangbf[9],// columns for band 3 in bit field
+		revised_gangbf[9],// same revised UA2s UA3s ***
+		mini_digs[9], mini_pairs[27], // UA2s UA3  ***
+		valid_pairs, //  27 bits valid sockets UA2s ***
 		nfloors, limstep,map[9], cptdebug;
-	//=============== uas collector cluding bands
+	BF128 valid_sockets;
+
+	//=============== uas collector 
 	int limsize,floors;
 	uint64_t  tuaold[1000],// previous non hit uas infinal table of uas for bands 1+2
 		tua[TUA64_12SIZE],// 
@@ -54,11 +79,12 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	STD_B1_2 *ba, *bb;
 	int ib,digp;
 	uint64_t w0, ua;
+	//______________________ small tasks to handle sockets UA2s UA3s
+	// doing things similar to uamore in one band 
+	int CheckSocket2(int isocket);
 	//_____________________ functions collect UAs bands 1+2
 	void Initgen();
-	int BuildFloorsAndCollectOlds(int fl);
-	int CollectNews();
-	void EndCollectNewUAs();
+	void BuildFloorsAndCollectOlds(int fl);
 	int AddUA64(uint64_t * t, uint32_t & nt);
 	inline void AddUA(uint64_t v) {
 		ua = v; AddUA64(tua, nua);
@@ -71,6 +97,8 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	void CollectTriplets();
 	void CollectMore2minirows();
 	//_____________________ functions collect UA2s UAs3 socket 
+
+	void ProcessSocket2(int i81);
 
 	//	genb12.CollectUA2s();// collect GUA2s
 	//	genb12.CollectUA3s();//collect GUA3s
