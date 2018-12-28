@@ -27,6 +27,19 @@ void STD_B416::InitC10(int i) {
 void STD_B416::InitG12(int i) {
 	GetBandTable(i); SetGangster(); GetUAs();
 }
+void STD_B416::MorphUas() {
+	// morph all uas
+	for (uint32_t i = 0; i < nua; i++) {
+		register int uao = tua[i], ua = 0;
+		register uint32_t cc;
+		while (bitscanforward(cc, uao)) {
+			uao ^= 1 << cc;
+			ua |= 1 << map[cc];
+		}
+		tua[i] = ua;
+	}
+}
+
 void STD_B416::InitBand2_3(int i16, char * ze, BANDMINLEX::PERM & p) {
 	i416 = i16;
 	dband = 27;
@@ -253,9 +266,29 @@ void STD_B1_2::DebugIndex(int ind6) {
 		cout << oct << w[0] << dec << "\t" << w[1] << "\t" << w[2] << endl;
 	}
 }
+void STD_B1_2::PrintShortStatus() {
+	cout  << band << "\t\tband main data i0-415="<<i416 << endl;
+	cout << "nua    \t" << nua << endl;
+	cout << "n5     \t" << n5 << endl;
+	cout << "n6     \t" << n6 << endl;
+	cout << "n5 ind \t" << nind[0] << endl;
+	cout << "n6 ind \t" << nind[1] << endl;
+
+}
+
 void STD_B3::InitBand3(int i16, char * ze, BANDMINLEX::PERM & p) {
 	InitBand2_3(i16, ze, p);
 	memset(&guas, 0, sizeof guas);
+	// setup minirows bit fields
+	for (int i = 0; i < 9; i++) {
+		minirows_bf[i] = 0;
+		int * p = &band0[3 * i];
+		for (int j = 0; j < 3; j++)
+			minirows_bf[i] |= 1 << p[j];
+	}
+	//cout << band << " " << oct << minirows_bf[0]
+	//	<< " " << minirows_bf[1] << dec << endl;
+
 }
 /* GUA4 GUA6
 .x. .y.
@@ -288,6 +321,7 @@ int STD_B3::IsGua(int i81) {
 		int i27 = 9 * r1 + w81.i9;// index 0-26 of the pair
 		guas.pairs[i27] = i81;
 		guas.isguasocket2.setBit(i81);
+		guas.ua2_imini[i81] = 3 * r1 + w81.i9 / 3;
 		return 1;
 	}
 	// is it a gua4 gua6 catch data to use
@@ -327,6 +361,30 @@ int STD_B3::IsGua(int i81) {
 		guas.ua_pair[i81] = ua;
 		guas.isguasocket4.setBit(i81);
 		return 8;
+	}
+	return 0;
+}
+int STD_B3::IsGua3(int i81) {
+	GEN_BANDES_12::SGUA3 w81 = genb12.tsgua3[i81];
+	int *g = genb12.gang27,//the gangster 
+		d1= g[w81.id1],d2= g[w81.id2],d3= g[w81.id3];
+	//catch the minirow pattern needed
+	int bita = 1 << d1, bitb = 1 << d2, bitc = 1 << d3;
+	int mrpat = bita | bitb | bitc;
+	int stack = w81.col1 / 3;
+	// minirow of the stack must fit
+	for (int irow = 0; irow < 3; irow++) {
+		int imini = stack + 3 * irow, 
+			*pmini = &band0[9 * irow + 3 * stack];
+		if (mrpat != minirows_bf[imini])continue;
+		// possible triplet, must be right digit in right place
+		if (d1 != pmini[0] || d2 != pmini[1])continue;
+		guas.triplet[imini] = i81;// valid triplet
+		guas.triplet_imini[i81] = imini;// valid triplet
+		guas.isguasocket3.setBit(i81);
+		guas.ua_triplet[i81] = 7 << (3 * imini);
+		guas.ua3_imini[i81] = imini;
+		return 1;
 	}
 	return 0;
 }
@@ -391,7 +449,7 @@ int GENUAS_B12::CheckSocket2(int isocket) {// one of the 81 sockets
 */
 
 void GENUAS_B12::Initgen() {// buil start myband1 myband2
-	int diag = 0;
+	int diag =0;
 	if (diag)cout << "start GENUAS_B12::Initgen()" << endl;
 	limsize = UALIMSIZE;
 	zh2b5_g.sizef5= UALIMSIZE;
@@ -460,7 +518,7 @@ void GENUAS_B12::Initgen() {// buil start myband1 myband2
 	CollectMore2minirows();
 	if (diag) {
 		cout << "final UAs added table after collect triplets  nua=" << nua << endl;
-		if (diag > 1) {
+		if ( diag > 1) {
 			for (uint32_t i = 0; i < nua; i++) {
 				int ir = zh2b[0].DebugCheckUa(tua[i]);
 				cout << Char2Xout(tua[i]) << " " << (tua[i] >> 59) << " ir=" << ir << endl;
@@ -470,6 +528,11 @@ void GENUAS_B12::Initgen() {// buil start myband1 myband2
 }
 void GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
 	int diag = 0;
+	if (0 && fl == 0352) {
+		diag = 1;
+		zh2b5_g.diag = 1;
+	}
+	else zh2b5_g.diag = 0;
 	if (diag == 1) {
 		cout << "entry GENUAS_B12::BuildFloorsAndCollectOlds(int fl)" << endl;
 		cout << "floors 0" << oct << fl << dec << endl;
@@ -491,12 +554,15 @@ void GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
 	//if (1) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< first test
 	// check subsets and add to main table
 	for (int i = 0; i < zh2b5_g.nuaf5; i++) {
-		ua = zh2b5_g.tuaf5->bf.u64;
+		ua = zh2b5_g.tuaf5[i].bf.u64;
 		uint64_t cc = _popcnt64(ua);
 		if (cc > limsize) continue;
+		if (diag) cout << Char2Xout(ua) << "verif cc=" << cc << endl;
 		if (CheckOld()) continue;// superset of a previous ua
+		if (diag)cout << "goadd nua="<<nua << endl;
 		ua |= cc << 59;
 		AddUA64(tua, nua);
+		if (diag)cout << "retour add nua=" << nua << endl;
 	}
 	if (diag)cout << " nua =" << nua << endl;
 

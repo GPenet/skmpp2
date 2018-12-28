@@ -23,7 +23,7 @@ void ZHOU::InitBand3PerDigit(int * grid0b3){
 	}
 	zh_g.digsols = zh2b_g.digsols;// catch pointer to solution per digit
 }
-int ZHOU::PartialInitSearch17(int * t, int n){
+int ZHOU::PartialInitSearch17(uint32_t * t, int n){
 	memset(zh_g.Digit_cell_Assigned, 0, sizeof zh_g.Digit_cell_Assigned);
 	*this=zhou_i;
 	for (int icell = 0; icell<n; icell++)   {

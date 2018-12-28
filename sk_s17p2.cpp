@@ -6,7 +6,7 @@
 */
 
 //#define MODE66_ON
-#define GTEST17_ON 0
+#define GTEST17_ON 1
 #define UALIMSIZE 20
 #define UA32_10 0xffc00000
 #define UA64_54 0x3fffffffffffff
@@ -15,16 +15,8 @@
 
 #define MAXN5 51520
 #define MAXN6 237770 
-#define MAXNIND6 12080
 
 #define G17MORESIZE 64
-
-#define G17CHKX 256
-#define G17CHKY 256
-
-#define G17BLOCSUA 30
-#define G17BLOCGSUA 30
-//#define TUA64_12SIZE 5000 in go_17sol_tables.h
 
 #define G17TESTUASGUASLIMITS 1
 
@@ -55,7 +47,7 @@ extern ZHONE zhone_i;
 
 ofstream  fout1, fout2;
 #include "go_17sol.h"    
-XY_EXPAND xye6[2][MAXN6], xye5[2][MAXN5];
+//XY_EXPAND xye6[2][MAXN6], xye5[2][MAXN5];
 G17XY g17xy;
 G17CHUNK g17chunk;
 G17INDEXSTEP indexstep;

@@ -265,13 +265,14 @@ struct ZHOU{// size 32 bytes
 #endif
 
 #ifdef SEARCH17SOL
+	// see go_17sol_zx_cpp_h
 	inline void ComputeNextB3() { if (FullUpdate())GuessB3(); }
 	inline void ComputeNextB12() { if (FullUpdate())GuessB12(); }
 	// located in go_17sol_bs.cpp 
 	void SetUab3();
 	void SetUab12();
 	void InitBand3PerDigit(int * grid0b3);
-	int PartialInitSearch17(int * t, int n);
+	int PartialInitSearch17(uint32_t * t, int n);
 	int EndInitSearch17(ZHOU & o, int * t, int n);
 	void GuessB12();// band 3 filled false, look for a valid band 1+2 
 	void GuessB3();// band 12 is a valid sub puzzle find small ua
@@ -315,33 +316,5 @@ struct ZHOU{// size 32 bytes
 	int CollectFinal(BF128 *td,int &lim10);
    */
  };
- /* see Zh1b2b.h
- struct ZHBAND{// similar to  ZHOU for one band
-	 int FD[9][2],cells_unsolved;
-	 int ndigits, index, unsolved_digits;
-
-	 inline void Copy(ZHBAND & o);
-	 inline void Assign(int digit, int cell, int xcell);
-	 int Update();
-	 char * SetKnown(char * zs);
-	 int ApplySingleOrEmptyCells_Band3();
-	 int ApplySingleOrEmptyCells_B12();
-	 int ApplySingleOrEmptyCells();
-	 int FullUpdate();
-	 void SetaCom(int digit, int cell);
-	 void Setcell(int cell);
-	 inline void GuessBivalueInCell(BF128 & wc);
-	 inline int GuessHiddenBivalue();
-	 int GuessHiddenTriplet();
-	 void Guess();
-	 inline void ComputeNext(){	 if (FullUpdate())	 Guess();	 	 }
-	 int GetFreeDigits_c(int cell){ return GetFreeDigits(C_To128[cell]); }
-	 int GetFreeDigits(int xcell);
-	 int GetSolvedDigitForCell(int cell);
-	 // debugging code or print code
-	 void Debug(int all = 0);
-	 int GetAllDigits(int cell);
-	 void ImageCandidats();
-	 void ImageCandidats_b3();
- };*/
+ 
  

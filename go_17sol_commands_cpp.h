@@ -3,7 +3,28 @@
 char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
 
-
+char * libs_c17_00_cpt2g[20] = {
+	"bands1+2 processed entries M10",//0
+	"chunks processed entries gochunk",//1
+	"XY count",//2
+	"XY passing UA filter",//3
+	"XY brute force",//4
+	"valid brute force",//5
+	"more sockets2 searched ",//6
+	"more sockets2 searched found",//7
+	"valid b12 after build active",//8
+	"band3 active after build active",//9
+	"",//10
+	"",//11
+	"",//12
+	"",//13
+	"",//14
+	"",//15
+	"",//16
+	"",//17
+	"",//18
+	"control valib12// band3",//19
+};
 void Go_c17_00( ) {// p2 process
 	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;
 	cout << sgo.vx[0] << " -v0- band 0_415" << endl;
@@ -27,6 +48,11 @@ void Go_c17_00( ) {// p2 process
 	memset(p_cpt2g, 0, sizeof p_cpt2g);// used in debugging sequences only
 	genb12.Start(0);
 	genb12.NewBand1(sgo.vx[0]);
+	cout << "print final stats" << endl;
+	for (int i = 0; i < 10; i++) {
+		if (!p_cpt2g[i])continue;
+		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
+	}
 }
 //=========================== regressive tests
 

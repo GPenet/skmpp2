@@ -6,7 +6,10 @@ The copyright is not specified.
 #include "main.h"   
 #include "Zh1b2b.h"
 
-
+// row unsolved 6 bits per digit lookup table
+uint64_t zh2b_t_runsolved[9] = { 077 , 077 << 6 , 077 << 12 , 077 << 18 , 077 << 24 ,
+(uint64_t)077 << 32 ,(uint64_t)077 << 38 ,(uint64_t)077 << 44 ,(uint64_t)077 << 50 };
+uint32_t zh2b_t_runsolvedshift[9] = { 0,6,12,18,24,32,38,44,50 };
 //========================= global variable and working areas 
 extern ZH_GLOBAL zh_g;
 ZH2B zh2b[40]; //  
@@ -60,22 +63,36 @@ void ZH2B_GLOBAL::GetBands(int * g1, int * g2) {
 }
 
 void ZH2B_GLOBAL::InitGangster(int * g0, int * g1) {
-	uint64_t col64 = Zhoucol;
-	col64 |= ((uint64_t)Zhoucol) << 32;
+	uint64_t col64 = (uint64_t)Zhoucol | ((uint64_t)Zhoucol << 32);
 	memcpy(fd_revised, fd_sols[1], sizeof fd_revised);
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 9; i++, col64 <<= 1) {
 		if (g0[i] == g1[i])continue;
 		int changes = g0[i] ^ g1[i]; // one added one cleared
 		for (int d = 0, bit = 1; d < 9; d++, bit <<= 1) {// check digits
 			if (!(changes & bit)) continue;
 			if (g0[i] & bit)fd_revised[d] &= ~col64;
 			else fd_revised[d] |= col64;
-		}
-		col64 <<= 1;
+		}		
 	}
-
 }
 
+uint64_t ZH2B_GLOBAL::MoreSocket2(int * g0, int * g1, 
+	uint32_t * tclues, int nclues,int socket_digs) {
+	ua_ret=0;
+	socket_digits = socket_digs;
+	InitGangster(g0, g1);
+	zh2b[0].Init_gang();
+	zh2b[0].InitTclues(tclues, nclues);
+	return zh2b[0].MoreSocket2();
+}
+uint64_t ZH2B_GLOBAL::BuildUaret(BF64 * wsol) {
+	ua_ret = 0;
+	for (int i = 0; i < 9; i++) {
+		BF64 w = wsol[i] - fd_sols[0][i];
+		ua_ret |= w.bf.u64;
+	}
+	return ua_ret;
+}
 
 
 //============= zh2B code for uas 2 bands and validity 2 bands puzzle
@@ -95,7 +112,7 @@ void ZH2B::Init_std_bands() {//init after zh1b_g getband
 	memcpy(FD, zh2b_g.fd_sols[1], sizeof FD);
 	memset(CompFD, 0, sizeof CompFD);
 }
-void ZH2B::Init_gang() {//init after zh1b_g getband
+void ZH2B::Init_gang() {//init after zh1b_g InitGangster
 	zh2b_g.ndigits = 9;
 	*this = zh2b_i;
 	memcpy(FD, zh2b_g.fd_revised, sizeof FD);
@@ -146,6 +163,8 @@ CompFD[I] = FD[I] = A
 
 
 //================================ZH2B code
+
+/*
 int ZH2B::Isvalid() { // usually after init 2 steps
 	zh2b_g.nsol = zh2b_g.go_back = zh2b_g.modeguess = 0;
 	zh2b_g.lim = 1; ComputeNext();  return zh2b_g.nsol;
@@ -153,107 +172,134 @@ int ZH2B::Isvalid() { // usually after init 2 steps
 int ZH2B::IsvalidNoUpdate(int debug ) { // usually after init 2 steps
 	zh2b_g.nsol = zh2b_g.go_back = 0; zh2b_g.lim = 1; Guess();  return zh2b_g.nsol;
 }
+
 uint64_t ZH2B::GetUa() {
 	zh2b_g.ua_ret = 0;
 	zh2b_g.go_back = 0;
 	ComputeNextFalse();
 	return zh2b_g.ua_ret;
 }
+*/
 
-void ZH2B::Init_x_(GINT64 t, int n) {// cells must be 0-53
+void ZH2B::InitTclues(uint32_t * tclues, int n) {
 	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
-	*this= zh2b_i;
 	for (int icell = 0; icell < n; icell++) {
-		int cell = t.u8[icell], digit = zh2b_g.puz0[cell];
+		int cell = tclues[icell], digit = zh2b_g.puz0[cell];
 		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
 		Assign(digit, cell, xcell);
 		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
 	}
-	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | zh2b_g.Digit_cell_Assigned_init[i];
+	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | 
+		zh2b_g.Digit_cell_Assigned_init[i];
 }
-uint64_t ZH2B::Init_y_(GINT64 t, int n) {// cells must be 0-53
-	BF64 Digit_cell_Assigned[9];
-	memcpy(Digit_cell_Assigned, zh2b_g.Digit_cell_Assigned_init, sizeof Digit_cell_Assigned);
-	Copy(zh2b_i1);
-	for (int icell = 0; icell < n; icell++) {
-		int cell = t.u8[icell], digit = zh2b_g.puz0[cell];
-		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
-//		if (FD[digit].Off(xcell))  return 1;// no check for not valid entry
-		Assign(digit, cell, xcell);
-		Digit_cell_Assigned[digit].Set(xcell);
+/* this is for a valid bands 1+2
+   check missing socket2 and catch ua if small enough
+*/
+uint64_t ZH2B::MoreSocket2() {
+	if (FullUpdate()) {
+		if (rows_unsolved.isEmpty()) {// solved false at the very beginning
+			//cout << "immediate ua" << endl;
+			return zh2b_g.BuildUaret(FD);
+		}
+		//cout << "start image after initial update" << endl;
+		//ImageCandidats();
+		zh2b_g.ntsd = 0;// put in table digits not socket 
+		BitsInTable32(zh2b_g.tsd, zh2b_g.ntsd, 0xff ^ zh2b_g.socket_digits);
+		//try to combine 2 such digits "true " in priority 
+		for (zh2b_g.isd1 = 0; zh2b_g.isd1 < zh2b_g.ntsd; zh2b_g.isd1++) {
+			if ((this + 1)->MoreSocket2First())return zh2b_g.ua_ret;
+		}
+		//cout << " nothing one digit true" << endl;
+		return 0;
 	}
-	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | Digit_cell_Assigned[i];
-	//	Debug(1);
+	//cout << "invalid initial game" << endl;	// only possible a 9 digits ua ??? is it worth to look for it
+	return 0;
+}
+uint64_t ZH2B::MoreSocket2First() {// apply digit pointed by zh2b_g.isd1
+	*this = *(this - 1);
+	int digit = zh2b_g.tsd[zh2b_g.isd1];
+	FD[digit] = zh2b_g.fd_sols[0][digit];
+	if (FullUpdate()) {
+		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
+			//cout << "solved first " << endl;
+				return zh2b_g.BuildUaret(FD);
+		}
+		//cout << "image après premier et update digit="<<digit+1 << endl;
+		//ImageCandidats();
+		for (int isd2 = zh2b_g.isd1 + 1; isd2 < zh2b_g.ntsd; isd2++) {// second digit 
+			int digit = zh2b_g.tsd[isd2];
+			if (FD[digit].Count() == 6) continue;
+			if ((this + 1)->MoreSocket2Second(digit))return zh2b_g.ua_ret;
+		}
+		//cout << "first nothing with 2 digits" << endl;
+	}
+	//cout << " invalid after first" << endl;
+	return 0;
+}
+uint64_t ZH2B::MoreSocket2Second(int digit) {// apply digit pointed by isd2
+	*this = *(this - 1);
+	FD[digit] = zh2b_g.fd_sols[0][digit];
+	//cout << "solve  2 digit= " <<digit+1 << endl;
+	if (FullUpdate()) {
+		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
+			//cout << "rows_unsolved.isEmpty()" << endl;
+			return zh2b_g.BuildUaret(FD);
+		}
+		//cout << "more not solved after 2 digits " << endl;
+		//ImageCandidats();
+		return 0;
+	}
+// see on examples what to do
+	//cout << "illegal after digit 2 " << endl;
+	return 0;
+}
+uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
+	//cout << "entry validxy" << endl;
 	zh2b_g.ua_ret = 0;
-	zh2b_g.go_back = 0;
-	//ImageCandidats();
-	// find now first UA false or return 0
-	ComputeNextFalse();
-	return zh2b_g.ua_ret;
-}
-void ZH2B::Init_xy(ZH2B & o, GINT64 tx, int nx, GINT64 ty, int ny) {// cells must be 0-53
-	memset(zh2b_g.Digit_cell_Assigned_init, 0,
-		sizeof zh2b_g.Digit_cell_Assigned_init);
-	*this = o;
-	for (int icell = 0; icell < nx; icell++) {
-		int cell = tx.u8[icell], digit = zh2b_g.puz0[cell];
-		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
-		Assign(digit, cell, xcell);
-		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
-	}
-	for (int icell = 0; icell < ny; icell++) {
-		int cell = ty.u8[icell], digit = zh2b_g.puz0[cell];
-		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
-		Assign(digit, cell, xcell);
-		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
-	}
-	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | zh2b_g.Digit_cell_Assigned_init[i];
-}
-
-uint64_t ZH2B::CheckUa(uint64_t ua) {// purely debugging sequence
-	BF64 Digit_cell_Assigned[9];
-	memset(Digit_cell_Assigned, 0,
-		sizeof Digit_cell_Assigned);
-	Copy(zh2b_i);
-	{
-		register uint64_t R = 1;
-		for (int cell = 0; cell < 54; cell++) {
-			if (!(R&ua)) {// assign all cells not UA
-				int digit = zh2b_g.puz0[cell], xcell = C_To128[cell];
-				Assign(digit, cell, xcell);
-				Digit_cell_Assigned[digit].Set(xcell);
+	Init_std_bands();
+	InitTclues(tclues, n);
+	if (FullUpdate()) {
+		if (rows_unsolved.isEmpty()) return 0;// solved 
+		// try worse case true
+		//ImageCandidats();
+		int maxcount = 0, digmax = 10;
+		for (uint32_t idig = 0; idig < 9; idig++) {
+			int cc = FD[idig].Count();
+			if (cc < 7) continue;// solved
+			if (cc > maxcount) {
+				maxcount = cc;
+				digmax = idig;
 			}
 		}
+		BF64 mysol = zh2b_g.fd_sols[0][digmax];
+		//cout << Char2Xout(mysol.bf.u64) << "try true for digmax=" << digmax + 1 << endl;
+		(this + 1)->GuessGo(digmax, mysol, 0);
+		if (zh2b_g.ua_ret) return zh2b_g.ua_ret;// return if  ua found
+		// if does not work, suspect valid try best case first
+		GuessValidB12_best(0);//look for a ua starting with lowest number fo candidates
 	}
-	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | Digit_cell_Assigned[i];
-	zh2b_g.ua_ret = 0;
-	zh2b_g.go_back = 0;
-	ComputeNextFalse();
+	//if(!zh2b_g.ua_ret)ImageCandidats();
 	return zh2b_g.ua_ret;
 }
 
-#define NAKED(X) 	Map=map[X];R3|=R2&Map;R2|=R1&Map;R1|=Map;
-#define NAKED2(X) 	Map=map[X];R4|=R3&Map;R3|=R2&Map;R2|=R1&Map;R1|=Map;
-
-int ZH2B::ApplySingleOrEmptyCells() {
+int ZH2B::ApplySingleOrEmptyCells() {// only singles
 	zh2b_g.single_applied = 0;
 	unsigned _int64 * map = &FD[0].bf.u64;
 	unsigned _int64 unsolved = cells_unsolved.bf.u64;
 	register unsigned _int64 R2 = map[0] & map[1],
-		R1 = (map[0] | map[1]), Map, R3, R4;// digits 12
-	Map = map[2]; R3 = R2 & Map; R2 |= R1 & Map; R1 |= Map;
-	Map = map[3]; R4 = R3 & Map; R3 |= R2 & Map; R2 |= R1 & Map; R1 |= Map;
-	//NAKED(3)	looking for triplets in the same search
-	NAKED2(4)	NAKED2(5)	NAKED2(6)	NAKED2(7)	NAKED2(8) // digits 3-9
-		if (unsolved & (~R1)) return 1; // locked
+		R1 = (map[0] | map[1]), Map;// digits 12
+	Map = map[2]; R2 |= R1 & Map; R1 |= Map;
+	Map = map[3];  R2 |= R1 & Map; R1 |= Map;
+	Map = map[4];  R2 |= R1 & Map; R1 |= Map;
+	Map = map[5];  R2 |= R1 & Map; R1 |= Map;
+	Map = map[6];  R2 |= R1 & Map; R1 |= Map;
+	Map = map[7];  R2 |= R1 & Map; R1 |= Map;
+	Map = map[8];  R2 |= R1 & Map; R1 |= Map;
+	if (unsolved & (~R1)) return 1; // locked
 	R1 &= ~R2;
 	R1 &= unsolved; // forget solved seen as singles
 	if (R1) zh2b_g.single_applied = 1;
-	else {
-		zh2b_g.pairs.bf.u64 = R2 & (~R3);
-		zh2b_g.triplets.bf.u64 = R3 & (~R4);
-		return 0;
-	}
+	else return 0;
 	while (R1) {// usually a very small number of cells to assign
 		unsigned long res;
 		if (!_BitScanForward64(&res, R1)) break;
@@ -460,827 +506,185 @@ int ZH2B::FullUpdateNoGuess() {// called if partial puzzle, just solve
 	}
 	return 1;
 }
-void ZH2B::Guess() {
-	if (rows_unsolved.isEmpty()) {
-		if (zh2b_g.zsol && (!zh2b_g.nsol)) SetKnown(zh2b_g.zsol);// store the first solution
-		zh2b_g.nsol++;
-		if (zh2b_g.nsol > zh2b_g.lim) zh2b_g.go_back = 1;
-		return;
-	}
 
-	unsigned long res;
-	int ndig = 2;
-	register unsigned _int64 R3 = zh2b_g.pairs.bf.u64;
-	if (_BitScanForward64(&res, R3))goto gogo; // first pair is ok to go
-	ndig = 3;
-	R3 = zh2b_g.triplets.bf.u64;
-	if (_BitScanForward64(&res, R3))goto gogo; // first triplet is ok to go
-	R3 = cells_unsolved.bf.u64;
-	if (!_BitScanForward64(&res, R3))return; // should not be
-	ndig = 6;//unknown, do it  always in a new area
-
-
-gogo:
-	int cell = From_128_To_81[res];
-	for (int idig = 0; idig < 9; idig++)
-		if (FD[idig].On(res)) {
-			ZH2B * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->Seta(idig, res);
-			mynext->ComputeNext();
+void ZH2B::GuessValidB12(int index) {// first ok then false best count
+	// choose digit with lowest count of unsolved
+	//cout << "guess index=" << index << endl;
+	//if (index) ImageCandidats();
+	int maxcount = 0, digmax=10 ;
+	for (uint32_t idig = 0; idig < 9; idig++) {
+		int cc = FD[idig].Count();
+		if (cc < 7) continue;// solved
+		if (cc > maxcount) {
+			maxcount = cc;
+			digmax = idig;
 		}
-}
-/*
-
-the guess sequence should select first cells in the "X" band
-or may be the "x" band shloud be always band 1 to have cell order in the same
-sequence as the guess priority
-Target, be forced to refresh the table as much as possble for a new "x"
-*/
-void ZH2B::GuessFalse() {// try to find a false
-	if (rows_unsolved.isEmpty()) {// stop at first false
-		register uint64_t Rs = 0, Rw;
+	}
+	if (digmax > 8) {// we have a ua if it's not the solution grid	
+		zh2b_g.ua_ret=0;
 		for (int i = 0; i < 9; i++) {
-			Rw = FD[i].bf.u64;
-			Rw &= (~zh2b_g.digsols[i]);
-			Rs |= Rw;
-		}
-		if (Rs) {
-			zh2b_g.ua_ret = Rs;
-			zh2b_g.go_back = 1;
+			BF64 w = FD[i] - zh2b_g.fd_sols[0][i];
+			zh2b_g.ua_ret |= w.bf.u64;
 		}
 		return;
 	}
-	unsigned long res;
-	register unsigned _int64 R3 = zh2b_g.pairs.bf.u64;
-	if (_BitScanForward64(&res, R3))goto gogo; // first pair is ok to go
-	R3 = zh2b_g.triplets.bf.u64;
-	if (_BitScanForward64(&res, R3))goto gogo; // first triplet is ok to go
-	R3 = cells_unsolved.bf.u64;
-	if (!_BitScanForward64(&res, R3))return; // should not be
-
-gogo:
-	int cell = From_128_To_81[res], digit = zh2b_g.puz0[cell];
-	if (FD[digit].On(res)) {// start with the good digit if possible
-		ZH2B * mynext = this + 1; // start next guess
-		mynext->Copy(*this);
-		mynext->Seta(digit, res);
-		mynext->ComputeNextFalse();
-		if (zh2b_g.go_back) return;
+	BF64 mysol = zh2b_g.fd_sols[0][digmax];
+	if ((FD[digmax] & mysol) == mysol) {// if all true possible try it
+		//cout <<Char2Xout(mysol.bf.u64)<< "try true for digmax=" << digmax + 1 << endl;
+		(this + 1)->GuessGo(digmax, mysol,index);
+		if (zh2b_g.ua_ret) return;// return if  ua found
 	}
 
-	for (int idig = 0; idig < 9; idig++) {
-		if (idig == digit)continue;// finish with the ok
-		if (FD[idig].On(res)) {// one valid digit		
-			if (0)cout << "brute force guess  cell " << cell
-				<< " dig" << idig + 1 << endl;
-			ZH2B * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->Seta(idig, res);
-			mynext->ComputeNextFalse();
-			if (zh2b_g.go_back) return;
+
+	// try false decreasing count of true  
+	int r_unsolved =  (rows_unsolved.bf.u64>> zh2b_t_runsolvedshift[digmax]) & 077;
+	BF64 tuaw[500], tsolw[500];
+
+	//cout << "call solve 1 digit for digitw=" << digmax+1 << endl;
+	int nuaw = zh2b1d_g.Go(mysol, FD[digmax], tsolw, tuaw, r_unsolved);
+	//cout << "index=" << index << " nfalse perms=" << nuaw << endl;
+
+	//sort increasing order of tuawcount
+	uint64_t tsort[50],temp;
+	for (int i = 0; i < nuaw; i++) {
+		tsort[i] = _popcnt64(tuaw[i].bf.u64)<<16;
+		tsort[i] |= i;
+	}
+	for(int i=0;i<nuaw-1;i++)for(int j=i+1;j<nuaw;j++)
+		if (tsort[i] > tsort[j]) {
+			temp = tsort[i]; tsort[i] = tsort[j]; tsort[j] = temp;
 		}
-	}
-}
-/*
-//==================== ZH2B ua collector code
-void ZH2B::InitGenUas(int * zpuz) {// so far nothing to do except checking the index (done)
-	genuasb12.Initgen(zpuz);// maximum is the size -1 for ztemp ; ntemp
-	zh2b_g.test = 0;
-}
-void ZH2B::InitUas2() { genuasb12.InitUas2(); }
-void ZH2B::CollectFinal(TUA64 & mt) {
-	register uint64_t b1 = 0xffffffff, b2 = b1 << 32;
-	for (int i = 4; i <= genuasb12.limsize; i++) {
-		if (genuasb12.nftemp[i])
-			for (int j = 0; j < genuasb12.nftemp[i]; j++) {
-				register uint64_t w = genuasb12.zftemp[i][j];
-				if ((!(w&b1)) || (!(w&b2)))continue;	// forget if purely band 1 or band2
-				mt.wt = w;
-				mt.AddUA();
-			}
-	}
-}
-int ZH2B::CollectFinalua2s(uint64_t *td, int maxt, int n0) {// must clear subsets
-	// done for a specific
-	int n = n0, istart;
-	for (int i = 0; i <= genuasb12.limsize; i++) {
-		istart = n;
-		if (genuasb12.nftemp[i])
-			for (int j = 0; j < genuasb12.nftemp[i]; j++) {
-				if (n >= maxt)return maxt;
-				register uint64_t w = genuasb12.zftemp[i][j], wn = ~w;
-				for (int k = n0; k < istart; k++) {// clear subsets
-					if (!(wn&td[k])) goto next;// subset found
-				}
-				td[n++] = w;
-			next: {}
-			}
-	}
-	memset(genuasb12.nftemp, 0, sizeof genuasb12.nftemp);
-	return n;
-}
-void ZH2B::GenUas(int floors) {
-	genuasb12.OrderFloors(floors);// first relabel sol to have floors as lower digits
-	// active floors are now located in pseudo digits 0-...
-	// init brute force for active floors to empty
-	__stosq(&FD[0].bf.u64, 0, 9); __stosq(&CompFD[0].bf.u64, 0, 9);
-	cells_unsolved = 0;
-	for (int i = 0; i < genuasb12.nfloors; i++) {
-		cells_unsolved |= genuasb12.ordered_digsols[i];
-		FD[i] = genuasb12.ordered_digpm[i];
-	}
-	rows_unsolved.bf.u64 = maskLSB[6 * genuasb12.nfloors].u64[0];
-	for (int i = 0; i < genuasb12.nfloors; i++) {
-		FD[i] &= cells_unsolved;
-	}
-}
-void ZH2B::GenUAs2_minirowpair(int col1, int col2, int dig1, int dig2, int i_81) {
-	genuasb12.OrderFloorsPair(dig1, dig2);
-	__stosq(&FD[0].bf.u64, 0, 9); __stosq(&CompFD[0].bf.u64, 0, 9);
-	cells_unsolved = 0;
-	for (int i = 0; i < 2; i++) {
-		cells_unsolved |= genuasb12.ordered_digsols[i];
-		FD[i] = genuasb12.ordered_digpm[i];
-	}
-	rows_unsolved.bf.u64 = maskLSB[6 * 2].u64[0];
-	for (int i = 0; i < 2; i++) {
-		FD[i] &= cells_unsolved;
-	}
-	// add and assign now col1 dig1 and col2 dig2
-	// where was col1 dig2 and col2 dig1
-	unsigned long cx1, cx2;
-	{
-		register uint64_t RC = Zhoucol, RU = cells_unsolved.bf.u64;
-		RC |= RC << 32; // now col1 six rows
-		register uint64_t Rw = (RC << col1)&RU;// one cell
-		_BitScanForward64(&cx1, Rw); // now cx1 is the cell mode 2x32
-		Rw = (RC << col2)&RU;
-		Rw &= FD[0].bf.u64; // must be one cell and only one
-		_BitScanForward64(&cx2, Rw); // now cx1 is the cell mode 2x32
-	}
-
-	FD[0] |= (uint64_t)1 << cx1;
-	FD[1] |= (uint64_t)1 << cx2;
-	Seta(0, cx1); Seta(1, cx2);
-	if (Update2()) {
-		if (!(rows_unsolved.bf.u32[0] & 07777)) {
-			register uint64_t w0 = ~genuasb12.ordered_digsols[0];
-			w0 &= FD[0].bf.u64;
-			register uint64_t w1 = ~genuasb12.ordered_digsols[1];
-			w1 &= FD[1].bf.u64;
-			w0 |= w1;
-			int n = (int)_popcnt64(w0);
-			genuasb12.AddUA(w0, n);
-		}
-		else Guess2();
-		genuasb12.Collectua2s(i_81);
-	}
-	//=====================================================
-	//cout << "try now 3 digits" << endl;
-	int flbase = (1 << dig1) | (1 << dig2);
-	genuasb12.nfloors = 3;
-	genuasb12.uax[3] = 0;
-	{// next step is to try all 2+1 digits patterns
-		for (int i = 0; i < 84; i++) {// try now all 4 digits
-			int fl = floors_3d[i], last_floor = fl ^ flbase;
-			unsigned long  diglast;
-			if (_popcnt32(last_floor) != 1)continue;// must include the 2 digits in minirow
-			genuasb12.BuildTsubsets3(i);
-			//cout << "try digits 0" << oct << fl << dec << endl;
-			_BitScanForward(&diglast, last_floor);// this is the last dig
-			genuasb12.ordered_digpm[2] = genuasb12.digpm[diglast];
-			genuasb12.ordered_digsols[2] = genuasb12.digsols[diglast];
-
-
-			__stosq(&FD[0].bf.u64, 0, 9); __stosq(&CompFD[0].bf.u64, 0, 9);
-			cells_unsolved = 0;
-			for (int i = 0; i < 3; i++) {
-				cells_unsolved |= genuasb12.ordered_digsols[i];
-				FD[i] = genuasb12.ordered_digpm[i];
-			}
-			rows_unsolved.bf.u64 = maskLSB[6 * 3].u64[0];
-			for (int i = 0; i < 3; i++) 	FD[i] &= cells_unsolved;
-			//ImageCandidats();
-			// add and assign now col1 dig1 and col2 dig2
-			// where was col1 dig2/diglast and col2 dig1/diglast
-			unsigned long cx1, cx2;
-			{
-				register uint64_t RC = Zhoucol, RU = cells_unsolved.bf.u64;
-				RC |= RC << 32; // now col1 six rows
-				register uint64_t Rw1 = (RC << col1)&RU;
-				ZH2B rzh = *this;
-				while (_BitScanForward64(&cx1, Rw1)) { // can be one or 2 cells
-					Rw1 ^= (uint64_t)1 << cx1;// clear bit
-					register uint64_t Rw2 = (RC << col2)&RU;
-					while (_BitScanForward64(&cx2, Rw2)) {// can be one or 2 cells
-						Rw2 ^= (uint64_t)1 << cx2; // clear bit
-						Copy(rzh);// restaure the start point
-						FD[0] |= (uint64_t)1 << cx1;
-						FD[1] |= (uint64_t)1 << cx2;
-						Seta(0, cx1); Seta(1, cx2);
-						if (Update3()) Guess3();
-						genuasb12.Collectua2s(i_81);
-					}
-				}
-			}
-		}
-		//==================================
-		genuasb12.nfloors = 4;
-		genuasb12.uax[4] = 0;
-		{// next step is to try all 2+1 digits patterns
-			for (int i = 0; i < 126; i++) {// try now all 4 digits
-				int fl = floors_4d[i], last_floors = fl ^ flbase;
-				unsigned long dig3, dig4;
-				if (_popcnt32(last_floors) != 2)continue;// must include the 2 digits in minirow
-				genuasb12.BuildTsubsets4(i);
-				//cout << "try digits 0" << oct << fl << dec << endl;
-				_BitScanForward(&dig3, last_floors);
-				genuasb12.ordered_digpm[2] = genuasb12.digpm[dig3];
-				genuasb12.ordered_digsols[2] = genuasb12.digsols[dig3];
-				last_floors ^= 1 << dig3;
-				_BitScanForward(&dig4, last_floors);
-				genuasb12.ordered_digpm[3] = genuasb12.digpm[dig4];
-				genuasb12.ordered_digsols[3] = genuasb12.digsols[dig4];
-
-				__stosq(&FD[0].bf.u64, 0, 9); __stosq(&CompFD[0].bf.u64, 0, 9);
-				cells_unsolved = 0;
-				for (int i = 0; i < 4; i++) {
-					cells_unsolved |= genuasb12.ordered_digsols[i];
-					FD[i] = genuasb12.ordered_digpm[i];
-				}
-				rows_unsolved.bf.u64 = maskLSB[6 * 4].u64[0];
-				for (int i = 0; i < 4; i++) 	FD[i] &= cells_unsolved;
-				//ImageCandidats();
-				// add and assign now col1 dig1 and col2 dig2
-				// where was col1 dig2/diglast and col2 dig1/diglast
-				unsigned long cx1, cx2;
-				{
-					register uint64_t RC = Zhoucol, RU = cells_unsolved.bf.u64;
-					RC |= RC << 32; // now col1 six rows
-					register uint64_t Rw1 = (RC << col1)&RU;
-					ZH2B rzh = *this;
-					while (_BitScanForward64(&cx1, Rw1)) { // can be one or 2 cells
-						Rw1 ^= (uint64_t)1 << cx1;// clear bit
-						register uint64_t Rw2 = (RC << col2)&RU;
-						while (_BitScanForward64(&cx2, Rw2)) {// can be one or 2 cells
-							Rw2 ^= (uint64_t)1 << cx2;// clear bit
-							Copy(rzh);// restaure the start point
-							FD[0] |= (uint64_t)1 << cx1;
-							FD[1] |= (uint64_t)1 << cx2;
-							Seta(0, cx1); Seta(1, cx2);
-							if (Update4()) Guess4();
-							genuasb12.Collectua2s(i_81);
-						}
-					}
-				}
-			}
-		}
-	}
-
-}
-void ZH2B::GenUAs2_minirowtriplet(int col1, int col2, int col3, int dig1, int dig2, int dig3, int i_81) {
-	int flbase = (1 << dig1) | (1 << dig2) | (1 << dig3);
-	for (int i = 0; i < 84; i++) if (floors_3d[i] == flbase) {
-		genuasb12.BuildTsubsets3(i); break;
-	}
-	genuasb12.OrderFloorsTriplet(dig1, dig2, dig3);
-	__stosq(&FD[0].bf.u64, 0, 9); __stosq(&CompFD[0].bf.u64, 0, 9);
-	cells_unsolved = 0;
-	for (int i = 0; i < 3; i++) {
-		cells_unsolved |= genuasb12.ordered_digsols[i];
-		FD[i] = genuasb12.ordered_digpm[i];
-	}
-	rows_unsolved.bf.u64 = maskLSB[6 * 3].u64[0];
-	for (int i = 0; i < 3; i++) {
-		FD[i] &= cells_unsolved;
-	}
-	unsigned long cx1, cx2, cx3;
-	{
-		register uint64_t RC = Zhoucol, RU = cells_unsolved.bf.u64;
-		RC |= RC << 32; // now col1 six rows
-		register uint64_t Rw1 = (RC << col1)&RU;
-		ZH2B rzh = *this;
-		while (_BitScanForward64(&cx1, Rw1)) { // can be one or 2 cells
-			Rw1 ^= (uint64_t)1 << cx1;// clear bit
-			register uint64_t Rw2 = (RC << col2)&RU;
-			while (_BitScanForward64(&cx2, Rw2)) {// can be one or 2 cells
-				Rw2 ^= (uint64_t)1 << cx2;// clear bit
-				register uint64_t Rw3 = (RC << col3)&RU;
-				while (_BitScanForward64(&cx3, Rw3)) {
-					Rw3 ^= (uint64_t)1 << cx3;// clear bit
-					Copy(rzh);// restaure the start point
-					FD[0] |= (uint64_t)1 << cx1;
-					FD[1] |= (uint64_t)1 << cx2;
-					FD[2] |= (uint64_t)1 << cx3;
-					Seta(0, cx1); Seta(1, cx2); Seta(2, cx3);
-					if (Update3()) {
-						if (!(rows_unsolved.bf.u32[0] & 0777777)) {
-							register uint64_t w0 = ~genuasb12.ordered_digsols[0];
-							w0 &= FD[0].bf.u64;
-							register uint64_t w1 = ~genuasb12.ordered_digsols[1];
-							w1 &= FD[1].bf.u64;
-							w0 |= w1;
-							w1 = ~genuasb12.ordered_digsols[2];
-							w1 &= FD[2].bf.u64;
-							w0 |= w1;
-							int n = (int)_popcnt64(w0);
-							genuasb12.AddUA(w0, n);
-						}
-						else Guess3();
-					}
-				}
-			}
-		}
-	}
-	genuasb12.Collectua2s(i_81);
-	//================================ try one more floor
-	//if (1) return;
-	genuasb12.nfloors = 4;
-	genuasb12.uax[4] = 0;
-	{// next step is to try all 2+1 digits patterns
-		for (int i = 0; i < 126; i++) {// try now all 4 digits
-			int fl = floors_4d[i], last_floors = fl ^ flbase;
-			unsigned long dig4;
-			if (_popcnt32(last_floors) != 1)continue;// must include the 2 digits in minirow
-			genuasb12.BuildTsubsets4(i);
-			//cout << "try digits 0" << oct << fl << dec << endl;
-			_BitScanForward(&dig4, last_floors);
-			genuasb12.ordered_digpm[3] = genuasb12.digpm[dig4];
-			genuasb12.ordered_digsols[3] = genuasb12.digsols[dig4];
-
-			__stosq(&FD[0].bf.u64, 0, 9); __stosq(&CompFD[0].bf.u64, 0, 9);
-			cells_unsolved = 0;
-			for (int i = 0; i < 4; i++) {
-				cells_unsolved |= genuasb12.ordered_digsols[i];
-				FD[i] = genuasb12.ordered_digpm[i];
-			}
-			rows_unsolved.bf.u64 = maskLSB[6 * 4].u64[0];
-			for (int i = 0; i < 4; i++) 	FD[i] &= cells_unsolved;
-			//ImageCandidats();
-			unsigned long cx1, cx2, cx3;
-			{
-				register uint64_t RC = Zhoucol, RU = cells_unsolved.bf.u64;
-				RC |= RC << 32; // now col1 six rows
-				register uint64_t Rw1 = (RC << col1) &RU;
-				ZH2B rzh = *this;
-				while (_BitScanForward64(&cx1, Rw1)) {
-					Rw1 ^= (uint64_t)1 << cx1;// clear bit
-					register uint64_t Rw2 = (RC << col2) & RU;
-					while (_BitScanForward64(&cx2, Rw2)) {
-						Rw2 ^= (uint64_t)1 << cx2; // clear bit
-						register uint64_t Rw3 = (RC << col3) & RU;
-						while (_BitScanForward64(&cx3, Rw3)) {
-							Rw3 ^= (uint64_t)1 << cx3;// clear bit
-							Copy(rzh);// restaure the start point
-							FD[0] |= (uint64_t)1 << cx1;
-							FD[1] |= (uint64_t)1 << cx2;
-							FD[2] |= (uint64_t)1 << cx3;
-							Seta(0, cx1); Seta(1, cx2); Seta(2, cx3);
-							if (Update4()) {
-								if (!(rows_unsolved.bf.u32[0] & 077777777)) {
-									register uint64_t w1 = ~genuasb12.ordered_digsols[3];
-									w1 &= FD[3].bf.u64;
-									if (w1) {
-										register uint64_t w0 = ~genuasb12.ordered_digsols[0];
-										w0 &= FD[0].bf.u64;
-										w0 |= w1;
-										w1 = ~genuasb12.ordered_digsols[1];
-										w1 &= FD[1].bf.u64;
-										w0 |= w1;
-										w1 = ~genuasb12.ordered_digsols[2];
-										w1 &= FD[2].bf.u64;
-										w0 |= w1;
-										int n = (int)_popcnt64(w0);
-										genuasb12.AddUA(w0, n);
-									}
-								}
-								else Guess4();
-							}
-						}
-
-					}
-				}
-			}
-			genuasb12.Collectua2s(i_81);
-		}
-	}
-
-}
-
-void ZH2B::GenUas2() {
-	genuasb12.ntsubsets = 0;
-	genuasb12.uax[2] = 0;
-	for (int i = 0; i < 36; i++) {// try now all 2 digits
-		GenUas(floors_2d[i]);
-		if (Update2()) {
-			if (!(rows_unsolved.bf.u32[0] & 077)) continue;
-			Guess2();
-			genuasb12.Collect(genuasb12.u2d[i], genuasb12.nnu2[i]);
-		}
-	}
-
-}
-void ZH2B::GenUas3() {
-	genuasb12.uax[3] = 0;
-	for (int i = 0; i < 84; i++) {// try now all 2 digits
-		genuasb12.BuildTsubsets3(i);
-		GenUas(floors_3d[i]);
-		if (Update3()) {
-			if (!(rows_unsolved.bf.u32[0] & 0777777)) continue;
-			Guess3();
-			genuasb12.Collect(genuasb12.u3d[i], genuasb12.nnu3[i]);
-
-		}
-	}
-}
-void ZH2B::GenUas4() {
-	genuasb12.uax[4] = 0;
-	for (int i = 0; i < 126; i++) {// try now all 4 digits
-		genuasb12.BuildTsubsets4(i);
-		GenUas(floors_4d[i]);
-		if (Update4()) {
-			if (!(rows_unsolved.bf.u32[0] & 077777777)) continue;
-			Guess4();
-			genuasb12.Collect(genuasb12.u4d[i], genuasb12.nnu4[i]);
-		}
-	}
-}
-void ZH2B::GenUas5() {
-	zh2b_g.test = 0;
-	genuasb12.limstep = 16;
-	for (int i = 0; i < 126; i++) {// try now all54 digits
-		int floors = 0x1ff ^ floors_4d[i];
-		genuasb12.BuildTsubsets5(floors);
-		GenUas(floors);
-		Update5();			Guess5();
-		genuasb12.Collect5();
+	// and now go till a ua is seen or no solution 
+	for (int i = 0; i < nuaw; i++) {
+		int iw = tsort[i] & 0xff;// 
+		//cout << Char2Xout(tsolw[iw].bf.u64) << "try false digmax=" << digmax + 1 << endl;
+		(this+1)->GuessGo(digmax, tsolw[iw],index);
+		if (zh2b_g.ua_ret) return;// return if  ua found
 	}
 }
 
-#define UPWCL2(I,P)cl = ~(A & TblRowMask[S]);\
-cells_unsolved.bf.u32[I] &= cl;\
-wcl[P]&= cl;
-
-#define UPWCL3(I,P,Q)cl = ~(A & TblRowMask[S]);\
-cells_unsolved.bf.u32[I] &= cl;\
-wcl[P]&= cl;wcl[Q]&= cl;
-
-#define UPWCL4(I,P,Q,R)cl = ~(A & TblRowMask[S]);\
-cells_unsolved.bf.u32[I] &= cl;\
-wcl[P]&= cl;wcl[Q]&= cl;wcl[R]&= cl;
-
-#define UPWCL5(I,P,Q,R,T)cl = ~(A & TblRowMask[S]);\
-cells_unsolved.bf.u32[I] &= cl;\
-wcl[P]&= cl;wcl[Q]&= cl;wcl[R]&= cl;wcl[T]&= cl;
-
-
-int ZH2B::Update2() {
-	register unsigned int Shrink = 1, S, A, cl, *wcl = FD[0].bf.u32;
-	while (Shrink) {
-		Shrink = 0;
-		register unsigned int  AR = rows_unsolved.bf.u32[0];// valid for digits 0,1,2
-		if (!(AR & 07777)) return 1;
-		//=digit 0
-		if (FD[0].bf.u32[0] == CompFD[0].bf.u32[0])goto digit0b;
-		UPDN(0, 0)	if ((AR & 7) != S) {
-			AR &= 07777777770 | S;	UPWCL2(0, 2)
-		}
-
-	digit0b:if (FD[0].bf.u32[1] == CompFD[0].bf.u32[1])goto digit1;
-		UPDN(0, 1)	if (((AR >> 3) & 7) != S) {
-			AR &= 07777777707 | (S << 3);	UPWCL2(1, 3)
-		}
-	digit1:	if (!(AR & 07700))goto loop;
-
-		if (FD[1].bf.u32[0] == CompFD[1].bf.u32[0])goto digit1b;
-		UPDN(1, 0)	if (((AR >> 6) & 7) != S) {
-			AR &= 07777777077 | (S << 6); UPWCL2(0, 0)
-		}
-
-	digit1b:if (FD[1].bf.u32[1] == CompFD[1].bf.u32[1])goto loop;
-		UPDN(1, 1)		if (((AR >> 9) & 7) != S) {
-			AR &= 07777770777 | (S << 9); UPWCL2(1, 1)
-		}
-
-
-	loop: rows_unsolved.bf.u32[0] = AR;
-	}// end while
-	return 1;
+void ZH2B::GuessGo(int dig, BF64 & wsol,int index) {// done in a new ocurrence
+	*this = *(this - 1);
+	// apply wsol and make next step
+	FD[dig] = wsol;// update will do the job
+	if (FullUpdate()) {
+		//ImageCandidats();
+		GuessValidB12(index + 1);
+	}
 }
-void ZH2B::Guess2() {
-	register uint32_t Rr = rows_unsolved.bf.u32[0] & 077;
-	// note if all 1 are settled, the puzzle is solved
-	if (Rr) {// select next unsolved row for digit 1 and try each possible cell
-		unsigned long row;
-		_BitScanForward(&row, Rr);
-		int  band = C_box[row], r_row = C_box_rel[row];
-		int x = (FD[0].bf.u32[band] >> TblMult9[r_row]) & 0x1ff;
-		while (x) {
-			unsigned long rcell;
-			_BitScanForward(&rcell, x);
-			int  drow = 27 * band + TblMult9[r_row];
-			x ^= (1 << rcell);
-			ZH2B * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->SetaC(0, rcell + drow);
-			if (mynext->Update2())	mynext->Guess2();
+
+void ZH2B::GuessValidB12_best(int index) {// first ok then false best count
+	// choose digit with lowest count of unsolved
+	//cout << "guess_best index=" << index << endl;
+	//if (index) ImageCandidats();
+	int mincount =100, digmin = 10;
+	for (uint32_t idig = 0; idig < 9; idig++) {
+		int cc = FD[idig].Count();
+		if (cc < 7) continue;// solved
+		if (cc < mincount) {
+			mincount = cc;
+			digmin = idig;
+		}
+	}
+	if (digmin > 8) {// we have a ua if it's not the solution grid	
+		zh2b_g.ua_ret = 0;
+		for (int i = 0; i < 9; i++) {
+			BF64 w = FD[i] - zh2b_g.fd_sols[0][i];
+			zh2b_g.ua_ret |= w.bf.u64;
+		}
+		//if(zh2b_g.ua_ret)cout << Char2Xout(zh2b_g.ua_ret) << " best ua found"   << endl;
+		return;
+	}
+	BF64 mysol = zh2b_g.fd_sols[0][digmin];
+	if ((FD[digmin] & mysol) == mysol) {// if all true possible try it
+		//cout << Char2Xout(mysol.bf.u64) << "try best true for digmax=" << digmin + 1 << endl;
+		(this + 1)->GuessGo_best(digmin, mysol, index);
+		if (zh2b_g.ua_ret) return;// return if  ua found
+	}
+
+	// try false (no sort likely unique solution )
+	int r_unsolved = (rows_unsolved.bf.u64 >> zh2b_t_runsolvedshift[digmin]) & 077;
+	BF64 tuaw[500], tsolw[500];
+	int nuaw = zh2b1d_g.Go(mysol, FD[digmin], tsolw, tuaw, r_unsolved);
+	//cout << "index=" << index << " nfalse perms=" << nuaw << endl;
+	for (int i = 0; i < nuaw ; i++) {
+		//cout << Char2Xout(tsolw[i].bf.u64) << "try best false perm="<<i<<" index=" << index << endl;
+		(this + 1)->GuessGo_best(digmin, tsolw[i], index);
+		if (zh2b_g.ua_ret) return;// return if  ua found
+	}
+}
+
+void ZH2B::GuessGo_best(int dig, BF64 & wsol, int index) {// done in a new ocurrence
+	*this = *(this - 1);
+	// apply wsol and make next step
+	FD[dig] = wsol;// update will do the job
+	if (FullUpdate()) {
+		//ImageCandidats();
+		GuessValidB12_best(index + 1);
+	}
+}
+/*GuessMoreGuas(int index) is for sockets guas2
+all sols are have false in bands 1+2
+we try to catch a ua as small as possible
+priority "true" to digits no part of the socket
+should not be true for <= 5 digits 
+*/
+void ZH2B::GuessMoreGuas(int index) {// all sols are have false in bands 1+2
+	// choose digit with lowest count of unsolved
+	// keep for later digits of the socket
+	//cout << "guess index=" << index << endl;
+	//if (index) ImageCandidats();
+	int maxcount = 0, digmax = 10;
+	for (uint32_t idig = 0; idig < 9; idig++) {
+		int cc = FD[idig].Count();
+		if (cc < 7) continue;// solved
+		if (cc > maxcount) {
+			maxcount = cc;
+			digmax = idig;
+		}
+	}
+	if (digmax > 8) {// we have a ua if it's not the solution grid	
+		zh2b_g.ua_ret = 0;
+		for (int i = 0; i < 9; i++) {
+			BF64 w = FD[i] - zh2b_g.fd_sols[0][i];
+			zh2b_g.ua_ret |= w.bf.u64;
 		}
 		return;
 	}
-	// all digit 0 solved this is a solution
-	register uint64_t w0 = ~genuasb12.ordered_digsols[0];
-	w0 &= FD[0].bf.u64;
-	if (!w0) return;
-	register uint64_t w1 = ~genuasb12.ordered_digsols[1];
-	w1 &= FD[1].bf.u64;
-	if (!w1) return;
-	w0 |= w1;
-	if (genuasb12.nfloors == 2) {
-		int n = (int)_popcnt64(w0);
-		genuasb12.AddUA(w0, n);
-		return;
+	BF64 mysol = zh2b_g.fd_sols[0][digmax];
+	if ((FD[digmax] & mysol) == mysol) {// if all true possible try it
+		//cout <<Char2Xout(mysol.bf.u64)<< "try true for digmax=" << digmax + 1 << endl;
+		(this + 1)->GuessGo(digmax, mysol, index);
+		if (zh2b_g.ua_ret) return;// return if  ua found
 	}
-	w0 |= genuasb12.uax[2];
-	int n = (int)_popcnt64(w0);
-	if (n > genuasb12.limstep) return;
-	genuasb12.AddUA(w0, n);
+
+
+	// try false decreasing count of true  
+	int r_unsolved = (rows_unsolved.bf.u64 >> zh2b_t_runsolvedshift[digmax]) & 077;
+	BF64 tuaw[500], tsolw[500];
+
+	//cout << "call solve 1 digit for digitw=" << digmax+1 << endl;
+	int nuaw = zh2b1d_g.Go(mysol, FD[digmax], tsolw, tuaw, r_unsolved);
+	//cout << "index=" << index << " nfalse perms=" << nuaw << endl;
+
+	//sort increasing order of tuawcount
+	uint64_t tsort[50], temp;
+	for (int i = 0; i < nuaw; i++) {
+		tsort[i] = _popcnt64(tuaw[i].bf.u64) << 16;
+		tsort[i] |= i;
+	}
+	for (int i = 0; i < nuaw - 1; i++)for (int j = i + 1; j < nuaw; j++)
+		if (tsort[i] > tsort[j]) {
+			temp = tsort[i]; tsort[i] = tsort[j]; tsort[j] = temp;
+		}
+	// and now go till a ua is seen or no solution 
+	for (int i = 0; i < nuaw; i++) {
+		int iw = tsort[i] & 0xff;// 
+		//cout << Char2Xout(tsolw[iw].bf.u64) << "try false digmax=" << digmax + 1 << endl;
+		(this + 1)->GuessGo(digmax, tsolw[iw], index);
+		if (zh2b_g.ua_ret) return;// return if  ua found
+	}
 }
-
-int ZH2B::Update3() {
-	register unsigned int Shrink = 1, S, A, cl, *wcl = FD[0].bf.u32;
-	while (Shrink) {
-		Shrink = 0;
-		register unsigned int  AR = rows_unsolved.bf.u32[0];// valid for digits 0,1,2
-		if (!(AR & 0777777)) return 1;
-		//=digit 0
-		if (FD[0].bf.u32[0] == CompFD[0].bf.u32[0])goto digit0b;
-		UPDN(0, 0)	if ((AR & 7) != S) {
-			AR &= 07777777770 | S;	UPWCL3(0, 2, 4)
-		}
-
-	digit0b:if (FD[0].bf.u32[1] == CompFD[0].bf.u32[1])goto digit1;
-		UPDN(0, 1)	if (((AR >> 3) & 7) != S) {
-			AR &= 07777777707 | (S << 3);	UPWCL3(1, 3, 5)
-		}
-	digit1:	if (!(AR & 07700))goto digit2;
-
-		if (FD[1].bf.u32[0] == CompFD[1].bf.u32[0])goto digit1b;
-		UPDN(1, 0)	if (((AR >> 6) & 7) != S) {
-			AR &= 07777777077 | (S << 6); UPWCL3(0, 0, 4)
-		}
-
-	digit1b:if (FD[1].bf.u32[1] == CompFD[1].bf.u32[1])goto digit2;
-		UPDN(1, 1)		if (((AR >> 9) & 7) != S) {
-			AR &= 07777770777 | (S << 9); UPWCL3(1, 1, 5)
-		}
-	digit2:	if (!(AR & 0770000))goto loop;
-
-		if (FD[2].bf.u32[0] == CompFD[2].bf.u32[0])goto digit2b;
-		UPDN(2, 0)	if (((AR >> 12) & 7) != S) {
-			AR &= 07777707777 | (S << 12);	UPWCL3(0, 0, 2)
-		}
-
-	digit2b:if (FD[2].bf.u32[1] == CompFD[2].bf.u32[1])goto loop;
-		UPDN(2, 1)	if (((AR >> 15) & 7) != S) {
-			AR &= 07777077777 | (S << 15);	UPWCL3(1, 1, 3)
-		}
-
-
-	loop: rows_unsolved.bf.u32[0] = AR;
-	}// end while
-	return 1;
-}
-void ZH2B::Guess3() {// three floors empty at start solve floor 3
-	register uint32_t Rr = (rows_unsolved.bf.u32[0] >> 12) & 077;
-	// note if all 1 are settled, the puzzle is solved
-	if (Rr) {// select next unsolved row for digit 2 and try each possible cell
-		unsigned long row;
-		_BitScanForward(&row, Rr);
-		int  band = C_box[row], r_row = C_box_rel[row];
-		int x = (FD[2].bf.u32[band] >> TblMult9[r_row]) & 0x1ff;
-		while (x) {
-			unsigned long rcell;
-			_BitScanForward(&rcell, x);
-			int  drow = 27 * band + TblMult9[r_row];
-			x ^= (1 << rcell);
-			ZH2B * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->SetaC(2, rcell + drow);// digit 2
-			if (mynext->Update3())	mynext->Guess3();
-		}
-		return;
-	}
-	{
-		// all digit 3 solved go to guess2 if not a zero deviation
-		register uint64_t w0 = ~genuasb12.ordered_digsols[2];
-		w0 &= FD[2].bf.u64;
-		if (!w0) return;
-		w0 |= genuasb12.uax[3];
-		if (!(rows_unsolved.bf.u32[0] & 0777777)) {
-			if (FD[0].bf.u64 == genuasb12.ordered_digsols[0] ||
-				FD[1].bf.u64 == genuasb12.ordered_digsols[1]) return;
-		}
-		genuasb12.uax[2] = w0;
-	}
-	Guess2();
-}
-
-int ZH2B::Update4() {
-	register unsigned int Shrink = 1, S, A, cl, *wcl = FD[0].bf.u32;
-	while (Shrink) {
-		Shrink = 0;
-		register unsigned int  AR = rows_unsolved.bf.u32[0];// valid for digits 0,1,2
-		if (!(AR & 077777777)) return 1;
-		//=digit 0
-		if (FD[0].bf.u32[0] == CompFD[0].bf.u32[0])goto digit0b;
-		UPDN(0, 0)	if ((AR & 7) != S) {
-			AR &= 07777777770 | S;	UPWCL4(0, 2, 4, 6)
-		}
-
-	digit0b:if (FD[0].bf.u32[1] == CompFD[0].bf.u32[1])goto digit1;
-		UPDN(0, 1)	if (((AR >> 3) & 7) != S) {
-			AR &= 07777777707 | (S << 3);	UPWCL4(1, 3, 5, 7)
-		}
-	digit1:	if (!(AR & 07700))goto digit2;
-
-		if (FD[1].bf.u32[0] == CompFD[1].bf.u32[0])goto digit1b;
-		UPDN(1, 0)	if (((AR >> 6) & 7) != S) {
-			AR &= 07777777077 | (S << 6); UPWCL4(0, 0, 4, 6)
-		}
-
-	digit1b:if (FD[1].bf.u32[1] == CompFD[1].bf.u32[1])goto digit2;
-		UPDN(1, 1)		if (((AR >> 9) & 7) != S) {
-			AR &= 07777770777 | (S << 9); UPWCL4(1, 1, 5, 7)
-		}
-	digit2:	if (!(AR & 0770000))goto digit3;
-
-		if (FD[2].bf.u32[0] == CompFD[2].bf.u32[0])goto digit2b;
-		UPDN(2, 0)	if (((AR >> 12) & 7) != S) {
-			AR &= 07777707777 | (S << 12);	UPWCL4(0, 0, 2, 6)
-		}
-
-	digit2b:if (FD[2].bf.u32[1] == CompFD[2].bf.u32[1])goto digit3;
-		UPDN(2, 1)	if (((AR >> 15) & 7) != S) {
-			AR &= 07777077777 | (S << 15);	UPWCL4(1, 1, 3, 7)
-		}
-
-	digit3: if (!(AR & 077000000))goto loop;
-
-		if (FD[3].bf.u32[0] == CompFD[3].bf.u32[0])goto digit3b;
-		UPDN(3, 0)	  if (((AR >> 18) & 7) != S) {
-			AR &= 07770777777 | (S << 18); UPWCL4(0, 0, 2, 4)
-		}
-
-	digit3b:  if (FD[3].bf.u32[1] == CompFD[3].bf.u32[1])goto loop;
-		UPDN(3, 1)if (((AR >> 21) & 7) != S) {
-			AR &= 07707777777 | (S << 21); UPWCL4(1, 1, 3, 5)
-		}
-
-	loop: rows_unsolved.bf.u32[0] = AR;
-	}// end while
-	return 1;
-}
-void ZH2B::Guess4() {// three floors empty at start solve floor 3
-	register uint32_t Rr = (rows_unsolved.bf.u32[0] >> 18) & 077;
-	// note if all 1 are settled, the puzzle is solved
-	if (Rr) {// select next unsolved row for digit 3 and try each possible cell
-		unsigned long row;
-		_BitScanForward(&row, Rr);
-		int  band = C_box[row], r_row = C_box_rel[row];
-		int x = (FD[3].bf.u32[band] >> TblMult9[r_row]) & 0x1ff;
-		while (x) {
-			unsigned long rcell;
-			_BitScanForward(&rcell, x);
-			int  drow = 27 * band + TblMult9[r_row];
-			x ^= (1 << rcell);
-			ZH2B * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->SetaC(3, rcell + drow);// digit 3
-			if (mynext->Update4())	mynext->Guess4();
-			//  if not  game locked ?? continue;
-		}
-		return;
-	}
-	{
-		// all digit 3 solved go to guess3 if not a zero deviation
-		register uint64_t w0 = ~genuasb12.ordered_digsols[3];
-		w0 &= FD[3].bf.u64;
-		if (!w0) return;
-		w0 |= genuasb12.uax[4];
-		if (!(rows_unsolved.bf.u32[0] & 077777777)) {
-			if (FD[0].bf.u64 == genuasb12.ordered_digsols[0] ||
-				FD[1].bf.u64 == genuasb12.ordered_digsols[1] ||
-				FD[2].bf.u64 == genuasb12.ordered_digsols[2]) return;
-		}
-		genuasb12.uax[3] = w0;
-	}
-	Guess3();
-}
-
-int ZH2B::Update5() {
-	register unsigned int Shrink = 1, S, A, cl, *wcl = FD[0].bf.u32;
-	while (Shrink) {
-		Shrink = 0;
-		register unsigned int  AR = rows_unsolved.bf.u32[0];// valid for digits 0,1,2
-		if (!(AR & 077777777)) return 1;
-		//=digit 0
-		if (FD[0].bf.u32[0] == CompFD[0].bf.u32[0])goto digit0b;
-		UPDN(0, 0)	if ((AR & 7) != S) {
-			AR &= 07777777770 | S;	UPWCL5(0, 2, 4, 6, 8)
-		}
-
-	digit0b:if (FD[0].bf.u32[1] == CompFD[0].bf.u32[1])goto digit1;
-		UPDN(0, 1)	if (((AR >> 3) & 7) != S) {
-			AR &= 07777777707 | (S << 3);	UPWCL5(1, 3, 5, 7, 9)
-		}
-	digit1:	if (!(AR & 07700))goto digit2;
-
-		if (FD[1].bf.u32[0] == CompFD[1].bf.u32[0])goto digit1b;
-		UPDN(1, 0)	if (((AR >> 6) & 7) != S) {
-			AR &= 07777777077 | (S << 6); UPWCL5(0, 0, 4, 6, 8)
-		}
-
-	digit1b:if (FD[1].bf.u32[1] == CompFD[1].bf.u32[1])goto digit2;
-		UPDN(1, 1)		if (((AR >> 9) & 7) != S) {
-			AR &= 07777770777 | (S << 9); UPWCL5(1, 1, 5, 7, 9)
-		}
-	digit2:	if (!(AR & 0770000))goto digit3;
-
-		if (FD[2].bf.u32[0] == CompFD[2].bf.u32[0])goto digit2b;
-		UPDN(2, 0)	if (((AR >> 12) & 7) != S) {
-			AR &= 07777707777 | (S << 12);	UPWCL5(0, 0, 2, 6, 8)
-		}
-
-	digit2b:if (FD[2].bf.u32[1] == CompFD[2].bf.u32[1])goto digit3;
-		UPDN(2, 1)	if (((AR >> 15) & 7) != S) {
-			AR &= 07777077777 | (S << 15);	UPWCL5(1, 1, 3, 7, 9)
-		}
-
-	digit3: if (!(AR & 077000000))goto loop;
-
-		if (FD[3].bf.u32[0] == CompFD[3].bf.u32[0])goto digit3b;
-		UPDN(3, 0)	  if (((AR >> 18) & 7) != S) {
-			AR &= 07770777777 | (S << 18); UPWCL5(0, 0, 2, 4, 8)
-		}
-
-	digit3b:  if (FD[3].bf.u32[1] == CompFD[3].bf.u32[1])goto digit4;
-		UPDN(3, 1)if (((AR >> 21) & 7) != S) {
-			AR &= 07707777777 | (S << 21); UPWCL5(1, 1, 3, 5, 9)
-		}
-	digit4:if (!(AR & 07700000000))goto loop;
-
-		if (FD[4].bf.u32[0] == CompFD[4].bf.u32[0])goto digit4b;
-		UPDN(4, 0)if (((AR >> 24) & 7) != S) {
-			AR &= 07077777777 | (S << 24);  UPWCL5(0, 0, 2, 4, 6)
-		}
-
-	digit4b:if (FD[4].bf.u32[1] == CompFD[4].bf.u32[1])goto loop;
-		UPDN(4, 1)if (((AR >> 27) & 7) != S) {
-			AR &= 0777777777 | (S << 27);  UPWCL5(1, 1, 3, 5, 7)
-		}
-
-	loop: rows_unsolved.bf.u32[0] = AR;
-	}// end while
-	return 1;
-}
-void ZH2B::Guess5() {// three floors empty at start solve floor 3.0
-	register uint32_t Rr = (rows_unsolved.bf.u32[0] >> 24) & 077;
-	// note if all 1 are settled, the puzzle is solved
-	if (Rr) {// select next unsolved row for digit 3 and try each possible cell
-		unsigned long row;
-		_BitScanForward(&row, Rr);
-		int  band = C_box[row], r_row = C_box_rel[row];
-		int x = (FD[4].bf.u32[band] >> TblMult9[r_row]) & 0x1ff;
-		while (x) {
-			unsigned long rcell;
-			_BitScanForward(&rcell, x);
-			int  drow = 27 * band + TblMult9[r_row];
-			x ^= (1 << rcell);
-			ZH2B * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->SetaC(4, rcell + drow);// digit 4
-			if (mynext->Update5())	mynext->Guess5();
-		}
-		return;
-	}
-	{
-		//  digit 4 solved go to guess4 if not a zero deviation
-		register uint64_t w0 = ~genuasb12.ordered_digsols[4];
-		w0 &= FD[4].bf.u64;
-		if (!w0) return;
-		int n = (int)_popcnt64(w0);
-		if (n > 4) return;
-		if (!(rows_unsolved.bf.u32[0] & 07777777777)) {
-			if (FD[0].bf.u64 == genuasb12.ordered_digsols[0] ||
-				FD[1].bf.u64 == genuasb12.ordered_digsols[1] ||
-				FD[2].bf.u64 == genuasb12.ordered_digsols[2] ||
-				FD[3].bf.u64 == genuasb12.ordered_digsols[3]) return;
-		}
-		genuasb12.uax[4] = w0;
-	}
-	Guess4();
-}*/
 
 void ZH2B::Debug(int all) {
 	cout << "DEBUG  nbsol=" << zh2b_g.nsol << " unsolved=" << Unsolved_Count() << endl;
@@ -1368,6 +772,7 @@ void ZH2B::ImageCandidats() {
 	cout << endl;
 
 }
+
 int  ZH2B::DebugCheckUa(uint64_t ua) {
 	Init_std_bands();
 	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
@@ -1384,8 +789,8 @@ int  ZH2B::DebugCheckUa(uint64_t ua) {
 		}
 	}
 	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | zh2b_g.Digit_cell_Assigned_init[i];
-	//ImageCandidats();
-	return Isvalid();
+	FullUpdate();
+	return (int)cells_unsolved.isNotEmpty();
 }
 
 
@@ -1429,7 +834,7 @@ void ZH2B5_GLOBAL::CollectUas5() {
 	zh2b5[0].cells_unsolved = cells_unsolved;
 	uint32_t t[5] = { 077,07777,0777777,077777777,07777777777 };
 	zh2b5[0].rows_unsolved.bf.u32[0] = t[ndigits-1];
-	//if(ndigits>4)zh2b5[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<
+	if(diag)zh2b5[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<
 	zh2b5[0].ComputeNext5();
 }
 void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
@@ -1439,15 +844,17 @@ void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
 		if (!w) return; //a subset exists
 		ua |= w;
 	}
+	/* not true can be small gua not a band ua
 	if (!modevalid) {// not gua mode must be 1n both bands
 		register uint64_t R = BIT_SET_27;
 		if (!(ua&R))return;; // ua in band2
 		R <<= 32;
 		if (!(ua&R))return; // ua in band1
 	}
+	*/
 	int  cc = (int)_popcnt64(ua);
 	if (cc > sizef5) return;
-	//cout << Char2Xout(ua) << " ua found" << endl;
+	if (zh2b5_g.diag)cout << Char2Xout(ua) << " ua found nuaf5=" << nuaf5 << "cc=" << cc << endl;
 	tuaf5[nuaf5++] = ua;
 }
 
@@ -1596,9 +1003,9 @@ int ZH2B5::Seta5(int digit, int xcell) { // single in cell
 	return 0;
 }
 void  ZH2B5::Guess5() {// solve in table digit with lowest count
-	if (0 &&zh2b5_g.ndigits==5) {
+	if (zh2b5_g.diag) {
 		cout << oct << rows_unsolved.bf.u64 << dec << " unsolved guess5" << endl;
-		ImageCandidats();
+		//ImageCandidats();
 	}
 	if (!rows_unsolved.bf.u64) {// this is a solution
 		//cout << "valid sol" << endl;
@@ -1615,20 +1022,25 @@ void  ZH2B5::Guess5() {// solve in table digit with lowest count
 			digmin = idig;
 		}
 	}
+	if (zh2b5_g.diag) {
+		cout << oct << rows_unsolved.bf.u64 << dec << " unsolved guess5 for dig"
+			<<digmin+1<< endl;
+		//ImageCandidats();
+	}
 	// put in table all digmin valid solutions 
 	BF64 tuaw[50], tsolw[50];
 	//cout << "call solve 1 digit for digitw=" << digmin+1 << endl;
 	int nuaw=zh2b1d_g.Go(zh2b5_g.fdsw[0][digmin], FD[digmin], tsolw, tuaw,
 		(rows_unsolved.bf.u32[0]) >> (6 * digmin) & 077);
 	rows_unsolved.bf.u32[0] &= ~(077 << (6 * digmin));// clear unsolved
-	if (0 &&zh2b5_g.ndigits == 5)cout << "return nuaw=" << nuaw << " digmin="<<digmin<< endl;
+	if (zh2b5_g.diag)cout << "return nuaw=" << nuaw << " digmin="<<digmin+1<< endl;
 	//try each digit full solution if not fully true (subset would exist)
 	for (int i = 0; i < nuaw; i++) {
-		if (0 &&zh2b5_g.ndigits == 5)cout << i << " digmin=" << digmin << endl;
 		ZH2B5 * nextz = this + 1;// open a new zh2b
 		*nextz = *this;
 		{// clear the solution for other digits
 			register uint64_t R = tsolw[i].bf.u64, nR = ~R;
+			if (zh2b5_g.diag)cout<<Char2Xout(R) << "apply for i=" << i << " digmin=" << digmin+1 << endl;
 			uint64_t * RF = &nextz->FD[zh2b5_g.ndigits - 1].bf.u64;
 			for (; RF >= &nextz->FD->bf.u64; RF--)*RF &= nR;
 			nextz->FD[digmin].bf.u64 = R;// restore the solution for digit
@@ -1843,6 +1255,7 @@ void ZHONE_GLOBAL::AddUA(uint32_t ua) {// add if and clear supersets
 				return;// we have a subset
 			}
 		}
+		else if (R == ua)return;
 		else {
 			for (uint32_t jua = nua; jua > iua; jua--)tua[jua] = tua[jua - 1];// to insert the new
 			tua[iua] = ua;// inserted

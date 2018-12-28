@@ -20,6 +20,7 @@ char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
 
 void Go_c10() { // extract valid puzzles from entry
+	int filter = sgo.bfx[0];
 	if (!sgo.finput_name) return;
 	cout << "brute force Go_10 entry " << sgo.finput_name << " input" << endl;
 	finput.open(sgo.finput_name);
@@ -31,7 +32,10 @@ void Go_c10() { // extract valid puzzles from entry
 	zh_g.diag = sgo.vx[8];
 	while (finput.GetPuzzle(ze)) {
 		if(zh_g.diag) cout <<ze<<"<<<<<<<<<<<<<< new puzzle"<<endl;
-		if (zhou[0].CheckValidityQuick(ze)==1)		fout1 << ze << endl;
+		int ir = zhou[0].CheckValidityQuick(ze);
+		if(!filter)		fout1 << ze << endl;
+		else if((filter &1) && ir==0)fout1 << ze << endl;
+		else if (ir > 1)fout1 << ze << endl;
 	}
 
 }

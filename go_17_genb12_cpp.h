@@ -1,7 +1,9 @@
 void GEN_BANDES_12::SGUA2::Debug(const char * lib) {
 	cout << lib << " gua2 \t" << i_81 << " cols " << col1 + 1 << col2 + 1
-		<< " digs " << dig1 + 1 << dig2 + 1 << endl;
+		<< " digs " << dig1 + 1 << dig2 + 1 
+		<< " digs 0"<<oct<<digs<<dec<< endl;
 }
+
 void GEN_BANDES_12::InitialSockets2Setup() {//load permanent data
 	for (int i = 0; i < 81; i++) {// initial socket 2
 		SGUA2 & w= tsgua2[i];
@@ -24,34 +26,42 @@ void GEN_BANDES_12::InitialSockets2Setup() {//load permanent data
 }
 void GEN_BANDES_12::SecondSockets2Setup() {
 	ntua2 = 0; nactive2 = 0;
-	for (int i = 0; i < 81; i++) {// initial socket 2
-		SGUA2 & w = tsgua2[i];
+	for (int i81 = 0; i81 < 81; i81++) {// initial socket 2
+		SGUA2 & w = tsgua2[i81];
 		w.dig1 = gang27[w.id1];
 		w.dig2 = gang27[w.id2];
 		w.digs = (1 << w.dig1) | (1 << w.dig2);
 		w.valid = 0;
 		//skip if no band3 uses it gua2 gua4 gua6 / build guas 
 		for (int iband3 = 0; iband3 < nband3; iband3++) {
-			if(bands3[iband3].IsGua(i))// setup guas in band
+			if(bands3[iband3].IsGua(i81))// setup guas in band
 				w.valid=1;
 		}
 		if (!w.valid)continue;
 		// build revised gangster
-		memcpy(w.gangcols, gangcols, sizeof gangcols);
+		memcpy(w.gangcols, gangb12, sizeof gangb12);
 		w.gangcols[w.col1] ^= w.digs;
 		w.gangcols[w.col2] ^= w.digs;
 		// find guas of the socket
-		zh2b_g.InitGangster(gangcols, w.gangcols);
-		zh2b5_g.sizef5 = UALIMSIZE - 2;
+		zh2b_g.InitGangster(gangb12, w.gangcols);
+		zh2b5_g.sizef5 = UALIMSIZE;// -2;
 		zh2b5_g.modevalid = 0;
-		w.nua_start = ntua2;
-		//if (p_cpt2g[0] ++>2)	continue; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
-		ptua2 = &tua2[ntua2];
-		nua2 = nua3 = 0;
-
+		w.nua = 0;
+		//w.nua_start = ntua2;
+		ptua2 = w.tua;
+		nua2 = 0;
+		if (0) {
+			w.Debug("i81=26 status");
+			cout << " revised gangster status" << oct << endl;
+			for (int i = 0; i < 3; i++) 
+				cout << gangb12[i] << "\t" << w.gangcols[i] << endl;
+			cout << dec << endl;
+			//cout << Char2Xout(zh2b_g.fd_revised[0].bf.u64) << " dig0 rev" << endl;
+			//cout << Char2Xout(zh2b_g.fd_sols[1][0].bf.u64) << "      base" << endl;
+		}
 		//================== GUA collector 2 bands 
 		for (int i = 0; i < 36; i++) {// find UAs 2 digits
-			GuaCollect(floors_2d[i]);
+			GuaCollect(floors_2d[i] );
 		}
 		for (int i = 0; i < 84; i++) {// find UAs 3 digits
 			GuaCollect(floors_3d[i]);
@@ -60,19 +70,29 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 			GuaCollect(floors_4d[i]);
 		}
 		for (int i = 0; i < 126; i++) {// find UAs 5digits
-			//GuaCollect(0x1f^floors_4d[i]);
+			GuaCollect(0x1ff^floors_4d[i]);
 		}
 		if (nua2) {
-			tactive2[nactive2++]=i;
+			tactive2[nactive2++]=i81;
 			ntua2 += nua2;
 		}
-		w.nua_end = ntua2;// store the final count
+		//w.nua_end = ntua2;// store the final count
+		w.nua = nua2;
+		if (0) {
+			cout << "try collect socket2 for i81=" << i81 << "\tnua2=" << nua2 << endl;
+			for (uint32_t i =0; i < w.nua; i++)
+				cout << Char2Xout(w.tua[i]) << endl;
+		}
 	}
 	cout << "endSecondSockets2Setup ntua2=" << ntua2
 		<< " nactive i81=" << nactive2 << endl;
 }
 void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
+	if (fl != 0670) diag = 0;
+	if (diag) zh2b5_g.diag = 1; else zh2b5_g.diag = 0;
 	uint64_t solved_cells = zh2b5_g.FindUAsInit(fl, 1);
+	if (diag)cout<<Char2Xout(solved_cells) << "collect floors=0" << oct << fl << dec
+		<< " return find init" << endl;
 	if (!solved_cells) return;// one digit solved true
 	zh2b5_g.CollectUas5();// collect uas for this set of floors
 	if (!zh2b5_g.nuaf5) return;
@@ -101,12 +121,15 @@ void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
 	}
 	// check subsets and add to main table
 	for (int i = 0; i < zh2b5_g.nuaf5; i++) {
-		genuasb12.ua = zh2b5_g.tuaf5->bf.u64;
+		genuasb12.ua = zh2b5_g.tuaf5[i].bf.u64;
+		if (diag)cout << Char2Xout(genuasb12.ua) << " to add if new2 nua=" << nua2 << endl;
 		if (genuasb12.CheckOld()) continue;// superset of a previous ua
 		uint64_t cc = _popcnt64(genuasb12.ua);
 		genuasb12.ua |= cc << 59;
+		// protect against table limit
+		if (nua2 >= SIZETGUA)nua2 = SIZETGUA - 1; // guess it will be a smaller
 		if (genuasb12.AddUA64(ptua2, nua2)) {
-			//cout << Char2Xout(genuasb12.ua) << "added nua2="<<nua2 << endl;
+			if (diag)cout << Char2Xout(genuasb12.ua) << "added nua2="<<nua2 << endl;
 		}
 	}
 
@@ -135,13 +158,105 @@ void GEN_BANDES_12::BuildGang9x3() {
 
 void GEN_BANDES_12::InitialSockets3Setup() {//load permanent data
 	for (int i = 0; i < 81; i++) {// initial socket 3
+		SGUA3 & w = tsgua3[i];
+		int minir(i / 27);
+		w.i_81 = i;
+		w.imini = minir;
+		w.col1 =3*minir;// minirow first column in gangster
+		int dp = i - 27 * minir,// the 9 perms of the gangster minirow
+			dg = 9 * minir;// gangster 27 start
+		 // pointers to gangster digits
+		w.id1 = dp / 9;
+		dp -= 9 * w.id1;
+		w.id1 += dg;
+		dg += 3;// next gangster column inthe minirow
+		w.id2 = dp / 3;
+		dp -= 3 * w.id2;
+		w.id2 += dg;
+		dg += 3;// last gangster column in the minirow
+		w.id3 = dp +dg;
+		if (0) {
+			cout << "sua2=" << w.i_81 << " col1=" << w.col1 + 1
+				<< " id1;id2,id3 " << w.id1 
+				<< ";" << w.id2 << ";" << w.id3 << endl;
+		}
 	}
 }
 void GEN_BANDES_12::SecondSockets3Setup() {
+	ntua3 = 0; nactive3 = 0;
 	for (int i = 0; i < 81; i++) {// initial socket 2
-		SGUA2 w = tsgua2[i];
+		SGUA3 &w = tsgua3[i];
+		w.dig1 = gang27[w.id1];
+		w.dig2 = gang27[w.id2];
+		w.dig3 = gang27[w.id3];
+		w.valid = 0;
+
+		//skip if no band3 uses it gua2 gua4 gua6 / build guas 
+		for (int iband3 = 0; iband3 < nband3; iband3++) {
+			if (bands3[iband3].IsGua3(i))// setup guas in band
+				w.valid = 1;
+		}
+		if (!w.valid)continue;
+		// Setup the perms for gangsters in minirow
+		int bita = 1 << w.dig1, bitb = 1 << w.dig2, bitc = 1 << w.dig3;
+		int triplet_perms[2][3];
+
+		int * p = triplet_perms[0];// for per abc -> bca
+		p[0] = bita | bitb; p[1] = bitb | bitc; p[2] = bitc | bita;
+
+		p = triplet_perms[1];// for per abc -> cab
+		p[0] = bita | bitc; p[1] = bitb | bita; p[2] = bitc | bitb;
+
+		// build revised gangster
+		//w.gangcols[w.col2] ^= w.digs;
+		int tp3f[2][3] = { {1,2,0},{2,0,1} };// perms no valid digit
+		for (int ip = 0; ip < 2; ip++) {
+			// build revised gangster
+			int rgangcols[9];// revised gangster
+			memcpy(rgangcols, gangb12, sizeof gangcols);
+			p = triplet_perms[ip];
+			int c1 = w.col1, c2 = c1 + 1, c3 = c1 + 2;
+			rgangcols[c1] ^= p[0];
+			rgangcols[c2] ^= p[1];
+			rgangcols[c3] ^= p[2];
+
+			// find guas of the socket
+			zh2b_g.InitGangster(gangb12, rgangcols);
+			zh2b5_g.sizef5 = UALIMSIZE;//; - 3;
+			zh2b5_g.modevalid = 0;
+			//w.nua_start = ntua3;
+			ptua2 = w.tua;
+			nua2  = 0;
+
+			//================== GUA collector 2 bands 
+			for (int i = 0; i < 36; i++) {// find UAs 2 digits
+				GuaCollect(floors_2d[i]);
+			}
+			for (int i = 0; i < 84; i++) {// find UAs 3 digits
+				GuaCollect(floors_3d[i]);
+			}
+			for (int i = 0; i < 126; i++) {// find UAs 4 digits
+				GuaCollect(floors_4d[i]);
+			}
+			if(0)
+			for (int i = 0; i < 126; i++) {// find UAs 5digits
+				GuaCollect(0x1ff^floors_4d[i]);
+			}
+			if (nua2) {
+				tactive3[nactive3++] = i;
+				ntua3 += nua2;
+			}
+		}
+
+		//w.nua_end = ntua3;// store the final count
+		w.nua = nua2;// store the final count
 	}
+	cout << "endSecondSockets3Setup ntua3=" << ntua3
+		<< " nactive i81=" << nactive3 << endl;
+
+
 }
+
 void GEN_BANDES_12::GetStartB2(int ip) {//set  rows 3_9 column 1
 	char const *tp[20] = {// 3 out of 6 ordered 
 		"012345", "345012", "013245", "245013", "014235", "235014", "015234", "234015",
@@ -279,9 +394,8 @@ back:
 	if (--ii >= 0) goto next;
 }
 void Go_c17_91_go();
-
 int GEN_BANDES_12::ValidBand2() {
-	myband2.InitBand2_3(i2t16, &zsol[27], pband2);
+	myband2.InitBand2_3(it16_2, &zsol[27], pband2);
 	//_______________________ std process
 	if (modeb12 < 10) {
 		if (p_cpt2g[10]++)return 1;//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
@@ -289,6 +403,7 @@ int GEN_BANDES_12::ValidBand2() {
 		for (int i = 0; i < 9; i++) {// init columns status
 			cold[i] = 0x1ff;
 			for (int j = 0; j < 6; j++)	cold[i] ^= 1 << grid0[i + 9 * j];
+			gangb12[i] = 0x1ff ^ cold[i];
 		}
 		memcpy(gangcols, cold, sizeof gangcols);
 		Find_band3B();
@@ -446,215 +561,47 @@ back:
 	if (nband3)		g17b.GoM10();// call the process for that entry
 }
 
-
-
-
-
-/*
-void GEN_BANDES_12::GenUABands12(int limsize) {
-	if (limsize > 2000)limsize = 2000;
-	mtua.Init(tua, limsize);
-	mtua.nua = 0;
-	zh2b[0].InitGenUas(grid0);
-	zh2b[0].GenUas2();
-	zh2b[0].GenUas3();
-	zh2b[0].GenUas4();
-	zh2b[0].GenUas5();
-	zh2b[0].CollectFinal(mtua);
+void GEN_BANDES_12::DebugFreshUA(uint64_t ua) {
+	// purely debugging code, a fresh UA <= limsize must have >5 digits
+	uint32_t cell, digits = 0;
+	while (bitscanforward64(cell, ua)) {
+		ua ^= (uint64_t)1 << cell;
+		digits |= 1 << grid0[From_128_To_81[cell]];
+	}
+	if (_popcnt32(digits) < 6)
+		cout << "bug more ua bands 1+2 not enough digits " << endl;
 }
+void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
+	ntua2 = 0; nactive2 = 0;
+	for (int i = 0; i < 81; i++) {// initial socket 2
+		SGUA2 & w = tsgua2[i];
+		if (!w.valid)continue;
+		if (g17xy.bands_active_pairs.On_c(i))continue;// already active
+		if(g17xy.xygang[w.col1]&w.digs)continue;// not valid here
+		if (g17xy.xygang[w.col2] & w.digs)continue;// not valid here
+		// this is a possible gua2 socket try to find a gua
+		p_cpt2g[6]++;
+		//w.Debug("call MoreSocket2");
+		//cout <<"call MoreSocket2 i81=" << i  << endl;
+		uint64_t new_ua = zh2b_g.MoreSocket2(gangb12, w.gangcols,
+			g17xy.tclues, g17xy.nclues, w.digs);
+		if (new_ua) {
+			p_cpt2g[7]++;
+			g17xy.bands_active_pairs.setBit(C_To128[i]);
+			// insert in the ua table 
+			genuasb12.ua = new_ua;
+			uint64_t cc = _popcnt64(genuasb12.ua);
+			genuasb12.ua |= cc << 59;
+			// protect against table limit and load for future use
+			if (w.nua >= SIZETGUA)w.nua = SIZETGUA - 1; // guess it will be a smaller
+			genuasb12.AddUA64(w.tua, w.nua);
 
-void GEN_BANDES_12::CollectUA2s() {//try now to collect UA2s UA4s
-	ntua2 = 0;
-	zh2b[0].InitUas2();// raz nftemp and set limit size
-	for (int ib = 0; ib < 3; ib++)  CollectUA2sBox(ib);
-}
-void GEN_BANDES_12::CollectUA2sBox(int ibox) {
-	int cols[3][2] = { { 0, 1 }, { 0, 2 }, { 1, 2 } };
-	int * mybox = &gang27[9 * ibox],
-		my27ii = bands_pairs.bf.u32[ibox];
+			//cout << Char2Xout(new_ua) << "new ua i81=" << i
+			//	<< " cc=" << _popcnt64(new_ua) << endl;
+			DebugFreshUA(new_ua);
 
-	for (int ipcol = 0; ipcol < 3; ipcol++) {
-		int col1 = cols[ipcol][0], col2 = cols[ipcol][1];
-		int *tcol1 = &mybox[3 * col1], *tcol2 = &mybox[3 * col2];
-		for (int d1 = 0; d1 < 3; d1++) {
-			for (int d2 = 0; d2 < 3; d2++) {
-				int dig1 = tcol1[d1], dig2 = tcol2[d2],
-					digs = (1 << dig1) | (1 << dig2),
-					i_27 = 9 * ipcol + 3 * d1 + d2;
-				//======= limit search to active GUA2s + GUA4s +  GUA6s
-				if (!(my27ii&(1 << i_27))) continue; //only active 81
-				zh2b[0].GenUAs2_minirowpair(col1 + 3 * ibox, col2 + 3 * ibox,
-					dig1, dig2, i_27 + 27 * ibox);
-				ntua2 = zh2b[0].CollectFinalua2s(tua2,
-					1000, ntua2);
-			}
+
 		}
+		//break;
 	}
 }
-void GEN_BANDES_12::CollectUA3s() {//try now to collect UA2s UA4s
-	ntua3 = 0;
-	zh2b[0].InitUas2();// raz nftemp and set limit size
-	for (int ib = 0; ib < 3; ib++)  CollectUA3sBox(ib);
-}
-void GEN_BANDES_12::CollectUA3sBox(int ibox) {
-	int cols[3][2] = { { 0, 1 }, { 0, 2 }, { 1, 2 } };
-	int * mybox = &gang27[9 * ibox],
-		my27ii = bands_triplets.bf.u32[ibox];
-	int col1 = 3 * ibox, col2 = col1 + 1, col3 = col2 + 1;
-	int *tcol1 = gang[col1], *tcol2 = gang[col2], *tcol3 = gang[col3];
-	for (int d1 = 0; d1 < 3; d1++) {
-		for (int d2 = 0; d2 < 3; d2++) {
-			for (int d3 = 0; d3 < 3; d3++) {
-				int i_27 = 9 * d1 + 3 * d2 + d3,
-					i_81 = 27 * ibox + i_27;
-				// add later a filter for activve 81
-				if (!(my27ii&(1 << i_27))) continue; //only active 81
-				zh2b[0].GenUAs2_minirowtriplet(col1, col2, col3,
-					tcol1[d1], tcol2[d2], tcol3[d3], i_81);
-				ntua3 = zh2b[0].CollectFinalua2s(tua3, 1000, ntua3);
-			}
-		}
-	}
-
-}
-void GEN_BANDES_12::CollectMore() {
-	zhone[0].InitUasMore();
-	//============= first create base gangsters bands 1 and 2
-	memset(bcols, 0, sizeof bcols);
-	for (iband = 0; iband < 2; iband++) {// band1 or band 2
-		//============= first create base gangsters bands 1 and 2
-		int * bx = &grid0[27 * iband], *bc = bcols[iband];
-		for (int i = 0; i < 27; i++)	bc[i % 9] |= 1 << bx[i];
-	}
-	// collect first one minirow
-	for (iband = 0; iband < 2; iband++) {// band1 or band 2
-		for (ibox = 0; ibox < 3; ibox++) {
-			for (iminirow = 0; iminirow < 3; iminirow++) {
-				// first minirow pair or triplet
-				int dcols = 3 * ibox, dmini = 9 * iminirow + dcols;
-				for (int i = 0; i < 4; i++) {
-					ncells = 2;
-					switch (i) {
-					case 3:
-						ncells = 3;
-						tcells[2] = dmini + 2; tcols[2] = dcols + 2;
-					case 0:
-						tcells[0] = dmini; tcols[0] = dcols;
-						tcells[1] = dmini + 1; tcols[1] = dcols + 1;
-						break;
-					case 1:
-						tcells[0] = dmini; tcols[0] = dcols;
-						tcells[1] = dmini + 2; tcols[1] = dcols + 2;
-						break;
-					case 2:
-						tcells[0] = dmini + 1; tcols[0] = dcols + 1;
-						tcells[1] = dmini + 2; tcols[1] = dcols + 2;
-						break;
-					}
-					CollectMoreOneMinirow();// try this  minirow pair or triplet
-				}
-			}
-		}
-	}
-	// and later 2 minirows (have many subsets with one minirow)
-	for (iband = 0; iband < 2; iband++) {// band1 or band 2
-		for (ibox = 0; ibox < 3; ibox++) {
-			for (iminirow = 0; iminirow < 3; iminirow++) {
-				// first minirow pair or triplet
-				int dcols = 3 * ibox, dmini = 9 * iminirow + dcols;
-				for (int i = 0; i < 4; i++) {
-					ncells = 2;
-					switch (i) {
-					case 3:
-						ncells = 3;
-						tcells[2] = dmini + 2; tcols[2] = dcols + 2;
-					case 0:
-						tcells[0] = dmini; tcols[0] = dcols;
-						tcells[1] = dmini + 1; tcols[1] = dcols + 1;
-						break;
-					case 1:
-						tcells[0] = dmini; tcols[0] = dcols;
-						tcells[1] = dmini + 2; tcols[1] = dcols + 2;
-						break;
-					case 2:
-						tcells[0] = dmini + 1; tcols[0] = dcols + 1;
-						tcells[1] = dmini + 2; tcols[1] = dcols + 2;
-						break;
-					}
-					int nc0 = ncells;
-					for (ibox2 = ibox + 1; ibox2 < 3; ibox2++) {
-						for (iminirow2 = 0; iminirow2 < 3; iminirow2++) {
-							int dcols2 = 3 * ibox2, dmini2 = 9 * iminirow2 + dcols2;
-							for (int j = 0; j < 4; j++) {
-								ncells = nc0 + 2;
-								switch (j) {
-								case 3:
-									ncells++;
-									tcells[2 + nc0] = dmini2 + 2; tcols[2 + nc0] = dcols2 + 2;
-								case 0:
-									tcells[nc0] = dmini2; tcols[nc0] = dcols2;
-									tcells[1 + nc0] = dmini2 + 1; tcols[1 + nc0] = dcols2 + 1;
-									break;
-								case 1:
-									tcells[nc0] = dmini2; tcols[+nc0] = dcols2;
-									tcells[1 + nc0] = dmini2 + 2; tcols[1 + nc0] = dcols2 + 2;
-									break;
-								case 2:
-									tcells[nc0] = dmini2 + 1; tcols[+nc0] = dcols2 + 1;
-									tcells[1 + nc0] = dmini2 + 2; tcols[1 + nc0] = dcols2 + 2;
-									break;
-								}
-								CollectMore2Minirows();
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
-void GEN_BANDES_12::CollectMoreOneMinirow() {
-	int db0 = 27 * iband, db1 = 27 * (1 - iband),
-		*b0 = &grid0[db0], *b1 = &grid0[27 * (1 - iband)];
-	myfloors = 0;
-	mybf = 0;
-	// prepare the columns status to go
-	memcpy(mycols, bcols[1 - iband], sizeof mycols);
-	for (int i = 0; i < ncells; i++) {
-		int cell = tcells[i], col = tcols[i], box = C_box[col], dcolbox = 3 * box, colr = col % 3;
-		int bitdigit = 1 << b0[cell];
-		myfloors |= bitdigit;
-		mybf |= (uint64_t)1 << C_To128[cell + db0];
-		for (int j = 0; j < 3; j++) {
-			int & jcol = mycols[dcolbox + j];
-			if (j == colr)	jcol |= bitdigit;
-			else jcol &= ~bitdigit;
-		}
-	}
-	zhone[0].GenMoreUas(myfloors, mycols, b1, ncells);
-	// and collect the results
-	int oldua = mtua.nua;
-	zhone[0].CollectFinal(mtua, mybf, iband);
-	int newua = mtua.nua;
-}
-void GEN_BANDES_12::CollectMore2Minirows() {
-	int db0 = 27 * iband, *b0 = &grid0[db0], *b1 = &grid0[27 * (1 - iband)];
-	myfloors = 0;
-	mybf = 0;
-	// prepare the columns status to go
-	memcpy(mycols, bcols[1 - iband], sizeof mycols);
-	for (int i = 0; i < ncells; i++) {
-		int cell = tcells[i], col = tcols[i], box = C_box[col], dcolbox = 3 * box, colr = col % 3;
-		int bitdigit = 1 << b0[cell];
-		myfloors |= bitdigit;
-		mybf |= (uint64_t)1 << C_To128[cell + db0];
-		for (int j = 0; j < 3; j++) {
-			int & jcol = mycols[dcolbox + j];
-			if (j == colr)	jcol |= bitdigit;
-			else jcol &= ~bitdigit;
-		}
-	}
-	zhone[0].GenMoreUas(myfloors, mycols, b1, ncells);
-	zhone[0].CollectFinal(mtua, mybf, iband);
-}
-*/

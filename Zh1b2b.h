@@ -51,7 +51,7 @@ second 4x6bits for digits 5-8
 struct ZH2B_GLOBAL { // global variables for the game table
 	uint64_t * digsols; // pointer to solution grid per digit
 	uint64_t ua_ret;
-	BF64 val_init1_81, pairs, triplets;
+	BF64 val_init1_81;// , pairs, triplets;
 	BF64 Digit_cell_Assigned_init[9];
 	BF64 fd_sols[2][9];//start puzzle/ solution
 	BF64 fd_revised[9];// gangster revision of the solution
@@ -65,9 +65,10 @@ struct ZH2B_GLOBAL { // global variables for the game table
 	BF64 mysol, mystart, andsol, myandsol;
 	BF64 sols_buffer[3000], ua_buffer[3000];
 
-	uint32_t nuaold, nua, ndigits;;
+	uint32_t nuaold, nua, ndigits;
+	int tsd[7], ntsd, socket_digits, isd1;// socket more
 	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
-		rdigit, nctlg, go_back,
+		rdigit, nctlg, go_back,  
 		test;
 	// band UA collection active band pointers and UA table to build
 	int modeguess;
@@ -77,6 +78,7 @@ struct ZH2B_GLOBAL { // global variables for the game table
 	char zdebug[82];
 
 	ZH2B_GLOBAL();
+
 	inline void InitsGetSols(int i,int ibuf){
 		mystart = fdsw[1][i];
 		mysol = fdsw[0][i];
@@ -85,6 +87,9 @@ struct ZH2B_GLOBAL { // global variables for the game table
 	}
 	void GetBands(int * g1, int * g2);
 	void InitGangster(int * g0, int * g1);//common ot both GUA2s GUA3s
+	uint64_t MoreSocket2(int * g0, int * g1, 
+		uint32_t * tclues, int nclues,int socket_digs);
+	uint64_t BuildUaret(BF64 * wsol);
 };
 /* 2 BF 128 per digit
 	equivalent to F and Fcomp in Zhou
@@ -94,10 +99,10 @@ struct ZH2B_GLOBAL { // global variables for the game table
 // class encapsulating the brute force 
 struct ZH2B {// size 32 bytes 
 	BF64 FD[9], CompFD[9], cells_unsolved, rows_unsolved;
+
 	void Init_std_bands(); // after getbands in zh2b_g
 	void Init_gang(); // after getbands in zh2b_g
 	void DebugSol();
-
 
 	inline void Copy(ZH2B & o) { *this = o; }
 	inline void Assign(int digit, int cell, int xcell) {
@@ -108,20 +113,27 @@ struct ZH2B {// size 32 bytes
 		rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
 	}
 	inline int Unsolved_Count() { return rows_unsolved.Count(); }
-	inline void ComputeNext() { if (FullUpdate())Guess(); }
-	inline void ComputeNextFalse() { if (FullUpdate())GuessFalse(); }
-	int Isvalid();
-	int IsvalidNoUpdate(int debug = 0); // usually after init 2 steps
-	uint64_t GetUa();
-	void Init_x_(GINT64 t, int n);
-	uint64_t Init_y_(GINT64 t, int n);
-	void Init_xy(ZH2B & o, GINT64 tx, int nx, GINT64 ty, int ny);
-
+	//inline void ComputeNext() { if (FullUpdate())Guess(); }
+	//inline void ComputeNextFalse() { if (FullUpdate())GuessFalse(); }
+	//int Isvalid();
+	//int IsvalidNoUpdate(int debug = 0); // usually after init 2 steps
+	//uint64_t GetUa();
+	void InitTclues(uint32_t * tclues, int n);
+	uint64_t ValidXY(uint32_t * tclues, int n);
+	uint64_t MoreSocket2();
+	uint64_t MoreSocket2First();
+	uint64_t MoreSocket2Second(int digit);
 	int Update();
 	int FullUpdate();
 	int FullUpdateNoGuess();
-	void Guess();
-	void GuessFalse();
+	//void Guess();
+	//void GuessFalse();
+	void GuessValidB12(int index);
+	void GuessValidB12_best(int index);
+	void GuessGo(int dig, BF64 & wsol,int index);
+	void GuessGo_best(int dig, BF64 & wsol, int index);
+	void GuessMoreGuas(int index);
+
 	int ApplySingleOrEmptyCells();
 	uint64_t CheckUa(uint64_t ua);
 	char * SetKnown(char * zs);
@@ -147,7 +159,7 @@ struct ZH2B5_GLOBAL { // global variables for the game table
 		sizef5,// size limit for new uas
 		single_applied, // loop control in full update
 	    modevalid;// 0 base 1 gua mode
-	uint32_t  ndigits,filler;
+	uint32_t  ndigits,diag;
 	//_______________________
 	uint64_t FindUAsInit(int fl, int source = 1);
 	void CollectUas5();//FindInit done

@@ -1,13 +1,13 @@
 
 struct XY_EXPAND {// storing valid puzzles in a band and main data  size 32 bytes
 	GINT64 cells;// up to 6 cells sorted in the entry order
-	uint64_t cellsbf; //cells bit field in 54 bits mode
+	uint64_t cellsbf; //cells bit field in 2X  mode
 	GINT64 stacks;// stack count 
 	inline void Create5(int * tcells) {
 		stacks.u64 = cells.u64 = cellsbf = 0;
 		for (int i = 0; i < 5; i++) {
 			register int c = tcells[i];
-			cellsbf |= (uint64_t)1 << c;
+			cellsbf |= (uint64_t)1 << C_To128[c];
 			cells.u8[i] = c;
 			stacks.u16[C_stack[c]]++;
 		}
@@ -17,7 +17,7 @@ struct XY_EXPAND {// storing valid puzzles in a band and main data  size 32 byte
 		stacks.u64 = cells.u64 = cellsbf = 0;
 		for (int i = 0; i < 6; i++) {
 			register int c = tcells[i];
-			cellsbf |= (uint64_t)1 << c;
+			cellsbf |= (uint64_t)1 << C_To128[c];
 			cells.u8[i] = c;
 			stacks.u16[C_stack[c]]++;
 		}
@@ -180,65 +180,96 @@ struct G17B3HANDLER{
 
 };
 
+//========== indexstep max number of blocs 
+#define G17BLOCSUA 4
+#define G17BLOCGSUA 20
+//640 uas 320 guas ,,, step size
+
+#define G17CHKX 256
+#define G17CHKY 256
+#define MAXNIND6 12080
 
 struct G17XY{
-	XY_EXPAND xxe, yye;
-	uint64_t vxg[G17BLOCGSUA], vyg[G17BLOCGSUA], vw[G17BLOCGSUA+1];// one dummy in vw
-	uint64_t vm1xg[3], vm1yg[3], vm2xg[3], vm2yg[3];
 	BF128 bands_active_pairs, bands_active_triplets;
 	BF128 more_active_pairs, more_active_triplets;
+	uint64_t vxg[G17BLOCGSUA], vyg[G17BLOCGSUA], vw[G17BLOCGSUA + 1];// one dummy in vw
+	uint64_t vm1xg[3], vm1yg[3], vm2xg[3], vm2yg[3];
 	GINT64 stacksxy;
+	XY_EXPAND xxe, yye;
+	uint64_t cellsbf;
+	uint32_t tclues[12],xygang[9];
+
 	int ntb3, b3lim,// number of active bands after Guas and stack filters
-		nbx, nby,more3;// band x and band y count
+		ibfirst, // first band valid index in FirstCheckActiveBands
+		nbx, nby,nclues,more3;// band x and band y count
 	int tuab3[40], ntuab3;// UAs band3 found inside a ba,d3 cycle
 	G17TB3GO wg3;// current band 
 	G17B3HANDLER g17hh0;
 	int uasb3_1[2000], nuasb3_1, uasb3_2[2000], nuasb3_2;
 	//============= process
 	void Go_0();// check stacks, collect Guas status
+	void Init();// create tclues xygang
 	void Go_Guas_collect();
+	void Go_Guas_collect1();
+	void Go_Guas_collect2();
+	void Go_Guas_collect3();
+	void Go_Guas_collectdefault();
 	void Go_Guas_collectMore();
 	uint64_t GetPairs(int ib3);
 	int GetTriplets(int ib3);
-	void BuildActiveBands();
+	int FirstCheckActiveBands();
 	int CheckValidBand12();
-	int Rebuild();
+	void BuildActiveBands();
 	void Go_ValideB12();
 	void FoutValid17(int bf3, int ib3);
 };
 struct G17CHUNK{
 	int nxc, nyc, n64vua, n64vgua, ix, iy;
-	uint64_t vxc[G17CHKX * G17BLOCSUA], vxgc[G17CHKX * G17BLOCGSUA]; // X chunk vectors UAs and GUAs
-	uint64_t vyc[G17CHKY * G17BLOCSUA], vygc[G17CHKY * G17BLOCGSUA]; // Y chunk vectors UAs and GUAs
-	uint16_t tstore[256 * 256]; // storing XY passing filter 1 will never reach the limit
-	XY_EXPAND tyec[G17CHKY], txec[G17CHKX];// current tables
+	uint64_t *vyc;// stored after used vxc to optimize cache effect
+	uint64_t vxc[10000];// dynamic store vectors for vyc
 	// room for more vectors guas
 	uint64_t vm1xgc[G17CHKX * 3], vm1ygc[G17CHKY * 3]; //X  Y chunk vectors more 1
+	uint64_t  vxgc[G17CHKX * G17BLOCGSUA]; // X chunk vectors UAs and GUAs
+	uint64_t  vygc[G17CHKY * G17BLOCGSUA]; // Y chunk vectors UAs and GUAs
+
+	XY_EXPAND tyec[G17CHKY], txec[G17CHKX];// current tables
 
 	void GoChunk();
-	void GoChunk_2();
 };
 
 struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
+
+	uint64_t step_buffer[20000];
+	// dynamic allocation in step_buffer
+	uint64_t * vcellsuas,// 54 * blocs size for uas cells
+		*vcellsguas,// 54 * blocs size for guas cells
+		*vid81;// maxi 160 active id * bloc size
+	int cur_step_buffer_index,
+		vcellsuas_size,// n64vua * 54
+		vcellsguas_size,// n64vgua * 54
+		vid81_size;//n64vgua *(nactive2+nactive3)
 	XY_EXPAND xyew1[MAXNIND6], xyew2[MAXNIND6]; //12072 as seen maximum
 	uint64_t tvuas[MAXNIND6 * G17BLOCSUA], tvguas[MAXNIND6 * G17BLOCGSUA],
-		vcellsuas[54][G17BLOCSUA], vcellsguas[54][G17BLOCGSUA],
-		vauas[G17BLOCSUA], vaguas[G17BLOCGSUA], vid81[162][G17BLOCGSUA],
+		vauas[G17BLOCSUA], vaguas[G17BLOCGSUA], 
 		tua[TUA64_12SIZE], tgua[5000];
 	// moreguas partiel vectors
 	uint64_t tmgua[2][192], vmcellsguas[54][3], vmid81[162][3],vmuas[3];
 	uint64_t tvm1guas[MAXNIND6 * 3],	tvm2guas[MAXNIND6 * 3];
 
+	int tactive2[81], nactive2, tactive3[81], nactive3;
 
 	uint64_t  b1b2_2Xbf, b1b2_54bf, nb1b2_2Xbf, nb1b2_54bf, searched17_54;
 	int searched17_band3, searched_nclues1, searched_nclues2;
 	BF128 pairsok, tripletsok;// found one empty gua 
 	int ntua, ntgua, n64vua, n64vgua,added_more;
 	int * t1, *t2; // index used in band1 and band2
-	int xfirstdead, x2dead, yfirstdead, y2dead, oldx1, oldy1, oldx2;
+	uint32_t xfirstdead, x2dead, yfirstdead, y2dead, oldx1, oldy1, oldx2;
 	uint64_t dead, dead54;
 	int n51, n52, n61, n62, nw1, nw2, ncluesw2;
 	//======================================= process
+	inline uint64_t * AllocLockStepBuffer(int x){
+		uint64_t * vr = &step_buffer[cur_step_buffer_index];
+		cur_step_buffer_index += x; return vr; }
 	void Debug();
 	void CheckVectors();// debugging sequence
 	void CheckUas();// debugging sequence
@@ -249,7 +280,9 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	void Init(int i1, int i2);
 	int ShrinkUas();// shrink table of UAs for bands1+2
 	void ShrinkGuas();// shrink table for gangster uas2 ua3s
-	// process summary
+	int ShrinkGuasLoad(uint64_t *tu, int itu0, int itu1);
+	void SetV(uint64_t * v, int i1, int i2); // ste bit 1 in v from i1 to i2
+					  // process summary
 	void Do66(); // do 6 clues b1 6 clues b2  
 	void Do65(); // do 6 clues b1 5 clues b2  
 	void Do56(); // do 5 clues b1 6 clues b2
@@ -257,12 +290,12 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	void Do_Common_2();// build  Y tables of vectors
 	void Do_Common_3_BuildXvectors();// in fact, in the chunk for 256 X maximum
 	void Do_Common_3();// launch chunks 256 x256 in G17CHUNK
+	void PrintUasShrinked();
 };
 
 
 struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
 	int xyexpand_size,debug17,p17;	
-	G17B();
 
 	//=====================process
 	void GoM10();// end preparation for a given band1+band2+ table band3 pass 656 566

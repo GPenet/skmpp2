@@ -12,6 +12,7 @@ struct STD_B416 {
 		nua = t16_nua[i416];
 		memcpy(tua, &t16_UAs[t16_indua[i416]], 4 * nua);
 	}
+	void MorphUas();
 	void InitC10(int i);
 	void InitG12(int i) ;
 	void InitBand2_3(int i16,char * ze, BANDMINLEX::PERM & p) ;
@@ -35,25 +36,29 @@ struct STD_B1_2 :STD_B416 {
 	uint32_t GetMiniData(int index,  uint32_t & bcells, STD_B1_2 *bb);
 	void DoExpandBand(int dband);// dband 0/27
 	void DebugIndex(int ind6 = 0);
+	void PrintShortStatus();
 };
 
 struct STD_B3 :STD_B416 {// data specific to bands 3
 	struct GUAs {
 		BF128 isguasocket2, isguasocket3, isguasocket4;// active i81
-		int pairs[27] ;// gua2s i81 and bf of active
-		int triplet[9] ;//same gua3s
+		int pairs[27];// gua2s i81  bf of active
+		int triplet[9];//same gua3s
+		int triplet_imini[81];
 		int ua_pair[81], ua_triplet[81]; // storing ua bitfields
+		int ua2_imini[81], ua3_imini[81];
 	}guas;
+	int minirows_bf[9];
+	int triplet_perms[9][2][3];
 	//int ti81_pairs[27];// index to the relevant tsgua2 (genb12)
 	//int ti81_triplet[9];//index to the relevant tsgua3
 	//BF128 tbands_UA4_6s, tbands_pairs, tbands_triplets;
 	//int tuas46[81];
 	//GINT64 tipairs[96];
-	//int tindexUA4s[96];// pair id_81 (3x27) to bit 0_8 in the band
-	//int tindextriplets[96];// triplet id_81 (3x27) to bit 0_8 in the band
 	//_______________________
 	void InitBand3(int i16, char * ze, BANDMINLEX::PERM & p);
 	int IsGua(int i81);
+	int IsGua3(int i81);
 	void PrintB3Status();
 };
 
@@ -87,6 +92,10 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	void BuildFloorsAndCollectOlds(int fl);
 	int AddUA64(uint64_t * t, uint32_t & nt);
 	inline void AddUA(uint64_t v) {
+		ua = v; AddUA64(tua, nua);
+	}
+	inline void AddUACheck(uint64_t v) {
+		if (nua >= TUA64_12SIZE) nua = TUA64_12SIZE - 1;
 		ua = v; AddUA64(tua, nua);
 	}
 	void BuilOldUAs( uint32_t r0);
