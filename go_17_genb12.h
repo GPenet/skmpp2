@@ -92,7 +92,7 @@ struct GEN_BANDES_12{// encapsulating global data
 	void Find_band2B();
 	int ValidBand2();
 	void Find_band3B(int m10=1);
-	void DebugFreshUA(uint64_t ua);
+	int DebugFreshUA(uint64_t ua);
 	//int FindBand3Unique();//test or  debugging code see the corresponding file
 	//================ B creating a catalogue for the 17 search 
 	//same as A exchanging bands 2/3
@@ -117,7 +117,7 @@ struct GEN_BANDES_12{// encapsulating global data
 	}
 
 	int GetSocket(int bf, int i3){// UA; band 3 index
-		register int cc = __popcnt(bf);
+		register int cc = _popcnt32(bf);
 		if (cc > 3) return -1; // can not be a mini row
 		if (cc <2) return -1; // can not be a mini row
 		register int mask = 7;

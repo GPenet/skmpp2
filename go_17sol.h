@@ -135,7 +135,7 @@ struct G17B3HANDLER{
 			if (Ru & known_b3) continue;// already hit, forget it
 			Ru &= active_b3;
 			if (!Ru) return 1;// dead branch
-			if (__popcnt(Ru) == 1){// assign it and reduce the active cells
+			if (_popcnt32(Ru) == 1){// assign it and reduce the active cells
 				CriticalAssignCell(Ru);
 				irloop = 1;// should loop for new singles
 			}
@@ -182,7 +182,7 @@ struct G17B3HANDLER{
 
 //========== indexstep max number of blocs 
 #define G17BLOCSUA 4
-#define G17BLOCGSUA 20
+#define G17BLOCGSUA 30
 //640 uas 320 guas ,,, step size
 
 #define G17CHKX 256

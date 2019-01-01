@@ -1,9 +1,9 @@
 
 //========================================
-char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
+const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
 
-char * libs_c17_00_cpt2g[20] = {
+const char * libs_c17_00_cpt2g[20] = {
 	"bands1+2 processed entries M10",//0
 	"chunks processed entries gochunk",//1
 	"XY count",//2
@@ -141,14 +141,16 @@ void Go_c17_90() {// creating band UAs
 		zh1b_g.FindMissingUAs();
 
 		if (t16_nua[i416] == zh1b_g.nua)goto ok;
-		cout << "uas final table" << endl;
-		zh1b_g.PrintTua();
-		cout << "uas known table" << endl;
-		int id = t16_indua[i416], iff = id + t16_nua[i416];
-		for (int i = id; i < iff; i++)
-			cout << i - id << "\t"
-			<< Char27out(t16_UAs[i]) << "\t" << _popcnt32(t16_UAs[i]) << endl;
-		continue;
+		{
+			cout << "uas final table" << endl;
+			zh1b_g.PrintTua();
+			cout << "uas known table" << endl;
+			int id = t16_indua[i416], iff = id + t16_nua[i416];
+			for (int i = id; i < iff; i++)
+				cout << i - id << "\t"
+				<< Char27out(t16_UAs[i]) << "\t" << _popcnt32(t16_UAs[i]) << endl;
+			continue;
+		}
 	ok:
 		cout << "ua count equal" << endl;
 	}

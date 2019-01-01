@@ -88,7 +88,11 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		<< " nactive i81=" << nactive2 << endl;
 }
 void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
-	if (fl != 0670) diag = 0;
+	if (diag){
+		if (fl == 0722) cout << "try i81 = 0 floors 0722" << endl;
+		else diag = 0;
+	}
+	//if (fl != 0670) diag = 0;
 	if (diag) zh2b5_g.diag = 1; else zh2b5_g.diag = 0;
 	uint64_t solved_cells = zh2b5_g.FindUAsInit(fl, 1);
 	if (diag)cout<<Char2Xout(solved_cells) << "collect floors=0" << oct << fl << dec
@@ -311,85 +315,88 @@ nextii:
 	ii++;
 	{	crcb = tgen_band_cat[ii];//cell_r_c_b  24 cells to fill
 		register int fr0 = cd[crcb[2]] & bd[crcb[3]], fr = rd[crcb[1]] & fr0;
-		if (crcb[4])if (__popcnt(fr0) < 3) goto back; // 3 clues needed here
+		if (crcb[4])if (_popcnt32(fr0) < 3) goto back; // 3 clues needed here
 		if (!fr)goto back;
 		free[ii] = fr;
 	}
 	goto next_first;
-
 next:// erase previous fill and look for next
 	crcb = tgen_band_cat[ii];
 	d = zs0[crcb[0]];
 	bit = 1 << d;
 	rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
 	if (!free[ii])goto back;
-next_first:
-	crcb = tgen_band_cat[ii];// be sure to have the good one
-	bitscanforward(d, free[ii]);
-	bit = 1 << d;
-	free[ii] ^= bit;
-	zs[crcb[0] + 27] = (char)(d + '1');
-	zs0[crcb[0]] = d;
-	rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
-	if (ii < 23) goto nextii;
-	// this is a valid band, check if lexically minimale 
-	int ir = bandminlex.Getmin(zs0, &pband2, 0);
-	if (ir < 0) {//would be bug  did not come in enumeration
-		cerr << "Find B2 invalid return  Getmin" << endl;
-		return;
-	}
-	it16_2 = pband2.i416;
-	i2t16 = t416_to_n6[it16_2];
-	if (i2t16 < i1t16)goto next;// not canonical
-	if (i2t16 == i1t16)if (it16_2 < it16)goto next;// not canonical
+	{
+	next_first:
+		crcb = tgen_band_cat[ii];// be sure to have the good one
+		bitscanforward(d, free[ii]);
+		bit = 1 << d;
+		free[ii] ^= bit;
+		zs[crcb[0] + 27] = (char)(d + '1');
+		zs0[crcb[0]] = d;
+		rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
+		if (ii < 23) goto nextii;
+		// this is a valid band, check if lexically minimale 
+		int ir = bandminlex.Getmin(zs0, &pband2, 0);
+		if (ir < 0) {//would be bug  did not come in enumeration
+			cerr << "Find B2 invalid return  Getmin" << endl;
+			return;
+		}
+		it16_2 = pband2.i416;
+		i2t16 = t416_to_n6[it16_2];
+		if (i2t16 < i1t16)goto next;// not canonical
+		if (i2t16 == i1t16)if (it16_2 < it16)goto next;// not canonical
 
-	n_auto_b1b2 = 0;
-	if (n_auto_b1) {
-		for (int imorph = 0; imorph < n_auto_b1; imorph++) {
-			BANDMINLEX::PERM &p = t_auto_b1[imorph];
-			int band[27];// morph the band
-			for (int i = 0; i < 9; i++) {
-				band[i] = p.map[zs0[p.cols[i]]];
-				band[i + 9] = p.map[zs0[p.cols[i] + 9]];
-				band[i + 18] = p.map[zs0[p.cols[i] + 18]];
-			}
-			int ir = G17ComparedOrderedBand(zs0, band);
-			if (ir == 1)				goto next;
-			else if (!ir) {// auto morph b1 b2 store it for later
-				t_auto_b1b2[n_auto_b1b2++] = p;
+		n_auto_b1b2 = 0;
+		if (n_auto_b1) {
+			for (int imorph = 0; imorph < n_auto_b1; imorph++) {
+				BANDMINLEX::PERM &p = t_auto_b1[imorph];
+				int band[27];// morph the band
+				for (int i = 0; i < 9; i++) {
+					band[i] = p.map[zs0[p.cols[i]]];
+					band[i + 9] = p.map[zs0[p.cols[i] + 9]];
+					band[i + 18] = p.map[zs0[p.cols[i] + 18]];
+				}
+				int ir = G17ComparedOrderedBand(zs0, band);
+				if (ir == 1)				goto next;
+				else if (!ir) {// auto morph b1 b2 store it for later
+					t_auto_b1b2[n_auto_b1b2++] = p;
+				}
 			}
 		}
-	}
 
-	n_auto_b2b1 = 0;// possible automorph after perm b1b2
-	if (i1t16 == i2t16) {// must try perm bands 12 auto morphs
-		int b23[3][9];
-		for (int i = 0; i < 3; i++) {// morph band1 to band2 minlex
-			register int * rrd = b23[i], *rro = &grid0[9 * i];
-			for (int j = 0; j < 9; j++)
-				rrd[j] = pband2.map[rro[pband2.cols[j]]];
-		}
-		int ir = G17ComparedOrderedBand(zs0, b23[0]);// is it same as base
-		if (ir == 1) 			goto next;
-		else if (!ir)// auto morph b1 b2 store it for later
-			t_auto_b2b1[n_auto_b2b1++].InitBase(i2t16);
-		// must also test all auto morphs b2b1
-		for (int imorph = 0; imorph < n_auto_b1; imorph++) {// same automorphs b1 b2
-			BANDMINLEX::PERM &pp = t_auto_b1[imorph];
-			int b23_a[3][9];
-			for (int i = 0; i < 3; i++) {
-				register int * rrd = b23_a[i], *rro = b23[i];
-				for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
+		n_auto_b2b1 = 0;// possible automorph after perm b1b2
+		if (i1t16 == i2t16) {// must try perm bands 12 auto morphs
+			int b23[3][9];
+			for (int i = 0; i < 3; i++) {// morph band1 to band2 minlex
+				register int * rrd = b23[i], *rro = &grid0[9 * i];
+				for (int j = 0; j < 9; j++)
+					rrd[j] = pband2.map[rro[pband2.cols[j]]];
 			}
-			int ir = G17ComparedOrderedBand(&grid0[27], b23_a[0]);
-			if (ir == 1)goto next;
+			int ir = G17ComparedOrderedBand(zs0, b23[0]);// is it same as base
+			if (ir == 1) 			goto next;
 			else if (!ir)// auto morph b1 b2 store it for later
-				t_auto_b2b1[n_auto_b2b1++] = pp;
+				t_auto_b2b1[n_auto_b2b1++].InitBase(i2t16);
+			// must also test all auto morphs b2b1
+			for (int imorph = 0; imorph < n_auto_b1; imorph++) {// same automorphs b1 b2
+				BANDMINLEX::PERM &pp = t_auto_b1[imorph];
+				int b23_a[3][9];
+				for (int i = 0; i < 3; i++) {
+					register int * rrd = b23_a[i], *rro = b23[i];
+					for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
+				}
+				int ir = G17ComparedOrderedBand(&grid0[27], b23_a[0]);
+				if (ir == 1)goto next;
+				else if (!ir)// auto morph b1 b2 store it for later
+					t_auto_b2b1[n_auto_b2b1++] = pp;
+			}
 		}
+		nb12++;
+		if (ValidBand2())return;
+		goto next;
+
 	}
-	nb12++;
-	if (ValidBand2())return;
-	goto next;
+
 back:
 	if (--ii >= 0) goto next;
 }
@@ -469,110 +476,124 @@ next:// erase previous fill and look for next
 	bit = 1 << d;
 	rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
 	if (!free[ii])goto back;
-next_first:
-	crcb = tgen_band_cat[ii];// be sure to have the good one
-	bitscanforward(d, free[ii]);
-	bit = 1 << d;
-	free[ii] ^= bit;
-	zs[crcb[0] + 54] = (char)(d + '1');
-	zs0[crcb[0]] = d;
-	rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
-	if (ii < 23) goto nextii;
-	// this is a valid band, check if canonical 
-	int ir = bandminlex.Getmin(zs0, &pout, 0);
-	if (ir < 0) {//would be bug  did not come in enumeration
-		cerr << "gen band 3 invalid return Getmin" << endl;
-		return;
-	}
-	int it16_3 = pout.i416;
-	i3t16 = t416_to_n6[it16_3];
-	if (i3t16 < i1t16)goto next;// not canonical
-	if (i3t16 < i2t16)goto next;// not canonical (must be in this case
-	//==============================  b1=b2=b3 use minlex check (simplest code, not common)
-	if (i1t16 == i3t16 && i3t16 == i2t16) {// 3 bands equal use diagonal test 
-		BANDMINLEX::PERM * p = minlexusingbands.pout;
-		p[0].InitBase(i1t16);
-		p[1] = pband2;
-		p[2] = pout;
-		if (minlexusingbands.IsLexMinDirect(grid0, i1t16, t_auto_b1, n_auto_b1, ndiag))
-			goto next;
-		//int box, rows[9], cols[9], out[81];
-		//rowminlexcheck(grid0, out, box, rows, cols);
-		//for (int i = 0; i < 81; i++)if (out[i] < grid0[i])goto next;
-		goto exit_diag;// rowminlex includes diagonal check
-	}
-	//========================== morphs on b1b2 base test
-	if (n_auto_b1b2) {// still direct automorphism b1b2
-		for (int imorph = 0; imorph < n_auto_b1b2; imorph++) {
-			BANDMINLEX::PERM &p = t_auto_b1b2[imorph];
-			int b23[3][9];
-			// direct
-			for (int i = 0; i < 3; i++) {// band 3 only
-				register int * rrd = b23[i], *rro = &grid0[54 + 9 * i];
-				for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
+	{
+	next_first:
+		crcb = tgen_band_cat[ii];// be sure to have the good one
+		bitscanforward(d, free[ii]);
+		bit = 1 << d;
+		free[ii] ^= bit;
+		zs[crcb[0] + 54] = (char)(d + '1');
+		zs0[crcb[0]] = d;
+		rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
+		if (ii < 23) goto nextii;
+		// this is a valid band, check if canonical 
+		int ir = bandminlex.Getmin(zs0, &pout, 0);
+		if (ir < 0) {//would be bug  did not come in enumeration
+			cerr << "gen band 3 invalid return Getmin" << endl;
+			return;
+		}
+		int it16_3 = pout.i416;
+		i3t16 = t416_to_n6[it16_3];
+		if (i3t16 < i1t16)goto next;// not canonical
+		if (i3t16 < i2t16)goto next;// not canonical (must be in this case
+		//==============================  b1=b2=b3 use minlex check (simplest code, not common)
+		if (i1t16 == i3t16 && i3t16 == i2t16) {// 3 bands equal use diagonal test 
+			BANDMINLEX::PERM * p = minlexusingbands.pout;
+			p[0].InitBase(i1t16);
+			p[1] = pband2;
+			p[2] = pout;
+			if (minlexusingbands.IsLexMinDirect(grid0, i1t16, t_auto_b1, n_auto_b1, ndiag))
+				goto next;
+			//int box, rows[9], cols[9], out[81];
+			//rowminlexcheck(grid0, out, box, rows, cols);
+			//for (int i = 0; i < 81; i++)if (out[i] < grid0[i])goto next;
+			goto exit_diag;// rowminlex includes diagonal check
+		}
+		{
+			//========================== morphs on b1b2 base test
+			if (n_auto_b1b2) {// still direct automorphism b1b2
+				for (int imorph = 0; imorph < n_auto_b1b2; imorph++) {
+					BANDMINLEX::PERM &p = t_auto_b1b2[imorph];
+					int b23[3][9];
+					// direct
+					for (int i = 0; i < 3; i++) {// band 3 only
+						register int * rrd = b23[i], *rro = &grid0[54 + 9 * i];
+						for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
+					}
+					if (G17ComparedOrderedBand(&grid0[54], b23[0]) == 1)				goto next;
+				}
 			}
-			if (G17ComparedOrderedBand(&grid0[54], b23[0]) == 1)				goto next;
-		}
-	}
-	//=========================== perm b1b2 and base test (b1=b2)
-	if (n_auto_b2b1) {// possible lower band3 with a perm band1 band2
-		int b23[3][9];//first morph to band 2 min lexical
-		for (int i = 0; i < 3; i++) {// rows 4 to 9 as of band 2 perm
-			register int * rrd = b23[i], *rro = &grid0[54 + 9 * i];
-			for (int j = 0; j < 9; j++)
-				rrd[j] = pband2.map[rro[pband2.cols[j]]];
-		}
-		for (int imorph = 0; imorph < n_auto_b2b1; imorph++) {// then apply auto morphs 
-			BANDMINLEX::PERM &pp = t_auto_b2b1[imorph];
-			int b23_a[3][9];
-			for (int i = 0; i < 3; i++) {
-				register int * rrd = b23_a[i], *rro = b23[i];
-				for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
+			//=========================== perm b1b2 and base test (b1=b2)
+			if (n_auto_b2b1) {// possible lower band3 with a perm band1 band2
+				int b23[3][9];//first morph to band 2 min lexical
+				for (int i = 0; i < 3; i++) {// rows 4 to 9 as of band 2 perm
+					register int * rrd = b23[i], *rro = &grid0[54 + 9 * i];
+					for (int j = 0; j < 9; j++)
+						rrd[j] = pband2.map[rro[pband2.cols[j]]];
+				}
+				for (int imorph = 0; imorph < n_auto_b2b1; imorph++) {// then apply auto morphs 
+					BANDMINLEX::PERM &pp = t_auto_b2b1[imorph];
+					int b23_a[3][9];
+					for (int i = 0; i < 3; i++) {
+						register int * rrd = b23_a[i], *rro = b23[i];
+						for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
+					}
+					if (G17ComparedOrderedBand(&grid0[54], b23_a[0]) == 1) goto next;
+				}
 			}
-			if (G17ComparedOrderedBand(&grid0[54], b23_a[0]) == 1) goto next;
-		}
-	}
-	//========================= (b2=b3)#b1  perm b2b3 to consider (direct done)
-	if (i3t16 == i2t16) {// check b3b2 on  auto morphs b1
-		if (grid0[27] - 1) goto next; // must be '2' in r4c1
-		for (int imorph = 0; imorph < n_auto_b1; imorph++) {
-			BANDMINLEX::PERM &p = t_auto_b1[imorph];
-			int b23[6][9];
-			for (int i = 0; i < 6; i++) {// rows 4 to 9 from band 2
-				register int * rrd = b23[i], *rro = &grid0[27 + 9 * i];
-				for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
+			//========================= (b2=b3)#b1  perm b2b3 to consider (direct done)
+			if (i3t16 == i2t16) {// check b3b2 on  auto morphs b1
+				if (grid0[27] - 1) goto next; // must be '2' in r4c1
+				for (int imorph = 0; imorph < n_auto_b1; imorph++) {
+					BANDMINLEX::PERM &p = t_auto_b1[imorph];
+					int b23[6][9];
+					for (int i = 0; i < 6; i++) {// rows 4 to 9 from band 2
+						register int * rrd = b23[i], *rro = &grid0[27 + 9 * i];
+						for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
+					}
+					int ir = G17ComparedOrderedBand(&grid0[27], b23[3]);
+					if (ir == 1)goto next;
+					if (ir < 1 && G17ComparedOrderedBand(&grid0[54], b23[0]) == 1)goto next;
+				}
 			}
-			int ir = G17ComparedOrderedBand(&grid0[27], b23[3]);
-			if (ir == 1)goto next;
-			if (ir < 1 && G17ComparedOrderedBand(&grid0[54], b23[0]) == 1)goto next;
-		}
-	}
-	//============================= b1=b3 #b2 
-	if (minlexusingbands.IsLexMinDiagB(grid0, i1t16, i2t16, i3t16, t_auto_b1, n_auto_b1, ndiag))goto next;
+			//============================= b1=b3 #b2 
+			if (minlexusingbands.IsLexMinDiagB(grid0, i1t16, i2t16, i3t16, t_auto_b1, n_auto_b1, ndiag))goto next;
 
-exit_diag:
-	//genb12.B3add(pout.i416);
-	bands3[nband3++].InitBand3(i3t16,&zs[54],pout);
-	//valid_bands.bands3[nband3].Init(zs0);
-	goto next;
+		}
+
+	exit_diag:
+		//genb12.B3add(pout.i416);
+		bands3[nband3++].InitBand3(i3t16, &zs[54], pout);
+		//valid_bands.bands3[nband3].Init(zs0);
+		goto next;
+
+	}
 back:
 	if (--ii >= 0) goto next;
 	if (m10 != 1)return;
 	if (nband3)		g17b.GoM10();// call the process for that entry
 }
 
-void GEN_BANDES_12::DebugFreshUA(uint64_t ua) {
+int GEN_BANDES_12::DebugFreshUA(uint64_t ua) {
 	// purely debugging code, a fresh UA <= limsize must have >5 digits
 	uint32_t cell, digits = 0;
 	while (bitscanforward64(cell, ua)) {
 		ua ^= (uint64_t)1 << cell;
 		digits |= 1 << grid0[From_128_To_81[cell]];
 	}
-	if (_popcnt32(digits) < 6)
-		cout << "bug more ua bands 1+2 not enough digits " << endl;
+	if (_popcnt32(digits) >= 6) return 0;
+	cout << "bug more ua bands 1+2 not enough digits " << endl;
+	return 1;
 }
 void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
-	ntua2 = 0; nactive2 = 0;
+	int diag = 0;
+	if (p_cpt2g[3] == 4859)diag = 1;
+	if (diag) {
+		cout << "entry Sockets2SetupForB12" << endl;
+		cout << Char2Xout(cluesbf) << " cluesbf" << endl;
+		char ws[82];
+		cout << g17xy.bands_active_pairs.String3X(ws) << " bands active pairs" << endl;
+	}
 	for (int i = 0; i < 81; i++) {// initial socket 2
 		SGUA2 & w = tsgua2[i];
 		if (!w.valid)continue;
@@ -581,25 +602,31 @@ void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
 		if (g17xy.xygang[w.col2] & w.digs)continue;// not valid here
 		// this is a possible gua2 socket try to find a gua
 		p_cpt2g[6]++;
-		//w.Debug("call MoreSocket2");
-		//cout <<"call MoreSocket2 i81=" << i  << endl;
+		zh2b_g.test = 0;
+		if (diag && i==80) {
+			w.Debug("call MoreSocket2");
+			cout <<"call MoreSocket2 i81=" << i  << endl;
+			zh2b_g.test = 1;
+		}
 		uint64_t new_ua = zh2b_g.MoreSocket2(gangb12, w.gangcols,
 			g17xy.tclues, g17xy.nclues, w.digs);
 		if (new_ua) {
 			p_cpt2g[7]++;
-			g17xy.bands_active_pairs.setBit(C_To128[i]);
+			g17xy.bands_active_pairs.Set_c(i);
 			// insert in the ua table 
 			genuasb12.ua = new_ua;
 			uint64_t cc = _popcnt64(genuasb12.ua);
 			genuasb12.ua |= cc << 59;
-			// protect against table limit and load for future use
-			if (w.nua >= SIZETGUA)w.nua = SIZETGUA - 1; // guess it will be a smaller
-			genuasb12.AddUA64(w.tua, w.nua);
+			if (cc <= UALIMSIZE) {
+				// protect against table limit and load for future use
+				if (w.nua >= SIZETGUA)w.nua = SIZETGUA - 1; // guess it will be a smaller
+				genuasb12.AddUA64(w.tua, w.nua);
 
-			//cout << Char2Xout(new_ua) << "new ua i81=" << i
-			//	<< " cc=" << _popcnt64(new_ua) << endl;
-			DebugFreshUA(new_ua);
+				if (DebugFreshUA(new_ua))
+					cout << Char2Xout(new_ua) << "too small new ua i81=" << i
+					<< " cc=" << _popcnt64(new_ua) << endl;
 
+			}
 
 		}
 		//break;

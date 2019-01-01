@@ -48,7 +48,7 @@ struct ZH_GLOBAL { // global variables for the game table
 	char * zsol, *puzfinal, *pat, 
 		stdfirstsol[82],
 		zerobased_sol[81];
-#ifdef SKMPPV2
+//#ifdef SKMPPV2
 	// switching to solver mode
 	PM3X pm, pmdiag,pmelims;
 	BF128  cells_unsolved_e, cells_unsolved_diag,// pm status direct and diagonal
@@ -65,7 +65,7 @@ struct ZH_GLOBAL { // global variables for the game table
 	ZHOU * zhou_current;
 	// specific to symmetry of given generation
 	USHORT * ptcor;
-#endif
+//#endif
     //=================== floor analysis (one digit)
 	int current_digit,active_floor;
 	BF128  or_floor[9], elim_floor[9];
@@ -100,7 +100,7 @@ struct ZH_GLOBAL { // global variables for the game table
 	int Go_InitSolve(GINT16 * td, int nc);
 	void ValidPuzzle(ZHOU * z);
 	void Debug();
-#ifdef SKMPPV2
+//#ifdef SKMPPV2
 	// located in go_0xxcpp
 	inline void Init_Assign(){ nsingles = 0; cells_assigned.SetAll_0(); }
 	void Pm_Status(ZHOU * z);
@@ -110,8 +110,7 @@ struct ZH_GLOBAL { // global variables for the game table
 	void Build_digits_cells_pair_bf();
 	// located in solver step
 	void DebugNacked();
-#endif
-
+//
 };
 /* 2 BF 128 per digit
 	equivalent to F and Fcomp in Zhou
@@ -127,7 +126,7 @@ struct ZHOU{// size 32 bytes
 	int ndigits,index,unsolved_digits,box_hidden_pair;
 
 	inline void Copy(ZHOU & o);
-	inline void Assign(int digit, int cell, int xcell);
+	void Assign(int digit, int cell, int xcell);
 	int Upd1(int digit);
 	int Update();
 	int InitSudoku(GINT16 * t, int n);
@@ -215,7 +214,7 @@ struct ZHOU{// size 32 bytes
 	int FullUpdateAtStart();
 	int CheckStatus();// located in solver_step 
 
-#ifdef SKMPPV2
+//#ifdef SKMPPV2
 	// located in go_0xx.cpp
 	int Rate10_LastInUnit();
 	int Rate12_SingleBox();
@@ -262,7 +261,7 @@ struct ZHOU{// size 32 bytes
 	void AssignSolver(int print = 0);
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
-#endif
+//#endif
 
 #ifdef SEARCH17SOL
 	// see go_17sol_zx_cpp_h

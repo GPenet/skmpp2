@@ -4,6 +4,7 @@
 
 
 */
+#define SKMPPV2
 ZHOU zdyn,zdynstep,zhou_solve_start;
 ZH_GLOBAL zhgdyn;
 void BuildHiddenBiv_Xwings(PM3X& pm, PM3X& pmdiag, HID_BIV & rbiv, HID_BIV & xbiv,int diag=0) {

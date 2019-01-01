@@ -66,7 +66,8 @@ struct ZH2B_GLOBAL { // global variables for the game table
 	BF64 sols_buffer[3000], ua_buffer[3000];
 
 	uint32_t nuaold, nua, ndigits;
-	int tsd[7], ntsd, socket_digits, isd1;// socket more
+	int tsd[7], ntsd, tsd2[7], ntsd2,
+		socket_digits, isd1;// socket more
 	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
 		rdigit, nctlg, go_back,  
 		test;
@@ -121,8 +122,11 @@ struct ZH2B {// size 32 bytes
 	void InitTclues(uint32_t * tclues, int n);
 	uint64_t ValidXY(uint32_t * tclues, int n);
 	uint64_t MoreSocket2();
-	uint64_t MoreSocket2First();
+	uint64_t MoreSocket2First(int digit);
 	uint64_t MoreSocket2Second(int digit);
+	uint64_t MoreSocketGuess();
+	uint64_t MoreSocketAssign(uint32_t digit, uint32_t xcell);
+
 	int Update();
 	int FullUpdate();
 	int FullUpdateNoGuess();
@@ -264,7 +268,7 @@ struct ZHONE_GLOBAL { // global variables for the game table
 		 cells_unsolved &= ~(1 << cell);
 		 FD[digit] &= ~(1 << (27 + C_row[cell]));//9*digit + row
 	 }
-	 inline int Unsolved_Count() { return __popcnt(cells_unsolved); }
+	 inline int Unsolved_Count() { return _popcnt32(cells_unsolved); }
 	 int ApplySingleOrEmptyCells();
 	 void InitOne_std_band(); // after getband in zh1b_g
 	 int InitSudokux(GINT * t, int n);

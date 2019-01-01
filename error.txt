@@ -1,0 +1,949 @@
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x77) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x77): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char)
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x96) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x96): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*)
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0xb5) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0xb5): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::ostream::operator<<(std::ostream& (*)(std::ostream&))
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0xd0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0xd0): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*)
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0xf6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0xf6): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::ostream::operator<<(std::ostream& (*)(std::ostream&))
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x143) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x143): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::ostream::operator<<(std::ostream& (*)(std::ostream&))
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x15c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x15c): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::ostream::operator<<(std::ostream& (*)(std::ostream&))
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x7ab) : référence indéfinie vers « std::ios_base::Init::Init() »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.text+0x7ab): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::ios_base::Init::Init()
+/tmp/ccXfc9dD.o:sk_t.cpp:(.rdata$.refptr._ZNSt8ios_base4InitD1Ev[.refptr._ZNSt8ios_base4InitD1Ev]+0x0) : référence indéfinie vers « std::ios_base::Init::~Init() »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.rdata$.refptr._ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_[.refptr._ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_]+0x0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::endl<char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&) »
+/tmp/ccXfc9dD.o:sk_t.cpp:(.rdata$.refptr._ZSt4cout[.refptr._ZSt4cout]+0x0) : référence indéfinie vers « std::cout »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0x9c3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0x9c3): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*)
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0x9d2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0x9d2): relocalisation tronquée pour concorder avec la taille : R_X86_64_PC32 vers le symbole indéfini std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*)
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0x9e1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0x9e1): débordement de relocalisation additionnelle omise à partir de la sortie
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xa01) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xa1a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xa79) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xa88) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xa98) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xaa7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xad0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xae9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xaf8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xb23) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xb32) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xb41) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xb86) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xb95) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xba7) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xbc1) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xbd3) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xbe2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cc6eaHfj.o:sk_bitfields.cpp:(.text+0xc1b) : référence indéfinie vers « std::ios_base::Init::Init() »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd08) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd17) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0x667e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0x6692) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0x66a1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0x66ae) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0x66bd) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xbedc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xbeeb) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc05b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc06a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc09e) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc0b7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc0e7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc100) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc10f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc11e) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc14e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc167) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc176) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc185) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc1c1) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc1d0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc1f6) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc205) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc21e) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc251) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc265) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc274) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc284) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc293) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc2b2) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc2c1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc2d5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc2e4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc2f6) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc30a) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc31c) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc32b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc34e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc35d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc36c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc389) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc398) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc451) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc466) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc485) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc49e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc4ba) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc4d6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc4f2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc60d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc61c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc62b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc70f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc729) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc74f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc76b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc7c0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc7dc) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc818) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc8a3) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc8dc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc8fb) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc91a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc9a3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc9b2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xc9c1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcaa5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcabf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcae5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcb01) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcb54) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcbdf) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcc18) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcc37) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcc56) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcc84) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcc98) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcca7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xccb7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xccc6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcd54) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcd69) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcd88) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcda1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcdbd) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcdd9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xce6e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xce80) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xce8f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xceea) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcefc) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf0b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf4f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf63) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf72) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf84) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcf93) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcfa5) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xcfb4) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd013) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd022) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd031) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd13f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd153) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd162) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd176) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd185) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd1c7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd1d6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd209) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xd218) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xda5b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xda6a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe04a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe059) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe1b5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe1c4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe1d1) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe1e0) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe24b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe258) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe267) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe37d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe38c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe446) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xe455) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf1bc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf1ce) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf1de) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf1ed) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf1ff) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf20e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf220) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf232) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf241) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf312) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf321) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf392) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf3a1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf3be) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf3cd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf3de) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf3ed) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf406) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf41f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf430) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf43f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf44e) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf4e9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf4f8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf569) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf578) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf595) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf5a4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf5b5) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf5c4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf5dd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf5f6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf607) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf616) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf625) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf70a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xf719) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfa32) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfa44) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfa53) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfa70) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfa82) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfa91) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfaa4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfab4) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfac3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfb4c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0xfb5b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.text+0x10455) : référence indéfinie vers « std::ios_base::Init::Init() »
+/tmp/ccNh8wql.o:main.cpp:(.text$_ZN4ZHOU18GuessHiddenBivalueEv[_ZN4ZHOU18GuessHiddenBivalueEv]+0x27) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccNh8wql.o:main.cpp:(.text$_ZN4ZHOU18GuessHiddenBivalueEv[_ZN4ZHOU18GuessHiddenBivalueEv]+0x36) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccNh8wql.o:main.cpp:(.rdata$.refptr._ZSt4cerr[.refptr._ZSt4cerr]+0x0) : référence indéfinie vers « std::cerr »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4573) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4583) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4592) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x45a8) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x45b7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x45da) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x45e9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x45f8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4615) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4624) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x46c2) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x46d7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x46f6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x470f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x472b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4747) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4763) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4792) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x47a2) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x47b1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x483e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4853) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4872) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x488b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x48a7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x48c3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x49c5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x49d4) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x49e3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4ac7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4ae1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4b07) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4b23) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4b78) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4b94) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4bd0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4c5b) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4c94) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4cb3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x4cd2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x51a3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x51b2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x51c6) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x51d5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x51e2) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x51f1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x66a1) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x66b7) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x66c9) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x66d8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x66e7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x67c6) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x67dc) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x67ee) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x67fd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6810) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x681f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x68ee) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x68fe) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x690d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6920) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x692f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x69fd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6a0c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6a1c) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6a2b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6a3e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6a4d) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6bfd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6c0c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6c1b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6cff) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6d19) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6d3f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6d5b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6db0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6dcc) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6e08) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6e93) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6ecc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6eeb) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x6f0a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x78dc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x78f0) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x78ff) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7b99) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7ba8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7bfb) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7c0a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7c22) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7c31) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7c3e) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x7c4d) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x94d7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x94e7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x94f6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x950c) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x951b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x954c) : référence indéfinie vers « std::ostream::operator<<(long) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x955b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x957e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x958d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x959c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x95b9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x95c8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9649) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x965e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x967d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9696) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x96b2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x96ce) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x96fe) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x970e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x971d) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x978b) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x97a0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x97bf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x97d8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x97f4) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x98e7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x98f6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9905) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x99e9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9a03) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9a29) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9a45) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9a98) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9b28) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9b61) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9b80) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0x9b9f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa536) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa545) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa554) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa563) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa6cb) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa6da) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa6e9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa8ab) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa8ba) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xa8c9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xaa71) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xaa80) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xaa8f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xac37) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xac46) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xac55) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/cctkHLB2.o:Zh1b2b.cpp:(.text+0xafd6) : référence indéfinie vers « std::ios_base::Init::Init() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x47d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x491) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4a0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4b4) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4d2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4ff) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x50e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x527) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x53a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x549) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x558) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x567) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5c8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5d7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x611) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x620) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x149a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x14a7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x14b6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x14c3) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x14d2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1552) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1562) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1574) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1583) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1597) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x15a6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x15ba) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x15c9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x15f9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1608) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x161c) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x162b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x163e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1652) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1661) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1674) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1688) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1697) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x16aa) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x16be) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x16cd) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x16e0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x16f4) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1703) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1716) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x172a) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1739) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x22e0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x22ef) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x232f) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x234c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2365) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2374) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2383) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x23c7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x23d6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x23e3) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x23f2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x240b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x241a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x245e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x246d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x247a) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2489) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x24ad) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x24bc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x24cb) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x24da) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2503) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2512) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2521) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x254a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2559) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2568) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2591) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x25a0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x25af) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x264a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2659) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2857) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2870) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2a01) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2a10) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2a57) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2a66) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2aad) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2abc) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2b03) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2b12) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2b62) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2b76) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2b85) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2bcf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2bde) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2c00) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2c0f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2c4d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2c61) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2c70) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2ce3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2cf2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2d14) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2d23) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2d30) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2d3f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2d96) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2da5) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2db8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2dca) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2dd7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2de9) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2df8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2f36) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2f4a) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2f59) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x2ff7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3006) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3015) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3024) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3053) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3067) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3076) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x30d4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x30e8) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x30f7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x311f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3133) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3142) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3bd2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3be6) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3bf5) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3cdf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3cee) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3cfd) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3d0c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3d1b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3d7e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x3d8d) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4403) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4412) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4426) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4435) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x444c) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4463) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4472) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4489) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x44a0) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x44af) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x44c1) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x44d5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x44e7) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x44f6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4a8e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4aa2) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4ab1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4ac5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4ad4) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4b6b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4b7a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4b8c) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4b99) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4bab) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4bba) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4bc9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c0e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c20) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c2d) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c3f) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c4e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c65) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4c74) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4cb8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4cc7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4dfa) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4e0a) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4e19) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4e5c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4e6b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4e7a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4ede) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4eed) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4f01) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4f10) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4fc6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4fd5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4fe9) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x4ff8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5774) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5788) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5797) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x57ab) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x57ba) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5b08) : référence indéfinie vers « BANDMINLEX::GetAutoMorphs(int, BANDMINLEX::PERM*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5b8d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5ba1) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5bb0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5bc4) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5bd3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5be7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x5bf6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6061) : référence indéfinie vers « BANDMINLEX::Getmin(int*, BANDMINLEX::PERM*, int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6083) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6092) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x62da) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x64c2) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6671) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6984) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6993) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x69a2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6a45) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6a54) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6fc5) : référence indéfinie vers « BANDMINLEX::Getmin(int*, BANDMINLEX::PERM*, int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6fe7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x6ff6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7247) : référence indéfinie vers « MINLEXUSINGBANDS::IsLexMinDirect(int*, int, BANDMINLEX::PERM*, int, int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x73b0) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x75eb) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7782) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x77b8) : référence indéfinie vers « G17ComparedOrderedBand(int*, int*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x785c) : référence indéfinie vers « MINLEXUSINGBANDS::IsLexMinDiagB(int*, int, int, int, BANDMINLEX::PERM*, int, int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x79a4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x79b3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7cd5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7ce5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7cf4) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d07) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d17) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d26) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d39) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d49) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d58) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d6b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d7b) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d8a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7d9d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7dad) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7dbc) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7dcf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7ddf) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7dee) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7e59) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7e66) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7e75) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7e82) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7e91) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7ea0) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f3d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f4a) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f59) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f66) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f75) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f85) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7f94) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7fa4) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7fb3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7fc3) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7fd2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7fe2) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x7ff1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x8000) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x8010) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x801f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9b5d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9b6a) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9b79) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9b86) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9b95) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9ba9) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9bb8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9bcc) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9bdb) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9eb1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9ec0) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9f03) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9f12) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9f94) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9fa7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9fb6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9fca) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x9fd9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa5b2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa5c1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa5d5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa5e4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa5f6) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa605) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa61d) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa635) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa64d) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa65c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa674) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xa683) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb81c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb82b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb83a) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb849) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb8b3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb8c5) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xb8d4) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbb93) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbba2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbbb1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbbd3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbbe2) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbbf1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbc13) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbc22) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbc31) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbc57) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbc66) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbc75) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbcc4) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbcd3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbce5) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbcf5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd07) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd16) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd32) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd41) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd53) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd63) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd75) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbd84) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbda0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbdaf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbdc1) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbdd1) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbde3) : référence indéfinie vers « std::ostream::operator<<(std::ios_base& (*)(std::ios_base&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbdf2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbe0e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbe1d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xbe2c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc66c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc67b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc691) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc6a0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc6b0) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc6bf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc6cf) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xc6de) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xeea5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xeebe) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xeecd) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xeef3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xef48) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xef57) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xef7a) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xef89) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xefa5) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xeffa) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf009) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf02c) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf03b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf0a8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf0b7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf0c6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf0d9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf0e9) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf0f8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf108) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf117) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf142) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf151) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf15e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf16d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf17d) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf18c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf19c) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf1ab) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf1bb) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf1ca) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf1dc) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf1eb) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf239) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf252) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf262) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf271) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf28e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf29d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf2ac) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf2c9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf2d8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf2e7) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf2fa) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf30a) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf319) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf34e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf35d) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf380) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf38f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf3c0) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf3cf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf3e8) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf3f9) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf408) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf438) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf447) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf460) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf475) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf484) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf4a1) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf4b0) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf4bf) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf4e5) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf4f5) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf504) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf521) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf530) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf53f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf54e) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf56f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf57e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf58d) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf5ae) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf5bd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf5cc) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf5ed) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf5fc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf60b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf62c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf63b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf64a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf659) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf676) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf685) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf694) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf6a3) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf6bc) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf6cb) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf6e0) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf6ef) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf704) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf713) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf728) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf737) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf750) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf75f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf774) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf783) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf798) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf7a7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf7bc) : référence indéfinie vers « std::ostream::operator<<(unsigned short) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0xf7cb) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1096d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1097c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10997) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x109a6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x109b5) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x109d4) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x109e3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x109f2) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10a11) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10a20) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10a2f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10aa6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10ab5) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10b6c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10b7b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10bd0) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10bdf) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10c02) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10c11) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10c80) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10c8f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10caa) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10cb9) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10cc8) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10ce7) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10cf6) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10d05) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10d6a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10d79) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10dff) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e0e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e1e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e2d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e3f) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e4e) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e60) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10e6f) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10ebb) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10ecd) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10edc) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10eee) : référence indéfinie vers « std::ostream::operator<<(unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10efd) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10f28) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10f37) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10fbe) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10fcd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10fdd) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x10fec) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1127c) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1128b) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x112aa) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x112b9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1132b) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1133a) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11362) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11371) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11392) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x113a1) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x113c7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x113d6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1140b) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1141a) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11435) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11444) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11453) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1146e) : référence indéfinie vers « std::ostream::operator<<(unsigned int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1147d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1148c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x115ca) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x115d9) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11666) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11675) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11685) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11694) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x116a4) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x116b3) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x116d0) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x116df) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11703) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11712) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11725) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1173e) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1174d) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1175d) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1176c) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x1177f) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11798) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x117a7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x117b7) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x117c6) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11873) : référence indéfinie vers « std::basic_ofstream<char, std::char_traits<char> >::open(char const*, std::_Ios_Openmode) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x118a1) : référence indéfinie vers « std::basic_ifstream<char, std::char_traits<char> >::open(char const*, std::_Ios_Openmode) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x118ad) : référence indéfinie vers « std::basic_ifstream<char, std::char_traits<char> >::is_open() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x118c7) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x118dd) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x118ec) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11904) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11917) : référence indéfinie vers « std::ostream::operator<<(int) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11926) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11985) : référence indéfinie vers « std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11994) : référence indéfinie vers « std::ostream::operator<<(std::ostream& (*)(std::ostream&)) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x119cf) : référence indéfinie vers « std::ios_base::Init::Init() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x119f5) : référence indéfinie vers « std::basic_ofstream<char, std::char_traits<char> >::basic_ofstream() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text+0x11a1b) : référence indéfinie vers « std::basic_ofstream<char, std::char_traits<char> >::basic_ofstream() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text$_ZN6FINPUTC1Ev[_ZN6FINPUTC1Ev]+0x20) : référence indéfinie vers « std::basic_ios<char, std::char_traits<char> >::basic_ios() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text$_ZN6FINPUTC1Ev[_ZN6FINPUTC1Ev]+0x33) : référence indéfinie vers « std::basic_ifstream<char, std::char_traits<char> >::basic_ifstream() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text$_ZN6FINPUTC1Ev[_ZN6FINPUTC1Ev]+0xa7) : référence indéfinie vers « std::basic_ios<char, std::char_traits<char> >::~basic_ios() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.xdata$_ZN6FINPUTC1Ev+0xc) : référence indéfinie vers « __gxx_personality_seh0 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.xdata+0x14c) : référence indéfinie vers « __gxx_personality_seh0 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.xdata+0x190) : référence indéfinie vers « __gxx_personality_seh0 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.xdata+0x204) : référence indéfinie vers « __gxx_personality_seh0 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$_ZTC6FINPUT0_St14basic_ifstreamIcSt11char_traitsIcEE[_ZTC6FINPUT0_St14basic_ifstreamIcSt11char_traitsIcEE]+0x10) : référence indéfinie vers « typeinfo for std::basic_ifstream<char, std::char_traits<char> > »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$_ZTC6FINPUT0_St14basic_ifstreamIcSt11char_traitsIcEE[_ZTC6FINPUT0_St14basic_ifstreamIcSt11char_traitsIcEE]+0x38) : référence indéfinie vers « typeinfo for std::basic_ifstream<char, std::char_traits<char> > »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$_ZTC6FINPUT0_Si[_ZTC6FINPUT0_Si]+0x10) : référence indéfinie vers « typeinfo for std::istream »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$_ZTC6FINPUT0_Si[_ZTC6FINPUT0_Si]+0x38) : référence indéfinie vers « typeinfo for std::istream »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text$_ZN6FINPUTD1Ev[_ZN6FINPUTD1Ev]+0x3e) : référence indéfinie vers « std::basic_ifstream<char, std::char_traits<char> >::~basic_ifstream() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text$_ZN6FINPUTD1Ev[_ZN6FINPUTD1Ev]+0x50) : référence indéfinie vers « std::basic_ios<char, std::char_traits<char> >::~basic_ios() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.text$_ZN6FINPUTD0Ev[_ZN6FINPUTD0Ev]+0x1f) : référence indéfinie vers « operator delete(void*, unsigned long) »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$_ZTI6FINPUT[_ZTI6FINPUT]+0x0) : référence indéfinie vers « vtable for __cxxabiv1::__si_class_type_info »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$_ZTI6FINPUT[_ZTI6FINPUT]+0x10) : référence indéfinie vers « typeinfo for std::basic_ifstream<char, std::char_traits<char> > »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr._ZNSt14basic_ofstreamIcSt11char_traitsIcEED1Ev[.refptr._ZNSt14basic_ofstreamIcSt11char_traitsIcEED1Ev]+0x0) : référence indéfinie vers « std::basic_ofstream<char, std::char_traits<char> >::~basic_ofstream() »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.minlexusingbands[.refptr.minlexusingbands]+0x0) : référence indéfinie vers « minlexusingbands »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.t416_to_n6[.refptr.t416_to_n6]+0x0) : référence indéfinie vers « t416_to_n6 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.tgen_band_cat[.refptr.tgen_band_cat]+0x0) : référence indéfinie vers « tgen_band_cat »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.bandminlex[.refptr.bandminlex]+0x0) : référence indéfinie vers « bandminlex »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.tn6_to_416[.refptr.tn6_to_416]+0x0) : référence indéfinie vers « tn6_to_416 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.t416[.refptr.t416]+0x0) : référence indéfinie vers « t416 »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.t16_UAs[.refptr.t16_UAs]+0x0) : référence indéfinie vers « t16_UAs »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.t16_indua[.refptr.t16_indua]+0x0) : référence indéfinie vers « t16_indua »
+/tmp/ccgUuzNg.o:sk_s17p2.cpp:(.rdata$.refptr.t16_nua[.refptr.t16_nua]+0x0) : référence indéfinie vers « t16_nua »
+collect2: error: ld a retourné le statut de sortie 1

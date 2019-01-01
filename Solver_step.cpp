@@ -1,6 +1,7 @@
 /* solving a batch of puzzles.
 */
 #define _CRT_SECURE_NO_DEPRECATE
+#define SKMPPV2
 
 #include <fstream>
 #include <iostream>

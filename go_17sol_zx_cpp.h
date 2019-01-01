@@ -182,7 +182,7 @@ int ZHOU::MultipleB3(int bf) {// bf is band3 known cells bit field
 		int bf = cells_unsolved.bf.u32[2] & mask;
 		if (bf) {
 			nmx++;
-			register  int n = __popcnt(bf);
+			register  int n = _popcnt32(bf);
 			if (n < nbf) { nbf = n;  bfmx = bf; }
 		}
 	}
@@ -223,7 +223,7 @@ int ZHOU::MultipleB3loop(int bf){// bf is band3 known cells bit field
 		int bf = cells_unsolved.bf.u32[2] & mask;
 		if (bf){
 			nmx++;
-			register  int n = __popcnt(bf);
+			register  int n = _popcnt32(bf);
 			if (n < nbf){ nbf = n;  bfmx = bf; }
 		}
 	}

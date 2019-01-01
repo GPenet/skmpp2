@@ -83,6 +83,7 @@ uint64_t ZH2B_GLOBAL::MoreSocket2(int * g0, int * g1,
 	InitGangster(g0, g1);
 	zh2b[0].Init_gang();
 	zh2b[0].InitTclues(tclues, nclues);
+	if (test)zh2b[0].ImageCandidats();
 	return zh2b[0].MoreSocket2();
 }
 uint64_t ZH2B_GLOBAL::BuildUaret(BF64 * wsol) {
@@ -91,6 +92,8 @@ uint64_t ZH2B_GLOBAL::BuildUaret(BF64 * wsol) {
 		BF64 w = wsol[i] - fd_sols[0][i];
 		ua_ret |= w.bf.u64;
 	}
+	if (test)
+		cout << Char2Xout(ua_ret) << " gua found" << endl;
 	return ua_ret;
 }
 
@@ -201,58 +204,138 @@ uint64_t ZH2B::MoreSocket2() {
 			//cout << "immediate ua" << endl;
 			return zh2b_g.BuildUaret(FD);
 		}
-		//cout << "start image after initial update" << endl;
-		//ImageCandidats();
-		zh2b_g.ntsd = 0;// put in table digits not socket 
-		BitsInTable32(zh2b_g.tsd, zh2b_g.ntsd, 0xff ^ zh2b_g.socket_digits);
+		if (zh2b_g.test) {
+			cout << "start image after initial update" << endl;
+			ImageCandidats();
+		}
+		// split non socket digits ignore solved split all true valid and not
+
+		zh2b_g.ntsd = zh2b_g.ntsd2 = 0;// put in table digits not socket 
+		for (int i = 0; i < 9; i++) {
+			if (FD[i].Count() == 6) continue;
+			if ((FD[i] & zh2b_g.fd_sols[0][i]) != FD[i]) {
+				zh2b_g.tsd2[zh2b_g.ntsd2++] = i;
+			}
+			else zh2b_g.tsd[zh2b_g.ntsd++]=i;
+		}
 		//try to combine 2 such digits "true " in priority 
 		for (zh2b_g.isd1 = 0; zh2b_g.isd1 < zh2b_g.ntsd; zh2b_g.isd1++) {
-			if ((this + 1)->MoreSocket2First())return zh2b_g.ua_ret;
+			int digit = zh2b_g.tsd[zh2b_g.isd1];
+			//if (FD[digit].Count() == 6) continue;
+			if ((this + 1)->MoreSocket2First(digit))return zh2b_g.ua_ret;
 		}
-		//cout << " nothing one digit true" << endl;
-		return 0;
+		if (zh2b_g.test)cout << " nothing one digit true" << endl;
+		// 
+		if(MoreSocketGuess())return zh2b_g.ua_ret;;
 	}
 	//cout << "invalid initial game" << endl;	// only possible a 9 digits ua ??? is it worth to look for it
 	return 0;
 }
-uint64_t ZH2B::MoreSocket2First() {// apply digit pointed by zh2b_g.isd1
+uint64_t ZH2B::MoreSocket2First(int digit) {// apply digit pointed by zh2b_g.isd1
 	*this = *(this - 1);
-	int digit = zh2b_g.tsd[zh2b_g.isd1];
 	FD[digit] = zh2b_g.fd_sols[0][digit];
 	if (FullUpdate()) {
 		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
-			//cout << "solved first " << endl;
+			if (zh2b_g.test)cout << "solved first " << endl;
 				return zh2b_g.BuildUaret(FD);
 		}
-		//cout << "image après premier et update digit="<<digit+1 << endl;
-		//ImageCandidats();
+		if (zh2b_g.test) {
+			cout << "image après premier et update digit="<<digit+1 << endl;
+			ImageCandidats();
+		}
 		for (int isd2 = zh2b_g.isd1 + 1; isd2 < zh2b_g.ntsd; isd2++) {// second digit 
 			int digit = zh2b_g.tsd[isd2];
 			if (FD[digit].Count() == 6) continue;
 			if ((this + 1)->MoreSocket2Second(digit))return zh2b_g.ua_ret;
 		}
-		//cout << "first nothing with 2 digits" << endl;
+		if (zh2b_g.test)cout << "first nothing with 2 digits" << endl;
 	}
-	//cout << " invalid after first" << endl;
+	if (zh2b_g.test)cout << " invalid after first" << endl;
 	return 0;
 }
 uint64_t ZH2B::MoreSocket2Second(int digit) {// apply digit pointed by isd2
 	*this = *(this - 1);
 	FD[digit] = zh2b_g.fd_sols[0][digit];
-	//cout << "solve  2 digit= " <<digit+1 << endl;
+	if (zh2b_g.test)cout << "solve  2 digit= " <<digit+1 << endl;
 	if (FullUpdate()) {
 		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
-			//cout << "rows_unsolved.isEmpty()" << endl;
+			if (zh2b_g.test)cout << "rows_unsolved.isEmpty()" << endl;
 			return zh2b_g.BuildUaret(FD);
 		}
-		//cout << "more not solved after 2 digits " << endl;
-		//ImageCandidats();
+		if (zh2b_g.test) {
+			cout << "more not solved after 2 digits " << endl;
+			ImageCandidats();
+		}
 		return 0;
 	}
 // see on examples what to do
-	//cout << "illegal after digit 2 " << endl;
+	if (zh2b_g.test)cout << "illegal after digit 2 " << endl;
 	return 0;
 }
+uint64_t ZH2B::MoreSocketGuess() {// smallest row, true in priority
+	uint32_t mindig,minrow, idig, irow,xcell;
+	uint64_t minrowcount = 10, bit;
+	for (idig = 0; idig < 9; idig++) {
+		uint64_t wru = ((zh2b_t_runsolved[idig] & rows_unsolved.bf.u64)
+			>> zh2b_t_runsolvedshift[idig]) & 077;
+		if (!wru) continue;
+		register uint64_t R = FD[idig].bf.u64;
+		for ( irow = 0, bit = 1; irow < 6; irow++, bit <<= 1) {
+			if (!(bit & wru)) continue;// solved row
+			uint64_t row = R & units3xBM[irow].u64[0];
+			uint64_t cc = _popcnt64(row);
+			if (cc == 2) goto oktogo;
+			if (cc < minrowcount) {
+				minrowcount = cc;
+				mindig = idig;
+				minrow = irow;
+			}
+		}
+	}
+	idig = mindig;
+	irow = minrow;
+oktogo:;
+	// priority to "true" if it is possible
+	uint64_t w = FD[idig].bf.u64& units3xBM[irow].u64[0],// cells to use
+		wtrue = w & zh2b_g.fd_sols[0][idig].bf.u64; // cell true if available
+	if (wtrue) {
+		bitscanforward64(xcell, wtrue);
+		uint64_t vr=(this + 1)->MoreSocketAssign(idig, xcell);
+		if (vr) return vr;
+		w ^= wtrue; // clear true bit
+	}
+	// try other cells (usually one
+	while (bitscanforward64(xcell, w)) {
+		w ^= (uint64_t)1 << xcell;// clear bit
+		uint64_t vr = (this + 1)->MoreSocketAssign(idig, xcell);
+		if (vr) return vr;
+	}
+	return 0; // no valid solution
+}
+/*
+uint64_t zh2b_t_runsolved[9] = { 077 , 077 << 6 , 077 << 12 , 077 << 18 , 077 << 24 ,
+(uint64_t)077 << 32 ,(uint64_t)077 << 38 ,(uint64_t)077 << 44 ,(uint64_t)077 << 50 };
+uint32_t zh2b_t_runsolvedshift[9] = { 0,6,12,18,24,32,38,44,50 };
+*/
+uint64_t ZH2B::MoreSocketAssign(uint32_t digit, uint32_t xcell) {
+	*this = *(this - 1);
+	int cell = From_128_To_81[xcell];
+	Seta(digit, xcell);
+	if (FullUpdate()) {
+		if (zh2b_g.test) {
+			cout << "image après assign + update digit=" << digit + 1
+				<< cellsFixedData[cell].pt << endl;
+			ImageCandidats();
+		}
+		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
+			return zh2b_g.BuildUaret(FD);
+		}
+		return MoreSocketGuess();// continue guessing if needed
+	}
+	return 0;
+}
+
+
 uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
 	//cout << "entry validxy" << endl;
 	zh2b_g.ua_ret = 0;
@@ -284,9 +367,9 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
 
 int ZH2B::ApplySingleOrEmptyCells() {// only singles
 	zh2b_g.single_applied = 0;
-	unsigned _int64 * map = &FD[0].bf.u64;
-	unsigned _int64 unsolved = cells_unsolved.bf.u64;
-	register unsigned _int64 R2 = map[0] & map[1],
+	uint64_t * map = &FD[0].bf.u64;
+	uint64_t unsolved = cells_unsolved.bf.u64;
+	register uint64_t R2 = map[0] & map[1],
 		R1 = (map[0] | map[1]), Map;// digits 12
 	Map = map[2]; R2 |= R1 & Map; R1 |= Map;
 	Map = map[3];  R2 |= R1 & Map; R1 |= Map;
@@ -301,10 +384,9 @@ int ZH2B::ApplySingleOrEmptyCells() {// only singles
 	if (R1) zh2b_g.single_applied = 1;
 	else return 0;
 	while (R1) {// usually a very small number of cells to assign
-		unsigned long res;
-		if (!_BitScanForward64(&res, R1)) break;
-		unsigned _int64 bit = 1; bit <<= res; // switch to the bit value
-		//		cout << "naked cell" << From_128_To_81[res]<< endl;
+		uint32_t res;
+		if (!bitscanforward64(res, R1)) break;
+		uint64_t bit = (uint64_t)1 << res; // switch to the bit value
 		R1 &= ~bit;  // clear the bit
 		// call Seta(int digit, int xcell) so find digit
 		for (int idig = 0; idig < 9; idig++) {
@@ -476,8 +558,8 @@ char * ZH2B::SetKnown(char * zs) {
 			unsigned int band = FD[idig].bf.u32[ib];
 			for (int j = 0; j < 3; j++) if (!(arows & (1 << j))) {
 				int row = (band >> TblMult9[j]) & 0x1ff;
-				unsigned long  irow;
-				_BitScanForward(&irow, row);
+				uint32_t  irow;
+				bitscanforward(irow, row);
 				int	cell = Tblstartblock[ib] + TblMult9[j] + irow;
 				zs[cell] = idig + '1';
 			}
@@ -956,9 +1038,9 @@ int ZH2B5::FullUpdate5() {
 int ZH2B5::ApplySingleOrEmptyCells5() {
 #define NAKED5(X) Map=map[X];R2|=R1&Map;R1|=Map 
 	zh2b5_g.single_applied = 0;
-	unsigned _int64 * map = &FD[0].bf.u64;
-	unsigned _int64 unsolved = cells_unsolved.bf.u64;
-	register unsigned _int64 R2 = map[0] & map[1],
+	uint64_t * map = &FD[0].bf.u64;
+	uint64_t unsolved = cells_unsolved.bf.u64;
+	register uint64_t R2 = map[0] & map[1],
 		R1 = (map[0] | map[1]), Map;// digits 12
 	if (zh2b5_g.ndigits > 2)NAKED5(2);
 	if (zh2b5_g.ndigits > 3)NAKED5(3);
@@ -1413,8 +1495,8 @@ int ZHONE::ApplySingleOrEmptyCells() {
 		return 0;
 	}
 	while (R1) {// usually a very small number of cells to assign
-		unsigned long res;
-		if (!_BitScanForward(&res, R1)) break;
+		uint32_t res;
+		if (!bitscanforward(res, R1)) break;
 		int cell = res, bit = 1 << cell; // switch to the bit value
 		//		cout << "naked cell" << From_128_To_81[res]<< endl;
 		R1 &= ~bit;  // clear the bit
