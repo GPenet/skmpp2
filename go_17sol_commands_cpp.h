@@ -4,26 +4,26 @@ const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
 
 const char * libs_c17_00_cpt2g[20] = {
-	"bands1+2 processed entries M10",//0
-	"chunks processed entries gochunk",//1
-	"XY count",//2
-	"XY passing UA filter",//3
-	"XY brute force",//4
-	"valid brute force",//5
-	"more sockets2 searched ",//6
-	"more sockets2 searched found",//7
-	"valid b12 after build active",//8
-	"band3 active after build active",//9
-	"",//10
-	"",//11
-	"",//12
+	"0 bands1+2 processed entries M10",//0
+	"1 chunks processed entries gochunk",//1
+	"2 XY count",//2
+	"3 XY passing UA filter",//3
+	"4 XY brute force",//4
+	"5 valid brute force",//5
+	"6 more sockets2 searched ",//6
+	"7 more sockets2 searched found",//7
+	"8 valid b12 after build active",//8
+	"9 band3 active after build active",//9
+	"10 ",//10
+	"11 ",//11
+	"12 ",//12
 	"",//13
 	"",//14
 	"",//15
 	"",//16
 	"",//17
 	"",//18
-	"control valib12// band3",//19
+	"19 control valib12// band3",//19
 };
 void Go_c17_00( ) {// p2 process
 	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;

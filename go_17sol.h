@@ -92,12 +92,7 @@ struct G17TMORE{// FIFO table of more for bands 1+2
 		}
 
 	}
-	void PrintGuasDirect(){
-		for (int i = 0; i < nt; i++){
-			register uint64_t w = t[i];
-			cout << Char54out(w) << " " << (w >> 56) << endl;
-		}
-	}
+
 
 	void PrintUasDirect(){
 		for (int i = 0; i < nt; i++){
@@ -210,13 +205,6 @@ struct G17XY{
 	void Go_0();// check stacks, collect Guas status
 	void Init();// create tclues xygang
 	void Go_Guas_collect();
-	void Go_Guas_collect1();
-	void Go_Guas_collect2();
-	void Go_Guas_collect3();
-	void Go_Guas_collectdefault();
-	void Go_Guas_collectMore();
-	uint64_t GetPairs(int ib3);
-	int GetTriplets(int ib3);
 	int FirstCheckActiveBands();
 	int CheckValidBand12();
 	void BuildActiveBands();
@@ -261,7 +249,7 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	uint64_t  b1b2_2Xbf, b1b2_54bf, nb1b2_2Xbf, nb1b2_54bf, searched17_54;
 	int searched17_band3, searched_nclues1, searched_nclues2;
 	BF128 pairsok, tripletsok;// found one empty gua 
-	int ntua, ntgua, n64vua, n64vgua,added_more;
+	int ntua, ntgua, ntgua_raw, n64vua, n64vgua,added_more;
 	int * t1, *t2; // index used in band1 and band2
 	uint32_t xfirstdead, x2dead, yfirstdead, y2dead, oldx1, oldy1, oldx2;
 	uint64_t dead, dead54;
@@ -270,9 +258,6 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	inline uint64_t * AllocLockStepBuffer(int x){
 		uint64_t * vr = &step_buffer[cur_step_buffer_index];
 		cur_step_buffer_index += x; return vr; }
-	void Debug();
-	void CheckVectors();// debugging sequence
-	void CheckUas();// debugging sequence
 	// initial for a new step
 	inline void StartDead(){ xfirstdead = 0; oldx1 = 0; }
 	void GoAddNewUas_sub_step();
@@ -280,7 +265,7 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	void Init(int i1, int i2);
 	int ShrinkUas();// shrink table of UAs for bands1+2
 	void ShrinkGuas();// shrink table for gangster uas2 ua3s
-	int ShrinkGuasLoad(uint64_t *tu, int itu0, int itu1);
+	int ShrinkGuasLoad(uint64_t *tu, int itu1);
 	void SetV(uint64_t * v, int i1, int i2); // ste bit 1 in v from i1 to i2
 					  // process summary
 	void Do66(); // do 6 clues b1 6 clues b2  
@@ -300,9 +285,6 @@ struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
 	//=====================process
 	void GoM10();// end preparation for a given band1+band2+ table band3 pass 656 566
 	void Go();
-	void GoAddNewUas();
-	void GoAddNewGUas();
-	void InsertGua(uint64_t * tu, uint32_t & ntu, uint64_t gu);
 	//================ debugging code
 	void PrintEndPuz();
 	int Godebug17_1(int i1);

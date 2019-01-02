@@ -600,6 +600,13 @@ void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
 		if (g17xy.bands_active_pairs.On_c(i))continue;// already active
 		if(g17xy.xygang[w.col1]&w.digs)continue;// not valid here
 		if (g17xy.xygang[w.col2] & w.digs)continue;// not valid here
+
+		// is there a still valid GUA2 form a previous check
+		if (tmore_sockets2[i].Check(g17xy.cellsbf)) {
+			g17xy.bands_active_pairs.Set_c(i);
+			continue;
+		}
+
 		// this is a possible gua2 socket try to find a gua
 		p_cpt2g[6]++;
 		zh2b_g.test = 0;
@@ -628,7 +635,8 @@ void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
 
 			}
 
+			// add ua to the relevant "more" FIFO table
+			tmore_sockets2[i].Add(new_ua);
 		}
-		//break;
 	}
 }

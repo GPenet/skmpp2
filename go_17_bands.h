@@ -32,7 +32,6 @@ struct STD_B1_2 :STD_B416 {
 		memcpy(revised_g, gangster, sizeof gangster);
 	}
 	int ReviseG_triplet(int imini, int ip, STD_B1_2 * bb);
-	uint32_t GetCellsBf(int box, int imini, int icase);
 	uint32_t GetMiniData(int index,  uint32_t & bcells, STD_B1_2 *bb);
 	void DoExpandBand(int dband);// dband 0/27
 	void DebugIndex(int ind6 = 0);
@@ -50,11 +49,8 @@ struct STD_B3 :STD_B416 {// data specific to bands 3
 	}guas;
 	int minirows_bf[9];
 	int triplet_perms[9][2][3];
-	//int ti81_pairs[27];// index to the relevant tsgua2 (genb12)
-	//int ti81_triplet[9];//index to the relevant tsgua3
 	//BF128 tbands_UA4_6s, tbands_pairs, tbands_triplets;
 	//int tuas46[81];
-	//GINT64 tipairs[96];
 	//_______________________
 	void InitBand3(int i16, char * ze, BANDMINLEX::PERM & p);
 	int IsGua(int i81);
@@ -84,9 +80,6 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	STD_B1_2 *ba, *bb;
 	int ib,digp;
 	uint64_t w0, ua;
-	//______________________ small tasks to handle sockets UA2s UA3s
-	// doing things similar to uamore in one band 
-	int CheckSocket2(int isocket);
 	//_____________________ functions collect UAs bands 1+2
 	void Initgen();
 	void BuildFloorsAndCollectOlds(int fl);
@@ -108,9 +101,6 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	//_____________________ functions collect UA2s UAs3 socket 
 
 	void ProcessSocket2(int i81);
-
-	//	genb12.CollectUA2s();// collect GUA2s
-	//	genb12.CollectUA3s();//collect GUA3s
 
 };
 

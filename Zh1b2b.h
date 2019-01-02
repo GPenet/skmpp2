@@ -114,11 +114,6 @@ struct ZH2B {// size 32 bytes
 		rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
 	}
 	inline int Unsolved_Count() { return rows_unsolved.Count(); }
-	//inline void ComputeNext() { if (FullUpdate())Guess(); }
-	//inline void ComputeNextFalse() { if (FullUpdate())GuessFalse(); }
-	//int Isvalid();
-	//int IsvalidNoUpdate(int debug = 0); // usually after init 2 steps
-	//uint64_t GetUa();
 	void InitTclues(uint32_t * tclues, int n);
 	uint64_t ValidXY(uint32_t * tclues, int n);
 	uint64_t MoreSocket2();
@@ -129,26 +124,20 @@ struct ZH2B {// size 32 bytes
 
 	int Update();
 	int FullUpdate();
-	int FullUpdateNoGuess();
-	//void Guess();
-	//void GuessFalse();
+
 	void GuessValidB12(int index);
 	void GuessValidB12_best(int index);
 	void GuessGo(int dig, BF64 & wsol,int index);
 	void GuessGo_best(int dig, BF64 & wsol, int index);
-	void GuessMoreGuas(int index);
 
 	int ApplySingleOrEmptyCells();
-	uint64_t CheckUa(uint64_t ua);
 	char * SetKnown(char * zs);
 	int Seta(int digit, int xcell);
 	inline int SetaC(int digit, int cell) { return Seta(digit, C_To128[cell]); }
 	inline void ClearCandidate(int dig, int xcell) { FD[dig].Clear(xcell); }
 	int GetAllDigits(int cell);
 	void Debug(int all=0);
-	void DebugDigit(int digit);
 	void ImageCandidats();
-	int DebugCheckUa(uint64_t ua);
 	
  };
 

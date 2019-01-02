@@ -195,6 +195,7 @@ void ZH2B::InitTclues(uint32_t * tclues, int n) {
 	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | 
 		zh2b_g.Digit_cell_Assigned_init[i];
 }
+
 /* this is for a valid bands 1+2
    check missing socket2 and catch ua if small enough
 */
@@ -204,12 +205,7 @@ uint64_t ZH2B::MoreSocket2() {
 			//cout << "immediate ua" << endl;
 			return zh2b_g.BuildUaret(FD);
 		}
-		if (zh2b_g.test) {
-			cout << "start image after initial update" << endl;
-			ImageCandidats();
-		}
 		// split non socket digits ignore solved split all true valid and not
-
 		zh2b_g.ntsd = zh2b_g.ntsd2 = 0;// put in table digits not socket 
 		for (int i = 0; i < 9; i++) {
 			if (FD[i].Count() == 6) continue;
@@ -221,11 +217,8 @@ uint64_t ZH2B::MoreSocket2() {
 		//try to combine 2 such digits "true " in priority 
 		for (zh2b_g.isd1 = 0; zh2b_g.isd1 < zh2b_g.ntsd; zh2b_g.isd1++) {
 			int digit = zh2b_g.tsd[zh2b_g.isd1];
-			//if (FD[digit].Count() == 6) continue;
 			if ((this + 1)->MoreSocket2First(digit))return zh2b_g.ua_ret;
 		}
-		if (zh2b_g.test)cout << " nothing one digit true" << endl;
-		// 
 		if(MoreSocketGuess())return zh2b_g.ua_ret;;
 	}
 	//cout << "invalid initial game" << endl;	// only possible a 9 digits ua ??? is it worth to look for it
@@ -236,40 +229,25 @@ uint64_t ZH2B::MoreSocket2First(int digit) {// apply digit pointed by zh2b_g.isd
 	FD[digit] = zh2b_g.fd_sols[0][digit];
 	if (FullUpdate()) {
 		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
-			if (zh2b_g.test)cout << "solved first " << endl;
 				return zh2b_g.BuildUaret(FD);
-		}
-		if (zh2b_g.test) {
-			cout << "image après premier et update digit="<<digit+1 << endl;
-			ImageCandidats();
 		}
 		for (int isd2 = zh2b_g.isd1 + 1; isd2 < zh2b_g.ntsd; isd2++) {// second digit 
 			int digit = zh2b_g.tsd[isd2];
 			if (FD[digit].Count() == 6) continue;
 			if ((this + 1)->MoreSocket2Second(digit))return zh2b_g.ua_ret;
 		}
-		if (zh2b_g.test)cout << "first nothing with 2 digits" << endl;
 	}
-	if (zh2b_g.test)cout << " invalid after first" << endl;
 	return 0;
 }
 uint64_t ZH2B::MoreSocket2Second(int digit) {// apply digit pointed by isd2
 	*this = *(this - 1);
 	FD[digit] = zh2b_g.fd_sols[0][digit];
-	if (zh2b_g.test)cout << "solve  2 digit= " <<digit+1 << endl;
 	if (FullUpdate()) {
 		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
-			if (zh2b_g.test)cout << "rows_unsolved.isEmpty()" << endl;
 			return zh2b_g.BuildUaret(FD);
-		}
-		if (zh2b_g.test) {
-			cout << "more not solved after 2 digits " << endl;
-			ImageCandidats();
 		}
 		return 0;
 	}
-// see on examples what to do
-	if (zh2b_g.test)cout << "illegal after digit 2 " << endl;
 	return 0;
 }
 uint64_t ZH2B::MoreSocketGuess() {// smallest row, true in priority
@@ -312,21 +290,10 @@ oktogo:;
 	}
 	return 0; // no valid solution
 }
-/*
-uint64_t zh2b_t_runsolved[9] = { 077 , 077 << 6 , 077 << 12 , 077 << 18 , 077 << 24 ,
-(uint64_t)077 << 32 ,(uint64_t)077 << 38 ,(uint64_t)077 << 44 ,(uint64_t)077 << 50 };
-uint32_t zh2b_t_runsolvedshift[9] = { 0,6,12,18,24,32,38,44,50 };
-*/
 uint64_t ZH2B::MoreSocketAssign(uint32_t digit, uint32_t xcell) {
 	*this = *(this - 1);
-	int cell = From_128_To_81[xcell];
 	Seta(digit, xcell);
 	if (FullUpdate()) {
-		if (zh2b_g.test) {
-			cout << "image après assign + update digit=" << digit + 1
-				<< cellsFixedData[cell].pt << endl;
-			ImageCandidats();
-		}
 		if (rows_unsolved.isEmpty()) {// solved (false) after first "true"
 			return zh2b_g.BuildUaret(FD);
 		}
@@ -334,7 +301,6 @@ uint64_t ZH2B::MoreSocketAssign(uint32_t digit, uint32_t xcell) {
 	}
 	return 0;
 }
-
 
 uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
 	//cout << "entry validxy" << endl;
@@ -355,16 +321,13 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
 			}
 		}
 		BF64 mysol = zh2b_g.fd_sols[0][digmax];
-		//cout << Char2Xout(mysol.bf.u64) << "try true for digmax=" << digmax + 1 << endl;
 		(this + 1)->GuessGo(digmax, mysol, 0);
 		if (zh2b_g.ua_ret) return zh2b_g.ua_ret;// return if  ua found
 		// if does not work, suspect valid try best case first
 		GuessValidB12_best(0);//look for a ua starting with lowest number fo candidates
 	}
-	//if(!zh2b_g.ua_ret)ImageCandidats();
 	return zh2b_g.ua_ret;
 }
-
 int ZH2B::ApplySingleOrEmptyCells() {// only singles
 	zh2b_g.single_applied = 0;
 	uint64_t * map = &FD[0].bf.u64;
@@ -403,7 +366,6 @@ int ZH2B::ApplySingleOrEmptyCells() {// only singles
 	}
 	return 0;// not locked
 }
-
 int ZH2B::Seta(int digit, int xcell) { // single in cell
 	int cell = From_128_To_81[xcell],
 		block = TblBoard_Block[cell];
@@ -580,14 +542,6 @@ int ZH2B::FullUpdate() {
 	}
 	return 1;
 }
-int ZH2B::FullUpdateNoGuess() {// called if partial puzzle, just solve
-	while (1) {
-		if (!Update()) return 0; // game locked in update
-		if (ApplySingleOrEmptyCells())			return 0; // locked empty cell or conflict singles in cells
-		if (zh2b_g.single_applied == 0)	break;
-	}
-	return 1;
-}
 
 void ZH2B::GuessValidB12(int index) {// first ok then false best count
 	// choose digit with lowest count of unsolved
@@ -644,7 +598,6 @@ void ZH2B::GuessValidB12(int index) {// first ok then false best count
 		if (zh2b_g.ua_ret) return;// return if  ua found
 	}
 }
-
 void ZH2B::GuessGo(int dig, BF64 & wsol,int index) {// done in a new ocurrence
 	*this = *(this - 1);
 	// apply wsol and make next step
@@ -654,7 +607,6 @@ void ZH2B::GuessGo(int dig, BF64 & wsol,int index) {// done in a new ocurrence
 		GuessValidB12(index + 1);
 	}
 }
-
 void ZH2B::GuessValidB12_best(int index) {// first ok then false best count
 	// choose digit with lowest count of unsolved
 	//cout << "guess_best index=" << index << endl;
@@ -695,7 +647,6 @@ void ZH2B::GuessValidB12_best(int index) {// first ok then false best count
 		if (zh2b_g.ua_ret) return;// return if  ua found
 	}
 }
-
 void ZH2B::GuessGo_best(int dig, BF64 & wsol, int index) {// done in a new ocurrence
 	*this = *(this - 1);
 	// apply wsol and make next step
@@ -703,68 +654,6 @@ void ZH2B::GuessGo_best(int dig, BF64 & wsol, int index) {// done in a new ocurr
 	if (FullUpdate()) {
 		//ImageCandidats();
 		GuessValidB12_best(index + 1);
-	}
-}
-/*GuessMoreGuas(int index) is for sockets guas2
-all sols are have false in bands 1+2
-we try to catch a ua as small as possible
-priority "true" to digits no part of the socket
-should not be true for <= 5 digits 
-*/
-void ZH2B::GuessMoreGuas(int index) {// all sols are have false in bands 1+2
-	// choose digit with lowest count of unsolved
-	// keep for later digits of the socket
-	//cout << "guess index=" << index << endl;
-	//if (index) ImageCandidats();
-	int maxcount = 0, digmax = 10;
-	for (uint32_t idig = 0; idig < 9; idig++) {
-		int cc = FD[idig].Count();
-		if (cc < 7) continue;// solved
-		if (cc > maxcount) {
-			maxcount = cc;
-			digmax = idig;
-		}
-	}
-	if (digmax > 8) {// we have a ua if it's not the solution grid	
-		zh2b_g.ua_ret = 0;
-		for (int i = 0; i < 9; i++) {
-			BF64 w = FD[i] - zh2b_g.fd_sols[0][i];
-			zh2b_g.ua_ret |= w.bf.u64;
-		}
-		return;
-	}
-	BF64 mysol = zh2b_g.fd_sols[0][digmax];
-	if ((FD[digmax] & mysol) == mysol) {// if all true possible try it
-		//cout <<Char2Xout(mysol.bf.u64)<< "try true for digmax=" << digmax + 1 << endl;
-		(this + 1)->GuessGo(digmax, mysol, index);
-		if (zh2b_g.ua_ret) return;// return if  ua found
-	}
-
-
-	// try false decreasing count of true  
-	int r_unsolved = (rows_unsolved.bf.u64 >> zh2b_t_runsolvedshift[digmax]) & 077;
-	BF64 tuaw[500], tsolw[500];
-
-	//cout << "call solve 1 digit for digitw=" << digmax+1 << endl;
-	int nuaw = zh2b1d_g.Go(mysol, FD[digmax], tsolw, tuaw, r_unsolved);
-	//cout << "index=" << index << " nfalse perms=" << nuaw << endl;
-
-	//sort increasing order of tuawcount
-	uint64_t tsort[50], temp;
-	for (int i = 0; i < nuaw; i++) {
-		tsort[i] = _popcnt64(tuaw[i].bf.u64) << 16;
-		tsort[i] |= i;
-	}
-	for (int i = 0; i < nuaw - 1; i++)for (int j = i + 1; j < nuaw; j++)
-		if (tsort[i] > tsort[j]) {
-			temp = tsort[i]; tsort[i] = tsort[j]; tsort[j] = temp;
-		}
-	// and now go till a ua is seen or no solution 
-	for (int i = 0; i < nuaw; i++) {
-		int iw = tsort[i] & 0xff;// 
-		//cout << Char2Xout(tsolw[iw].bf.u64) << "try false digmax=" << digmax + 1 << endl;
-		(this + 1)->GuessGo(digmax, tsolw[iw], index);
-		if (zh2b_g.ua_ret) return;// return if  ua found
 	}
 }
 
@@ -787,24 +676,6 @@ void ZH2B::Debug(int all) {
 					if (k == 2 || k == 5) 	cout << " ";
 				}
 				cout << "  ";
-			}
-			cout << endl; //end of row
-		}
-		cout << endl; // end of block
-	}
-	cout << endl; // end of map per digit
-
-}
-void ZH2B::DebugDigit(int digit) {
-	cout << "DEBUG  digit=" << digit + 1 << endl;
-	for (int ib = 0; ib < 2; ib++) {
-		for (int ir = 0; ir < 3; ir++) {
-			unsigned vf = FD[digit].bf.u32[ib];
-			unsigned  wr = (vf >> (9 * ir)) & 0x1ff;
-			for (int k = 0; k < 9; k++) {
-				if (wr & (1 << k))		cout << digit + 1;
-				else 		cout << ".";
-				if (k == 2 || k == 5) 	cout << " ";
 			}
 			cout << endl; //end of row
 		}
@@ -853,26 +724,6 @@ void ZH2B::ImageCandidats() {
 	} // end for i
 	cout << endl;
 
-}
-
-int  ZH2B::DebugCheckUa(uint64_t ua) {
-	Init_std_bands();
-	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
-	// assign all cells not ua
-	{
-		register uint64_t Rua = ua;
-		for (int i = 0; i < 54; i++) {
-			int xi = C_To128[i];
-			uint64_t bit = (uint64_t)1 << xi;
-			if (Rua&bit) continue;
-			int digit = zh2b_g.puz0[i];
-			Assign(digit, i, xi);
-			zh2b_g.Digit_cell_Assigned_init[digit].Set(xi);
-		}
-	}
-	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved | zh2b_g.Digit_cell_Assigned_init[i];
-	FullUpdate();
-	return (int)cells_unsolved.isNotEmpty();
 }
 
 
@@ -1185,18 +1036,13 @@ int ZH2B_1D_GLOBAL::Go(BF64 & sol, BF64 & fde, BF64 *tsol, BF64 *tua,int ru) {
 	myandsol.bf.u64 = BIT_SET_2X;
 	zh2b1d[0].FD = fde;
 	zh2b1d[0].CompFD.bf.u64 = 0;
-	//cout << Char2Xout(mysol.bf.u64) << "valid sol for digit" << endl;
-	if (0 &&zh2b5_g.ndigits == 5)
-		cout << Char2Xout(fde.bf.u64) << " start go ru=0" << oct << ru << dec << endl;
 	zh2b1d[0].ComputeNext(ru);
 	return nsolw;
 }
 int ZH2B_1D::GetSols( int ru) {
 	CompFD.bf.u64 = 0;
 	FD = zh2b_g.mystart &zh2b_g.myandsol;
-	//cout << Char2Xout(FD.bf.u64) << " start get sols" << endl;
 	zh2b_g.nsolw = 0;
-	//zh2b_g.andsol.bf.u64 = BIT_SET_2X;
 	ComputeNext(ru);
 	return zh2b_g.nsolw;
 }
@@ -1209,13 +1055,9 @@ int ZH2B_1D::GetAllSols(BF64 & fde, int ru, BF64 & fdsol) {
 	return zh2b_g.nsolw;
 }
 void ZH2B_1D::ComputeNext(int ru) {
-	//if(zh2b5_g.ndigits==5)
-	// cout << Char2Xout(FD.bf.u64) << " cnext ru=0" << oct << ru << dec << endl;
 	if (Update(ru)) {
 		if (!ru) {// new sol put it in table
-			//cout << Char2Xout(FD.bf.u64) << "found in zh2b1d" << endl;
 			if (FD != zh2b1d_g.mysol) {
-				//cout  << "store it" << endl;
 				zh2b1d_g.tuaw[zh2b1d_g.nsolw] = FD- zh2b1d_g.mysol;// partial ua
 				zh2b1d_g.tsolw[zh2b1d_g.nsolw++] = FD;// partial solution
 			}
@@ -1224,7 +1066,6 @@ void ZH2B_1D::ComputeNext(int ru) {
 	}
 }
 int ZH2B_1D::Update(int &ru) {// solve as much as possible 
-	//cout << "update ru=0" <<oct<< ru <<dec<< endl;
 	int Shrink = 1;
 	register int S, A;
 	while (Shrink) {
@@ -1264,9 +1105,6 @@ int ZH2B_1D::Update(int &ru) {// solve as much as possible
 	return 1;
 }
 void ZH2B_1D::Guess(int ru) {//
-	//cout << Char2Xout(FD.bf.u64) << "guess ru =0" << oct << ru << dec << endl;
-	//cout << Char2Xout(FD.bf.u64) << " guess ru=0" << oct << ru << dec << endl;
-
 	int dcell = 0,v,ruw=ru;
 	{
 		register uint32_t a = FD.bf.u32[0], b = FD.bf.u32[1];
@@ -1423,20 +1261,6 @@ void ZHONE_GLOBAL::ValidPuzzle(uint32_t * sol) {//depending on type
 	}
 	return;
 }
-/* old code for a valid puzzle
-		if (zh1b_g.type == 2) {//compare to start puzzle
-			memcpy(zh1b_g.fd_sols[1], FD, sizeof FD); //store the solution
-			for (int i = 0; i < 9; i++) {
-				if (FD[i] - zh1b_g.fd_sols[0][i]) {
-					zh1b_g.nsol = 1;// force exit after that one
-					break;
-				}
-			}
-		}
-		else if (zh1b_g.type == 1) {
-			if (zh1b_g.nsol < 2) memcpy(zh1b_g.fd_sols[zh1b_g.nsol], FD, sizeof FD);
-		}
-*/
 
 void ZHONE_GLOBAL::PrintTua() {
 	cout << "band status" << endl;
@@ -1692,7 +1516,6 @@ void ZHONE::ImageCandidats() {
 	cout << endl;
 
 }
-
 
 //============== collector mode
 void ZHONE::Checkstart() {

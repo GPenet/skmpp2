@@ -16,7 +16,7 @@
 #define MAXN5 51520
 #define MAXN6 237770 
 
-#define G17MORESIZE 64
+#define G17MORESIZE 32
 
 #define G17TESTUASGUASLIMITS 1
 

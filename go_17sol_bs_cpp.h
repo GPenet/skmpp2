@@ -4,11 +4,6 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	p_cpt2g[0] ++;
 	if (p_cpt2g[0]>1 )	return; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
 	myband2.MorphUas();
-	if (0) {
-		myband1.PrintStatus();
-		myband2.PrintStatus();
-		//return;
-	}
 	memset(p_cpt, 0, sizeof p_cpt);// used in debugging sequences only
 	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
 	int * zs0 = genb12.grid0;
@@ -20,26 +15,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	genb12.BuildGang9x3();
 	genb12.SecondSockets2Setup();// collect GUA2s 
 	genb12.SecondSockets3Setup();// collect GUA3s 
-	if (1) {
-		//myband1.PrintShortStatus(); myband2.PrintShortStatus();
-		cout << "n bands3      \t" << genb12.nband3 << endl;
-		cout << "ua bands1+2   \t" << genuasb12.nua << endl;
-		cout << "guas socket2  \t" << genb12.ntua2 << endl;
-		cout << "guas socket3  \t" << genb12.ntua3 << endl;
-		cout << "active socket2\t" << genb12.nactive2 << endl;
-		cout << "active socket3\t" << genb12.nactive3 << endl;
-	}
-	if (0) {
-		int i81 = 80;
-		GEN_BANDES_12::SGUA2 w = genb12.tsgua2[i81];
-		cout << "gua2 initial status for i81=" << i81 << "active status="<<w.valid<< endl;
-		if (!w.valid)return;
-		for (uint32_t i = 0; i < w.nua; i++)
-			cout << Char2Xout(w.tua[i]) << " i=" << i << endl;
-		return;
-	}
 	Go();// standard entry point for all 
-	if (p_cpt1g[0])g17b.PrintEndPuz();
 }
 
 void G17B::Go(){// search process external loop 2X2Y
@@ -51,29 +27,40 @@ void G17B::Go(){// search process external loop 2X2Y
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
-	cout << "go n1=" << n1 << " n2=" << n2 <<" could be dynamic<<<<<<<<"<< endl;
+	if (1) {
+		//myband1.PrintShortStatus(); myband2.PrintShortStatus();
+		cout << "n bands3      \t" << genb12.nband3 << endl;
+		cout << "ua bands1+2   \t" << genuasb12.nua << endl;
+		cout << "guas socket2  \t" << genb12.ntua2 << endl;
+		cout << "guas socket3  \t" << genb12.ntua3 << endl;
+		cout << "active socket2\t" << genb12.nactive2 << endl;
+		cout << "active socket3\t" << genb12.nactive3 << endl;
+		cout << "n1=" << n1 << " n2=" << n2 << " could be dynamic<<<<<<<<" << endl;
+	}
 	for (int i1 = 0; i1 < n1; i1++) {
-		//if (i1 ) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		if (1) {
+			cout << "i1=" << i1 << "\tn51=" << indexstep.n51 
+				<< " n61=" << indexstep.n61		<< endl;
+		}
+		//if (i1) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		//if (Godebug17_1(i1)) continue;
 		for (int i2 = 0; i2 < n2; i2++) {
-			//if (i2 )continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			//if (i2>6) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 			//if (Godebug17_2(i2)) continue;
 			indexstep.added_more = 0;
 			indexstep.Init(i1, i2);
 			if (!(indexstep.n51 | indexstep.n52)) continue;
 			if (indexstep.ShrinkUas())continue;// dead branch
 			if (1) {
-				cout << "i1=" << i1 << " i2=" << i2
-					<< " n51=" << indexstep.n51 << " n52=" << indexstep.n52
-					<< " n61=" << indexstep.n61 << " n62=" << indexstep.n62  
-					<< " nua step" << indexstep.ntua 
+				cout << " i2=" << i2<< " n52=" << indexstep.n52	 << " n62=" << indexstep.n62  
+					<< "\tnua step" << indexstep.ntua <<"\tnua"<< genuasb12.nua
+					<< "\tgnua step" << indexstep.ntgua << "\tngua" << indexstep.ntgua_raw
 					<<"\tp_cpt2g[3]="<< p_cpt2g[3] << endl;
-				//indexstep.PrintUasShrinked();
 			}
 			indexstep.ShrinkGuas();
 			g17more.Init();
 			g17morebig.Init();
-			//if (1) continue;
+			genb12.Init_tmore_sockets2();
 			if (indexstep.n52) {
 				indexstep.Do65();
 				//if (genuasb12.nua < TUA64_12SIZE && indexstep.n64vua < G17BLOCSUA - 2) {
@@ -81,30 +68,14 @@ void G17B::Go(){// search process external loop 2X2Y
 				//}
 				//indexstep.GoAddNewGUas_sub_step();
 			}
-			//if (indexstep.n51)				indexstep.Do56();
-
-			if (1) continue;
+			if (indexstep.n51)				indexstep.Do56();
+			//indexstep.Do66(); // keep it for a 18 222222222 search
 		}
 	}
 
-
-	if (1) return;
-
+/* 
 	for (int i1 = 0; i1 < n1; i1++){
-		if (GTEST17_ON)if (Godebug17_1(i1)) continue;
 		for (int i2 = 0; i2 < n2; i2++){
-			if (indexstep.n52){
-				indexstep.Do65();
-				if (genuasb12.nua < TUA64_12SIZE && indexstep.n64vua< G17BLOCSUA-2){
-					indexstep.GoAddNewUas_sub_step();
-				}
-				indexstep.GoAddNewGUas_sub_step();
-			}
-			if (indexstep.n51)				indexstep.Do56();
-
-			//indexstep.Do66(); // keep it for a 18 222222222 search
-			GoAddNewUas();
-			GoAddNewGUas();
 			g17more.Init();// restart with empty more tables for the next step
 			g17morebig.Init();
 			for (int i = 0; i < 3; i++)g17moreg[i].Init();
@@ -112,6 +83,7 @@ void G17B::Go(){// search process external loop 2X2Y
 		if (GTEST17_ON || g17b.debug17>1)
 			Godebug17_4(i1, n2);// i1 i1 nua nua2 nua3 p_cpt[4]
 	}
+*/
 }
 void G17INDEXSTEP::Init(int i1, int i2) {
 	cur_step_buffer_index = 0;
@@ -149,11 +121,6 @@ void G17INDEXSTEP::Init(int i1, int i2) {
 	else y2dead |= t2[0];
 	dead = ((uint64_t)y2dead << 32) | x2dead;
 	b1b2_2Xbf = ((uint64_t)t2[0] << 32) | t1[0];
-	if (0) {
-		cout << Char2Xout(dead) << " dead \ti1 i2  =" << i1 << " i2=" << i2
-			<< "\tn51/52\t" << n51 << " " << n52 << endl;
-		cout << Char2Xout(b1b2_2Xbf) << " b1b2_2Xbf" << endl;
-	}
 }
 int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 	// could erase new supersets to consider doing it in 2 steps
@@ -195,10 +162,11 @@ int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 	}
 	return 0;
 }
-int G17INDEXSTEP::ShrinkGuasLoad(uint64_t *tu, int itu0, int itu1) {
+int G17INDEXSTEP::ShrinkGuasLoad(uint64_t *tu,  int itu1) {
 	int n = 0;
+	ntgua_raw += itu1;
 	register uint64_t Rw = b1b2_2Xbf, Rn = ~dead;
-	for (int iua = itu0; iua < itu1; iua++) {
+	for (int iua = 0; iua < itu1; iua++) {
 		register uint64_t Ru = tu[iua];
 		if (!(Rw & Ru)) {
 			Ru &= Rn;
@@ -214,16 +182,11 @@ void G17INDEXSTEP::ShrinkGuas() {// shrink table for gangster uas2 ua3s
 // group all gua2 gua2 soskets in one table
 	int tactive2_start[81], tactive2_end[81],
 		tactive3_start[81], tactive3_end[81];
-	ntgua = nactive2 = nactive3 = 0;
+	ntgua = ntgua_raw = nactive2 = nactive3 = 0;
 	for (int i = 0; i < genb12.nactive2; i++) {
 		int i81 = genb12.tactive2[i]; 
 		GEN_BANDES_12::SGUA2 & w = genb12.tsgua2[i81];
-		int n = ShrinkGuasLoad(w.tua, 0, w.nua);
-		// for a better efficiency limit xx uas per i81 seems bad
-		//if (n > 15) {// we keep the 15 smaller per i81
-		//	w.nua += (15 - n);
-		//	n = 15;
-		//}
+		int n = ShrinkGuasLoad(w.tua,  w.nua);
 		if (n) {// still valid guas for this i81 gua2
 			tactive2_end[nactive2] = ntgua;
 			tactive2_start[nactive2] = ntgua - n;
@@ -233,7 +196,7 @@ void G17INDEXSTEP::ShrinkGuas() {// shrink table for gangster uas2 ua3s
 	for (int i = 0; i < genb12.nactive3; i++) {
 		int i81 = genb12.tactive3[i];
 		GEN_BANDES_12::SGUA3 & w = genb12.tsgua3[i81];
-		int n = ShrinkGuasLoad(w.tua, 0, w.nua);
+		int n = ShrinkGuasLoad(w.tua,  w.nua);
 		if (n) {// still valid guas for this i81 gua3
 			tactive3_end[nactive3] = ntgua;
 			tactive3_start[nactive3] = ntgua - n;
@@ -241,24 +204,8 @@ void G17INDEXSTEP::ShrinkGuas() {// shrink table for gangster uas2 ua3s
 
 		}
 	}
-	if (p_cpt2g[3] == 4839) {
-		cout << "active guas=" << ntgua << "\tlimit=" << 64 * G17BLOCGSUA << endl
-			<< " active i81 guas2=" << nactive2
-			<< " active i81 guas3=" << nactive3 << endl;
-		cout << "guas table" << endl;
-		for (int i = 0; i < ntgua; i++) {
-			cout << Char2Xout(tgua[i]) << " " << i << endl;
-		}
-		if (1) {
-			cout << "active2 table" << endl;
-			for (int i = 0; i < nactive2; i++)
-				cout << tactive2[i] << "," << tactive2_start[i]
-				<< "," << tactive2_end[i] << " \t";
-			cout << endl;
-		}
-	}
 	if (ntgua > 64 * G17BLOCGSUA) ntgua = 64 * G17BLOCGSUA;
-	//working with a mawimum of 640 GUAs for an index chunk
+	//working with a limited number of GUAs for an index chunk
 	n64vgua = (ntgua + 63) >> 6;
 	g17chunk.n64vgua = n64vgua;
 
@@ -286,30 +233,18 @@ void G17INDEXSTEP::ShrinkGuas() {// shrink table for gangster uas2 ua3s
 		}
 	}
 
-	// create id81 vectors of corresponding guas
+	// ____________________________________create id81 vectors of corresponding guas
 	vid81_size = n64vgua * (nactive2 + nactive3);
 	vid81 = AllocLockStepBuffer(vid81_size);
 	memset(vid81, 0, 8 * vid81_size);
 	uint64_t * vx = vid81;
 	for (int i = 0; i < nactive2; i++) {
 		SetV(vx, tactive2_start[i], tactive2_end[i]);
-		if (0 &&tactive2[i] == 37) {
-			cout << " id81=63 vecteurs 456  start end\t" << tactive2_start[i] << "\t" << tactive2_end[i] << endl;;
-			cout << Char64out(vx[4]) << endl;
-			cout << Char64out(vx[5]) << endl;
-			cout << Char64out(vx[6]) << endl;
-		}
 		vx += n64vgua;
 	}
 	for (int i = 0; i < nactive3; i++) {
 		SetV(vx, tactive3_start[i], tactive3_end[i]);
 		vx += n64vgua;
-	}
-	if (0) {
-		cout << "guas cells table vecteur 5" << endl;
-		for (int i = 50; i < 54; i++) {
-			cout << Char64out(vcellsguas[i * n64vgua + 5]) << " i=" << endl;;
-		}
 	}
 }
 void G17INDEXSTEP::SetV(uint64_t * v, int i1, int i2) {
@@ -339,64 +274,6 @@ void G17INDEXSTEP::SetV(uint64_t * v, int i1, int i2) {
 			return;
 		}
 	}
-}
-
-void G17B::GoAddNewUas(){// end step include small more in the the main uas table
-	// tua is supposed to have a capacity of TUA64_12SIZE uas
-	/*
-	register int N = g17more.nt, ndeb = genuasb12.nua;
-	if (N){
-		uint32_t & nua = genuasb12.nua;
-		uint64_t * tt = genuasb12.tua, *tt0 = g17more.t;
-		while (N-- && nua < TUA64_12SIZE){
-			genuasb12.AddUA(*tt0);
-			tt0++;
-		}
-	}
-	if (0){
-		cout << "more end step" << g17more.nt << " ndeb=" << ndeb
-			<< " final count=" << genuasb12.nua << " ecart " << genuasb12.nua - ndeb << endl;
-		g17more.PrintUasDirect();
-	}
-
-	*/
-}
-void G17B::GoAddNewGUas(){// end step include small more guas in the guas tables
-/*
-	if (genb12.ntua2 >= 3000) return;
-	register int nt = g17moreg[0].nt;
-	register uint64_t * t = g17moreg[0].t;
-	while (nt--){
-		register  uint64_t v = *t, vid = v >> 56;
-		//cout << Char64out(v) << "v" << endl;
-		if (vid>80){
-			//if (genb12.ntua3 < 3000) InsertGua(genb12.tua3, genb12.ntua3, v);
-		}
-		//else if (genb12.ntua2 < 3000)	InsertGua(genb12.tua2, genb12.ntua2, v);
-		t++;
-	}
-*/
-}
-
-void G17B::InsertGua(uint64_t * tu, uint32_t & ntu, uint64_t gu){
-	/*
-	GINT64 guw; guw.u64 = gu;
-	if (guw.u8[7] >= 81)guw.u8[7] -= 81;
-	register uint64_t w = guw.u64;
-	for (uint32_t iua = 0; iua < ntu; iua++){
-		register uint64_t r = tu[iua];
-		if (w > r) continue;
-		if (w == r) return;
-		// insert the new here
-		uint64_t temp[8000]; // temporary for copy forward
-		__movsq(temp, &tu[iua], (ntu - iua));
-		__movsq(&tu[iua + 1], temp, (ntu - iua));
-		tu[iua] = w;
-		ntu++;
-		return;
-	}
-	tu[ntu++] = w; // add to the end
-	*/
 }
 void G17INDEXSTEP::GoAddNewUas_sub_step(){// partial step build in vector 
 	/*
@@ -556,14 +433,9 @@ void G17INDEXSTEP::Do66(){// assumed after do 56 x is band 1 y is band2
 
 
 void G17INDEXSTEP::Do_Common(){// after xye w1('Y')  and w2('X') have been loaded
-	// find vector x start and vector y start (2 cells in each)
-	//cout << "entry Do_Common nw1=" << nw1 << "  nw2=" << nw2 << endl;
 	if (!nw1)return;
-	//p_cpt1[5]++;
-	// setup vectors for the 2 first cells X and Y
 	Do_Common_2();// build  Y tables of vectors
 	Do_Common_3();// launch chunks
-
 }
 void G17INDEXSTEP::Do_Common_2(){// build  Y tables of vectors
 	for (int iy = 0; iy < nw1; iy++){ //Y is bloc xyew1
@@ -620,10 +492,7 @@ void G17INDEXSTEP::Do_Common_3(){// launch chunks 256 x256
 	// now combining all 'x' to all 'y' in chunks size ..
 	int nxch = (nw2-1) / G17CHKX , nxc;
 	int nych = (nw1-1) / G17CHKY, nyc;
-	cout << "Do_Common_3() nxch=" << nxch << " nych=" << nych 
-		<<" nw2="<<nw2 << " nw1=" << nw1 << endl;
 	for (int ix = 0, iex = 0; ix <= nxch; ix++, iex += G17CHKX){
-		//if (ix ) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		nxc = G17CHKX;
 		if (ix == nxch) nxc = nw2 - G17CHKX * ix;
 		g17chunk.nxc = nxc;
@@ -631,11 +500,8 @@ void G17INDEXSTEP::Do_Common_3(){// launch chunks 256 x256
 			uint64_t *Ro = (uint64_t *)(&xyew2[iex]), *Rd = (uint64_t *)(g17chunk.txec);
 			memcpy(Rd, Ro, sizeof  g17chunk.txec[0] *nxc);
 		}
-		//cout << "before buildx" << endl;
 		Do_Common_3_BuildXvectors();// build 'X' tables in the chunk
-		//cout << "after buildx" << endl;
 		for (int iy = 0, iey = 0; iy <= nych; iy++, iey += G17CHKY){
-			//if (iy ) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 			nyc = G17CHKY;
 			if (iy == nych) nyc = nw1 - G17CHKY * iy;
 			g17chunk.nyc = nyc;
@@ -650,7 +516,6 @@ void G17INDEXSTEP::Do_Common_3(){// launch chunks 256 x256
 			
 			if (added_more)// and more moreguas as well
 				memcpy(g17chunk.vm1ygc, &tvm1guas[3*iey], 8*3 * nyc);
-			//cout << "gochunk" << endl;
 			g17chunk.GoChunk();
 		}
 	}
@@ -665,8 +530,6 @@ void G17CHUNK::GoChunk(){// elementary 'X' x 'Y' ychunk is 256x256
 	// this is the critical code in "part 1"
 	p_cpt2g[1] ++;
 	p_cpt2g[2] += nxc * nyc;
-	cout << "entry GoChunk() nxc="<<nxc<<" nyc=" <<nyc<< endl;
-	//p_cpt1[6]++;
 	uint16_t * limit_store;
 	uint16_t tstore[256 * 256]; // storing XY passing filter 1 will never reach the limit
 	{//=========Find all XY passing first filter for the chunk
@@ -745,7 +608,6 @@ void G17CHUNK::GoChunk(){// elementary 'X' x 'Y' ychunk is 256x256
 
 void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 	p_cpt2g[3] ++;
-	//if (p_cpt2g[3] > 36) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	Init();
 	/*
 	if (g17b.debug17){
@@ -769,12 +631,11 @@ void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 	if (g17more.Check(cellsbf))return;		// check here more uas
 	if (g17morebig.Check(cellsbf))return;
 	Go_Guas_collect();						// collect guas still active
-	//Go_Guas_collectMore();// collect guas still active //<<<<<<<<<<<<<<<<<<  see later
 	if (FirstCheckActiveBands()) return;
 	p_cpt2g[4]++;
 	if (CheckValidBand12()) return;
 	p_cpt2g[5]++;
-	if (1) {
+	if (0) {
 		cout << Char2Xout(cellsbf) << " entry Go_0 active nclues=" << nclues << " n=" << p_cptg[8]
 			<< " stacks " << stacksxy.u16[0] << stacksxy.u16[1] << stacksxy.u16[2]
 			<< "\t" << stacksxy.u16[3] << endl;
@@ -822,121 +683,15 @@ void G17XY::Go_Guas_collect(){//
 	more_active_triplets.SetAll_0();
 	bands_active_triplets.SetAll_0();
 	more3 = 0;
-	switch (indexstep.n64vgua) {
-	case 1: Go_Guas_collect1(); break;
-	case 2: Go_Guas_collect2(); break;
-	case 3: Go_Guas_collect3(); break;
-	default:Go_Guas_collectdefault();
-	}
-
-	/* a voir plus tard
-	register int imore = indexstep.added_more;
-	if (!imore) return;	//  look for missing ids add them in "or" mode
-	uint64_t vw1[3];
-	for (int i = 0; i < 3; i++)		vw1[i] = vm1xg[i] & vm1yg[i];
-	uint32_t iua;
-	uint64_t * tx = vw1;
-	G17TMORE * tm = g17moreg0;
-	for (int i = 0; i < 3; i++){//scan used  blocks
-		register uint64_t x = tx[i];
-		//x &= indexstep.vaguas[i];
-		while (bitscanforward64(iua, x)){
-			register uint64_t uaid = (tm[i].t[iua]) >> 56;
-			uint64_t *tv = indexstep.vmid81[uaid];// clear all same id iv vectors
-			x &= tv[i];// clear bit and other bits same id
-			if (uaid <81)bands_active_pairs.setBit(C_To128[uaid]);
-			else bands_active_triplets.setBit(C_To128[uaid - 81]);
-		}
-	}
-	*/
-
-}
-void G17XY::Go_Guas_collect1() {// collect sockets still active 0_63 guas
-	register uint64_t vw= vxg[0] & vyg[0];
-	// setup XY guas status
-	for (int i = 0; i < indexstep.nactive2; i++) {
-		register uint64_t vwi = vw & indexstep.vid81[i];
-		int i81 = indexstep.tactive2[i];
-		if(vwi)bands_active_pairs.setBit(C_To128[i81]);
-	}
-	uint64_t * myvid= &indexstep.vid81[indexstep.nactive2];
-	for (int i = 0; i < indexstep.nactive3; i++) {
-		register uint64_t vwi = vw & myvid[i];
-		int i81 = indexstep.tactive3[i];
-		if (vwi)bands_active_triplets.setBit(C_To128[i81]);
-	}
-
-}
-void G17XY::Go_Guas_collect2() {// collect sockets still active 64_127guas
-	uint64_t vw[2];
-	vw[0] = vxg[0] & vyg[0];
-	vw[1] = vxg[1] & vyg[1];
-	// setup XY guas status
-	for (int i = 0; i < indexstep.nactive2; i++) {
-		register uint64_t * pw = &indexstep.vid81[2 * i];
-		register uint64_t vwi = (vw[0] & pw[0]) | (vw[1] & pw[1]);
-		int i81 = indexstep.tactive2[i];
-		if (vwi)bands_active_pairs.setBit(C_To128[i81]);
-	}
-	uint64_t * myvid = &indexstep.vid81[indexstep.nactive2 * 2];
-	for (int i = 0; i < indexstep.nactive3; i++) {
-		register uint64_t * pw = &myvid[2 * i];
-		register uint64_t vwi = (vw[0] & pw[0]) | (vw[1] & pw[1]);
-		int i81 = indexstep.tactive3[i];
-		if (vwi)bands_active_triplets.setBit(C_To128[i81]);
-	}
-}
-void G17XY::Go_Guas_collect3() {// collect sockets still active 64_127guas
-	uint64_t vw[3];
-	vw[0] = vxg[0] & vyg[0];
-	vw[1] = vxg[1] & vyg[1];
-	vw[2] = vxg[2] & vyg[2];
-	if (0) {
-		cout << Char64out(indexstep.vaguas[0]);
-		cout << Char64out(indexstep.vaguas[1]);
-		cout << Char64out(indexstep.vaguas[2]) << "  vector vagues" << endl;
-		cout << Char64out(vxg[0]);
-		cout << Char64out(vxg[1]);
-		cout << Char64out(vxg[2]) << "  vector vxg" << endl;
-
-		cout << Char64out(vyg[0]);
-		cout << Char64out(vyg[1]);
-		cout << Char64out(vyg[2]) << "  vector vxg" << endl;
-
-		cout << Char64out(vw[0]);
-		cout << Char64out(vw[1]);
-		cout << Char64out(vw[2])<<"valid vector"<<endl;
-	}
-	// setup XY guas status
-	for (int i = 0; i < indexstep.nactive2; i++) {
-		register uint64_t * pw = &indexstep.vid81[3 * i];
-		register uint64_t vwi = (vw[0] & pw[0]) | (vw[1] & pw[1])|(vw[2] & pw[2]);
-		int i81 = indexstep.tactive2[i];
-		if (vwi)bands_active_pairs.setBit(C_To128[i81]);
-	}
-	uint64_t * myvid = &indexstep.vid81[indexstep.nactive2 * 3];
-	for (int i = 0; i < indexstep.nactive3; i++) {
-		register uint64_t * pw = &myvid[3 * i];
-		register uint64_t vwi = (vw[0] & pw[0]) | (vw[1] & pw[1]) | (vw[2] & pw[2]);
-		int i81 = indexstep.tactive3[i];
-		if (vwi)bands_active_triplets.setBit(C_To128[i81]);
-	}
-}
-void G17XY::Go_Guas_collectdefault() {// collect sockets still active 64_127guas
 	int n = indexstep.n64vgua;
 	uint64_t vw[G17BLOCGSUA];
-	for(int i=0;i<n;i++) vw[i]= vxg[i] & vyg[i];
+	for (int i = 0; i < n; i++) vw[i] = vxg[i] & vyg[i];
 	// setup XY guas status
 	for (int i = 0; i < indexstep.nactive2; i++) {
 		register uint64_t * pw = &indexstep.vid81[n * i];
 		register uint64_t vwi = (vw[0] & pw[0]);
-		for(int j=1;j<n;j++) vwi|= (vw[j] & pw[j]) ;
+		for (int j = 1; j < n; j++) vwi |= (vw[j] & pw[j]);
 		int i81 = indexstep.tactive2[i];
-		if (0 &&i81 == 37) {
-			cout << Char2Xout(vwi) << " vwi[5] for i81 37status" << endl;
-			cout << Char2Xout(pw[5]) << " pw[5] for i81 37status" << endl;
-			cout << Char2Xout(vw[5]) << " vw[5] status" << endl;
-		}
 		if (vwi)bands_active_pairs.Set_c(i81);
 	}
 	uint64_t * myvid = &indexstep.vid81[indexstep.nactive2 * n];
@@ -946,58 +701,23 @@ void G17XY::Go_Guas_collectdefault() {// collect sockets still active 64_127guas
 		for (int j = 1; j < n; j++) vwi |= (vw[j] & pw[j]);
 		int i81 = indexstep.tactive3[i];
 		if (vwi)bands_active_triplets.Set_c(i81);
-
-	}
-	if (0) {
-		cout << "Go_Guas_collectdefault() n= " << indexstep.n64vgua << endl;
-		cout << Char27out(bands_active_pairs.bf.u32[1]) << " pairs 27-53" << endl;
 	}
 }
-void G17XY::Go_Guas_collectMore(){// collect guas from more tables
-	register uint64_t R = cellsbf;
-	for (int it = 0; it < 3; it++){
-		register int nt = g17moreg[it].nt;
-		register uint64_t * t = g17moreg[it].t;
-		while (nt--){
-			register  uint64_t v = *t;
-			if (!(v&R)){
-				v >>= 56; //now socket 0-161
-				if (v <81)bands_active_pairs.setBit(C_To128[v]);
-				else bands_active_triplets.setBit(C_To128[v - 81]);
-			}
-			t++;
-		}
-	}
-}
-
 int G17XY::FirstCheckActiveBands() {// quick check of critical situations
 	//if (genb12.nband3 > 10) return 0;// small chances to exit false<<<<<<<<<<<<<<<<<<<<<<
 	// consider critical stack 
-	int maxcount = 0, stack,diag=0;
-	if (p_cpt2g[3] == 12)diag = 1;
+	int maxcount = 0, stack;
 	for (int i = 0; i < 3; i++) {
 		int st_count = stacksxy.u16[i];
 		if (st_count > maxcount) { maxcount = st_count; stack = i; }
 	}
 	if (maxcount < 5)return 0;// small chances to exit false
 
-	if (diag) {
-		uint32_t pa = bands_active_pairs.bf.u32[stack];
-		uint32_t ta = bands_active_triplets.bf.u32[stack];
-		cout << "critical stack is stack " << stack << " count="<<maxcount<< endl;
-		cout << Char27out(pa) << " sockets 2 active (stack)" << endl;
-		cout << Char27out(ta) << " sockets 3 active" << endl;
-	}
 	for (ibfirst = 0; ibfirst < genb12.nband3; ibfirst++) {
 		STD_B3::GUAs & myb = genb12.bands3[ibfirst].guas;
 		BF128 ws2 = bands_active_pairs & myb.isguasocket2;
 		BF128 ws3 = bands_active_triplets & myb.isguasocket3;
 		uint32_t ws2s= ws2.bf.u32[stack],ws3s= ws3.bf.u32[stack];
-		if (diag) {
-			cout << genb12.bands3[ibfirst].band << " ib3=" << ibfirst << endl;;
-			cout << Char27out(ws2s) << " sockets 2 band/stack" << endl;
-			cout << Char27out(ws3s) << "         3 band" << endl;
-		}
 		if(! (ws2s | ws3s)) return 1;// one non critical band found
 		if (maxcount == 6)continue; // band to exclude
 		// need 2 minimum clues to exclude the band
@@ -1020,97 +740,28 @@ int G17XY::FirstCheckActiveBands() {// quick check of critical situations
 			//cout << "triplet bit N°" << tix[i] << "\timini\t" << imini << endl;
 			mini_triplet |= bit;
 		}
-		if (diag) {
-			cout << Char9out(mini_bf1) << endl;
-			cout << Char9out(mini_bf3) << endl;
-			cout << Char9out(mini_triplet) << endl;
-		}
 		uint32_t mincount = _popcnt32(mini_bf1) + _popcnt32(mini_bf3) + _popcnt32(mini_triplet);
 		if (mincount > 2) return 1; // non critical band found
 	}
 	return 0;
-}
-uint64_t G17XY::GetPairs(int ib3){
-	uint32_t iuaid;
-	register uint64_t pairbfa = 0;
-	register uint64_t * ti = &genb12.tipairs[ib3][0].u64;
-	{ // process first box
-		register uint32_t X = genb12.tbands_pairs[ib3].bf.u32[0];
-		X &= bands_active_pairs.bf.u32[0];
-		while (bitscanforward(iuaid, X)){
-			X &= ~(1 << iuaid);
-			pairbfa |= ti[iuaid];
-		}
-	}
-		{ // process second box
-			register uint32_t X = genb12.tbands_pairs[ib3].bf.u32[1];
-			X &= bands_active_pairs.bf.u32[1];
-			while (bitscanforward(iuaid, X)){
-				X &= ~(1 << iuaid);
-				pairbfa |= ti[iuaid + 32];
-			}
-		}
-		{ // process last box
-			register uint32_t X = genb12.tbands_pairs[ib3].bf.u32[2];
-			X &= bands_active_pairs.bf.u32[2];
-			while (bitscanforward(iuaid, X)){
-				X &= ~(1 << iuaid);
-				pairbfa |= ti[iuaid + 64];
-			}
-		}
-		return pairbfa;
-}
-int G17XY::GetTriplets(int ib3){
-	register int minirows_triplets = 0;
-	uint32_t iuaid;
-	register int * ti = genb12.tindextriplets[ib3];
-	{ // process first box
-		register uint32_t X = genb12.tbands_triplets[ib3].bf.u32[0];
-		X &= bands_active_triplets.bf.u32[0];
-		while (bitscanforward(iuaid, X)){
-			X &= ~(1 << iuaid);
-			minirows_triplets |= ti[iuaid];
-		}
-	}
-	{ // process second box
-		register uint32_t X = genb12.tbands_triplets[ib3].bf.u32[1];
-		X &= bands_active_triplets.bf.u32[1];
-		while (bitscanforward(iuaid, X)){
-			X &= ~(1 << iuaid);
-			minirows_triplets |= ti[iuaid + 32];
-		}
-	}
-	{ // process third box
-		register uint32_t X = genb12.tbands_triplets[ib3].bf.u32[2];
-		X &= bands_active_triplets.bf.u32[2];
-		while (bitscanforward(iuaid, X)){
-			X &= ~(1 << iuaid);
-			minirows_triplets |= ti[iuaid + 64];
-		}
-	}
-	return minirows_triplets;
 }
 int G17XY::CheckValidBand12(){
 	// passing more filter now check validity or add a "more" ua
 	register uint64_t myua = zh2b[0].ValidXY(tclues,nclues);
 	if (myua){
 		uint64_t cc = _popcnt64(myua);
-		//cout << Char2Xout(myua) << " ua to add b12 cc="<<cc << endl;
 		if (cc <= UALIMSIZE) {
-			genb12.DebugFreshUA(myua);// check >= 6 digits
 			g17more.Add(myua);
 			genuasb12.AddUACheck(myua | (cc << 59));// and update the UA table
 		}
 		else g17morebig.Add(myua);
 		return 1; // not a solution unique for bands 1+2
 	}
-	else cout << "\t\t>>>>>>>>>>>>>>>>>>>>>bon p_cpt2g[3]=" << p_cpt2g[3] << endl;
 	return 0;
 }
 
 void G17XY::BuildActiveBands() {
 	ntb3 = 0;
-
 	for (int ib3 = ibfirst; ib3 < genb12.nband3; ib3++) {
 		STD_B3::GUAs & myb = genb12.bands3[ib3].guas;
 		BF128 ws2 = bands_active_pairs & myb.isguasocket2;
@@ -1120,15 +771,6 @@ void G17XY::BuildActiveBands() {
 			mini_bf1 = 0, mini_bf2 = 0, mini_bf3 = 0,
 			pairsbf = 0, 
 			mini_triplet = 0;
-		if (0) {
-			char ws[82];
-			cout << bands_active_pairs.String3X(ws) << " sockets 2 active" << endl;
-			cout << ws2.String3X(ws) << " sockets 2 band" << endl;
-			cout << ws3.String3X(ws) << " sockets 3 band" << endl;
-			cout << bands_active_triplets.String3X(ws) << " sockets 3 active" << endl;
-			cout << "expected count=" << ws2.Count() << endl;;
-		}
-
 		for (int i = 0; i < ntix; i++) {// switch from i_81 to mini rows
 			int i81= tix[i],
 				imini = myb.ua2_imini[i81],
@@ -1155,42 +797,16 @@ void G17XY::BuildActiveBands() {
 
 		uint32_t mincount = _popcnt32(mini_bf1) + _popcnt32(mini_bf3) + _popcnt32(mini_triplet);
 		if (mincount > 6) continue; // too many clues needed for 6 5 6
-		if (1) {
-			cout << "______________study band ib3=" << ib3 << endl;
-			cout << Char9out(mini_bf1) << "mini_bf1 0" << oct << mini_bf1 << dec << endl;
-			cout << Char9out(mini_bf2) << "mini_bf2 0" << oct << mini_bf2 << dec << endl;
-			cout << Char9out(mini_bf3) << "mini_bf3 0" << oct << mini_bf3 << dec << endl;
-			cout << Char9out(mini_triplet) << "mini_triplet" << endl;
-			cout << "expected count=" << ws2.Count() << endl;;
-		}
-
 
 		mini_bf1 &= ~mini_bf2;// now pure one pair
 		mini_bf2 &= ~mini_bf3;// now pure 2 pairs
-
-
+		
 		wg3.count.u16[0] = mini_bf1;
 		wg3.count.u16[1] = mini_bf2;
 		wg3.count.u16[2] = mini_bf3;
-
-
+		
 		wg3.countstack.u64 = stacksxy.u64;
 		wg3.pairs.u64 = pairsbf;
-		/*
-		if (pairsbf) {// parse the pair status
-			register int bit = 1, Ror = pairsbf;
-			for (int i = 0; i < 9; i++) {// 9 minirows to explore
-				register int n = __popcnt(Ror & 7);
-				if (n) {
-					wg3.count.u16[0] |= bit;
-					wg3.count.u16[n] |= bit;
-				}
-				bit <<= 1;
-				Ror >>= 3;
-			}
-		}
-		*/
-
 		// min count per stack
 		wg3.countsum.u16[3] = mincount;
 		wg3.countsum.u16[0] = _popcnt32(mini_bf1&7) + _popcnt32(mini_bf2 & 7)

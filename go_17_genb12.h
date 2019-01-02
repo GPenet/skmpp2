@@ -52,7 +52,7 @@ struct GEN_BANDES_12{// encapsulating global data
 		uint32_t nua;// nua_start, nua_end, nua;
 		void Debug(const char * lib);
 	}tsgua3[81];
-
+	G17TMORE tmore_sockets2[81];
 	// __________________________  primary UAs tables and creation of such tables
 	uint64_t  // tua3x[3000],// dynamic sub tables
 		*ptua2;// pointer to current table cycle search 2/3
@@ -77,6 +77,10 @@ struct GEN_BANDES_12{// encapsulating global data
 		gang27 = gang[0];
 		InitialSockets2Setup(); 
 		InitialSockets3Setup();	
+	}
+	void Init_tmore_sockets2() {
+		for (int i = 0; i < 81; i++)
+			tmore_sockets2[i].Init();
 	}
 	void InitialSockets2Setup();// batch level
 	void InitialSockets3Setup();// batch level
