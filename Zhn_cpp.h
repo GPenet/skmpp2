@@ -9,8 +9,38 @@ The copyright is not specified.
 #include "Zhtables_cpp.h" // also describes the pattern
 //#define DIAG
 
-ZH_GLOBAL zh_g;
+ /*ZH_1D class to solve one digit 3 bands
+all valid solutions  are stored in table
+the table is supplied by the caller
+this is somehow a private class for the brute force
+*/
+struct ZH_1D_GLOBAL {
+	BF128 *tsolw,t3; // belong to the caller
+	int nsolw;
+	ZH_1D_GLOBAL() { t3.SetAll_1(); t3.bf.u32[3] = 0; }
+	inline void Add(BF128 & s) {
+		*tsolw++ = s & t3; // clear last 32 bits
+		nsolw++;
+	}
+	int Go(BF128 & fde, BF128 *tsol);
+};
+struct ZH_1D {
+	BF128 FD;// last 32 bits contains unsolved rows
+	int GetSols(int ru);
+	int GetAllSols(BF128 & fde, int ru);
+	inline void Assign(int cell) {
+		FD &= AssignMask_Digit[cell];
+	}
+	void ComputeNext();
+	int Update(int &ru);
+	void Guess();
+	void GuessGo(int cell);
+	//int IsValid(uint64_t v);
+};
 
+ZH_GLOBAL zh_g;
+ZH_1D_GLOBAL zh1d_g;
+ZH_1D zh1d[5];
 ZHOU zhou[50]; // must host main brute force plus minimality analysis and recursive generation
 ZHOU zhou_i,zhou_ip,//zhou_i================== initial for a GAME
     zhou_solve;// basis to solve a puzzle using elimination logic
@@ -519,6 +549,16 @@ int ZHOU::FullUpdate(){
 		<< zh_g.cpt[5]	<< " compte upd=" << zh_g.cpt[3] << endl;
 	return 1;
 }
+int ZHOU::FullUpdateV2() {
+	if (zh_g.nsol > zh_g.lim) return 0;
+	while (1) {
+		if (!Update()) return 0; // game locked in update
+		if (!Unsolved_Count()) return 2;
+		if (ApplySingleOrEmptyCellsV2())	return 0; // locked empty cell or conflict singles in cells
+		if (!zh_g.single_applied)	break;
+	}
+	return 1;
+}
 void ZHOU::Guess(){// low chance to be solved here
 	if (zh_g.nsol > zh_g.lim) return;
 	if (cells_unsolved.isEmpty()){
@@ -554,6 +594,51 @@ void ZHOU::Guess(){// low chance to be solved here
 	int xcell = cells_unsolved.getFirst96(),cell=From_128_To_81[xcell];
 	for (int idig = 0; idig < 9; idig++){
 		if (FD[idig][0].On(xcell)){// one valid digit		
+			ZHOU * mynext = this + 1; // start next guess
+			mynext->Copy(*this);
+			mynext->SetaCom(idig, cell, xcell);
+			mynext->ComputeNext();
+		}
+	}
+}
+void ZHOU::GuessV2(BF128 * tres) {// low chance to be solved here
+	// select the digit not fully solved lowest count of candidates
+	int mincount = 90, digmin;
+	for (int idig = 0; idig < 9; idig++) {
+		int cc = (FD[idig][0]&zh1d_g.t3).Count();
+		if (cc < 10)continue;
+		if (cc < mincount) {
+			mincount = cc; digmin = idig;
+		}
+	}
+	if (mincount > 80)return; //should never be
+	DebugDigit(digmin);
+	// collect perms valid for this digit
+	//	int Go(BF128 & fde, BF128 *tsol, uint32_t ru);
+	int nperms = zh1d_g.Go(FD[digmin][0], tres);
+	cout << "retour recherche perms nperms=" << nperms << endl;
+	for (int i = 0; i < nperms; i++) {
+	}
+	if (1) return;
+	if (zh_g.nsol > zh_g.lim) return;
+	if (cells_unsolved.isEmpty()) {
+		if (zh_g.diag)cout << endl << "valid guess1\n" << endl;
+		zh_g.ValidPuzzle(this);
+		return;
+	}
+	if (index <= zh_g.maxindex && zh_g.modeguess) {
+		//cout << "first entry guess see more " << endl;
+		int ir = SolveHiddenPair_Box_Row();
+		//Debug(1);
+		if (zh_g.diag)ImageCandidats();
+		if (ir) { ComputeNext();		return; }
+	}
+	zh_g.cpt[1]++;
+
+	if (GuessHiddenTriplet()) return;
+	int xcell = cells_unsolved.getFirst96(), cell = From_128_To_81[xcell];
+	for (int idig = 0; idig < 9; idig++) {
+		if (FD[idig][0].On(xcell)) {// one valid digit		
 			ZHOU * mynext = this + 1; // start next guess
 			mynext->Copy(*this);
 			mynext->SetaCom(idig, cell, xcell);
@@ -627,6 +712,35 @@ int ZHOU::ApplySingleOrEmptyCells(){
 	zh_g.single_applied = 0;
 	if (ApplySingleOrEmptyCells_Band3()) return 1;
 	return ApplySingleOrEmptyCells_B12();
+}
+int ZHOU::ApplySingleOrEmptyCellsV2() {
+	// here only singles and empty cells searched 
+	BF128 R1 = FD[0][0], R2 = R1 & FD[1][0]; R1|= FD[1][0];
+	R2 |= R1 & FD[2][0]; R1 |= FD[2][0];
+	R2 |= R1 & FD[3][0]; R1 |= FD[3][0];
+	R2 |= R1 & FD[4][0]; R1 |= FD[4][0];
+	R2 |= R1 & FD[5][0]; R1 |= FD[5][0];
+	R2 |= R1 & FD[6][0]; R1 |= FD[6][0];
+	R2 |= R1 & FD[7][0]; R1 |= FD[7][0];
+	R2 |= R1 & FD[8][0]; R1 |= FD[8][0];
+	if ((cells_unsolved - R1).isNotEmpty()) return 1; // empty cells
+	R1 -= R2; // now true singles
+	R1 &= cells_unsolved; // these are new singles
+	if (R1.isEmpty()) return 0;
+	int tcells[80], ntcells = R1.Table3X27(tcells);
+	for (int i = 0; i < ntcells; i++) {
+		int cell = tcells[i];
+		for (int idig = 0; idig < 9; idig++) {
+			if (FD[idig][0].On_c(cell)) {
+				 Assign(idig, cell, C_To128[cell]);
+				 goto nextr1; 
+			}
+		}
+		return 1; // conflict with previous assign within this lot
+	nextr1:;
+	}
+	zh_g.single_applied =1;
+	return 0;
 }
 
 inline void ZHOU::GuessBivalueInCell(BF128 & wc){// priority to highest digits
@@ -991,3 +1105,243 @@ exitok:
 	GuessFloor();
 }
 
+//=========================== ZH_1D code one digit 3 bands
+int ZH_1D_GLOBAL::Go(BF128 & fde, BF128 *tsol) {
+	tsolw = tsol;
+	nsolw = 0;
+	zh1d[0].FD = fde;
+	zh1d[0].Guess();
+	return nsolw;
+}
+void ZH_1D::Guess() {// not yet solved
+	uint32_t rmask[3] = { 0777,0777000,0777000000 };
+	uint32_t ru = FD.bf.u32[3], bu = TblShrinkMask[ru],
+		minband=30,minbandindex;
+	if (1) {
+		cout <<Char9out(ru)<< " ru" << endl;
+		cout << Char9out(bu) << " bu" << endl;
+	}
+	// use the band with the lowed count
+	for (int ib = 0, bit = 1; ib < 3; ib++, bit <<= 1) {
+		if (bu&bit) {// not solved band
+			uint32_t cc = _popcnt32(FD.bf.u32[ib]);
+			if (cc <= 5) { minbandindex = ib; break; }
+			if (cc < minband) {
+				minband = cc;
+				minbandindex = ib;
+			}
+		}
+	}
+
+	if (1) {
+		cout << "guess minbandindex=" << minbandindex << endl;
+	}
+	// now select the unsolved  row with the lowest count
+	uint32_t band = FD.bf.u32[minbandindex],
+		bru = (ru >> (3 * minbandindex)) & 7,
+		dcell=27* minbandindex,count=10,myrow,myirow;
+	for (int irow = 0, bit = 1; irow < 3; irow++, bit <<= 1) {
+		if (bru&bit) {// not solved row in band
+			uint32_t row= band & rmask[irow];
+			uint32_t cc =  _popcnt32(row);
+			if (cc < count) {
+				count = cc;
+				myirow = irow;
+				myrow=row;
+				if (cc == 2) break;
+			}
+		}
+	}
+	if (1) {
+		cout << "guess rowindex=" << myirow << endl;
+		//return;
+	}
+	// try each candidate in the selected row
+	FD.bf.u32[3] ^= 1 << (3 * minbandindex + myirow);// set row solved
+	uint32_t cell;
+	while (bitscanforward(cell, myrow)) {
+		myrow ^= 1 << cell;
+		cell += dcell;
+		(this + 1)->GuessGo(cell);
+	}
+}
+void ZH_1D::GuessGo(int cell) {
+	*this = *(this - 1);
+	FD &= AssignMask_Digit[cell];// unsolved row already updated
+	register int Shrink, S, A,B,C,D, ru = FD.bf.u32[3],
+		rub= TblShrinkMask[ru];// rub 3 bits 0 to 111
+	if (1) {
+		cout << " guessgo rub=" << rub << endl;
+		char ws[82];
+		cout << FD.String3X(ws) << "after assign before update " << endl;
+		//return;
+	}
+	switch (rub) {
+	case 1: {// band 1 alone not solved
+		A = FD.bf.u32[0];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[0] = A;
+		ru = (ru & 0770) | S;
+		break;// no reason to loop here
+	}
+	case 2: {// band 2 alone not solved
+		A = FD.bf.u32[1];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[1] = A;
+		ru = (ru & 0707) | (S<<3);
+		break;// no reason to loop here
+	}
+	case 4: {// band 3 alone not solved
+		A = FD.bf.u32[2];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[2] = A;
+		ru = (ru & 077) | (S << 6);
+		break;// no reason to loop here
+	}
+	case 3:while (1) {// band 1;2 not solved
+		A = FD.bf.u32[0];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		FD.bf.u32[1] &= TblMaskSingle[S];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[0] =B= A;
+		ru = (ru & 0770) | S;
+		A = FD.bf.u32[1];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		FD.bf.u32[0] &= TblMaskSingle[S];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[1] = A;
+		ru = (ru & 0707) | (S << 3);
+		if(B== FD.bf.u32[0])goto exitswitch;// no reason to loop  
+	}
+	case 5: while (1) {// band 1;3 not solved
+			A = FD.bf.u32[0];
+			Shrink = (TblShrinkMask[A & 0x1FF] |
+				TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+				TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+			if ((A &= TblComplexMask[Shrink]) == 0)  return;
+			S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+			FD.bf.u32[2] &= TblMaskSingle[S];
+			S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+			FD.bf.u32[0] = B = A;
+			ru = (ru & 0770) | S;
+			A = FD.bf.u32[2];
+			Shrink = (TblShrinkMask[A & 0x1FF] |
+				TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+				TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+			if ((A &= TblComplexMask[Shrink]) == 0)  return;
+			S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+			FD.bf.u32[0] &= TblMaskSingle[S];
+			S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+			FD.bf.u32[2] = A;
+			ru = (ru & 077) | (S << 6);
+			if (B == FD.bf.u32[0])	goto exitswitch;// no reason to loop  
+		}
+
+	case 6: while (1) {// band 2;3 not solved
+		A =  FD.bf.u32[1];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		FD.bf.u32[2] &= TblMaskSingle[S];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[1] = B = A;
+		ru = (ru & 0707) | (S<<3);
+		A =FD.bf.u32[2];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		FD.bf.u32[1] &= TblMaskSingle[S];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[2] = A;
+		ru = (ru & 077) | (S << 6);
+		if (B == FD.bf.u32[1])	goto exitswitch;// no reason to loop  
+		if (1) {
+			cout << " loop6 ru=0"<<oct << ru <<dec<< endl;
+			char ws[82];
+			cout << FD.String3X(ws) << "end cycle with loop " << endl;
+			//return;
+		}
+	}
+	case 7: {// no band  solved
+		loop1:
+		A =  FD.bf.u32[0];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		B = FD.bf.u32[2];
+		FD.bf.u32[1] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];
+		B = FD.bf.u32[1];
+		FD.bf.u32[2] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[0]=C = A;
+		ru = (ru & 0770) | S;
+		loop2:
+		A =FD.bf.u32[1];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		B = FD.bf.u32[2];
+		FD.bf.u32[0] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];
+		B = FD.bf.u32[0];
+		FD.bf.u32[2] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[1]=D = A;
+		ru = (ru & 0707) | (S << 3);
+		A = B = FD.bf.u32[2];
+		Shrink = (TblShrinkMask[A & 0x1FF] |
+			TblShrinkMask[(A >> 9) & 0x1FF] << 3 |
+			TblShrinkMask[(A >> 18) & 0x1FF] << 6);
+		if ((A &= TblComplexMask[Shrink]) == 0)  return;
+		S = ((A | (A >> 9) | (A >> 18)) & 0x1FF);
+		B = FD.bf.u32[1];
+		FD.bf.u32[0] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];
+		B = FD.bf.u32[0];
+		FD.bf.u32[1] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];
+		S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
+		FD.bf.u32[2] = A;
+		ru = (ru & 077) | (S << 6);
+		if (C != FD.bf.u32[0])goto loop1;  
+		if (D != FD.bf.u32[1])goto loop2; 
+	}
+	}// end switch
+exitswitch:// can be solved, if not guess again
+	cout << " exit guessgo ru=0" <<oct<< ru<<dec << endl;
+
+	if (!(FD.bf.u32[3] = ru)) zh1d_g.Add(FD);
+	else {
+		char ws[82];
+		cout << FD.String3X(ws) << "after update before new guess" << endl;
+		Guess();
+	}
+}

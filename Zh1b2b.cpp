@@ -83,7 +83,7 @@ uint64_t ZH2B_GLOBAL::MoreSocket2(int * g0, int * g1,
 	InitGangster(g0, g1);
 	zh2b[0].Init_gang();
 	zh2b[0].InitTclues(tclues, nclues);
-	if (test)zh2b[0].ImageCandidats();
+	//if (test)zh2b[0].ImageCandidats();
 	return zh2b[0].MoreSocket2();
 }
 uint64_t ZH2B_GLOBAL::BuildUaret(BF64 * wsol) {
@@ -201,6 +201,10 @@ void ZH2B::InitTclues(uint32_t * tclues, int n) {
 */
 uint64_t ZH2B::MoreSocket2() {
 	if (FullUpdate()) {
+		if (zh2b_g.test) {
+			cout << "après full update" << endl;
+			ImageCandidats();
+		}
 		if (rows_unsolved.isEmpty()) {// solved false at the very beginning
 			//cout << "immediate ua" << endl;
 			return zh2b_g.BuildUaret(FD);

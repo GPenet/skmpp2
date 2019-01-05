@@ -1,6 +1,7 @@
 
 
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
+	zh2b_g.test = 0;
 	p_cpt2g[0] ++;
 	if (p_cpt2g[0]>1 )	return; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
 	myband2.MorphUas();
@@ -24,6 +25,7 @@ void G17B::Go(){// search process external loop 2X2Y
 	//g17morebig.Init();
 	//for (int i = 0; i < 3; i++)g17moreg[i].Init();
 	//zh_g.grid0 = genb12.grid0;
+	zh_g.grid0= genb12.grid0;
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
@@ -38,7 +40,7 @@ void G17B::Go(){// search process external loop 2X2Y
 		cout << "n1=" << n1 << " n2=" << n2 << " could be dynamic<<<<<<<<" << endl;
 	}
 	for (int i1 = 0; i1 < n1; i1++) {
-		if (1) {
+		if (0) {
 			cout << "i1=" << i1 << "\tn51=" << indexstep.n51 
 				<< " n61=" << indexstep.n61		<< endl;
 		}
@@ -51,7 +53,7 @@ void G17B::Go(){// search process external loop 2X2Y
 			indexstep.Init(i1, i2);
 			if (!(indexstep.n51 | indexstep.n52)) continue;
 			if (indexstep.ShrinkUas())continue;// dead branch
-			if (1) {
+			if (0) {
 				cout << " i2=" << i2<< " n52=" << indexstep.n52	 << " n62=" << indexstep.n62  
 					<< "\tnua step" << indexstep.ntua <<"\tnua"<< genuasb12.nua
 					<< "\tgnua step" << indexstep.ntgua << "\tngua" << indexstep.ntgua_raw
@@ -647,10 +649,7 @@ void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 	// at least one band is ok, time to check validity of the band 1+2
 	p_cpt2g[8] ++;
 	p_cpt2g[9] += ntb3;
-
-	if (1) return;
 //	if (g17b.debug17 > 1)		cout << " valide b 12" << endl;
-
 	Go_ValideB12();
 }
 
@@ -702,6 +701,7 @@ void G17XY::Go_Guas_collect(){//
 		int i81 = indexstep.tactive3[i];
 		if (vwi)bands_active_triplets.Set_c(i81);
 	}
+	more_checked_triplet= bands_active_triplets;
 }
 int G17XY::FirstCheckActiveBands() {// quick check of critical situations
 	//if (genb12.nband3 > 10) return 0;// small chances to exit false<<<<<<<<<<<<<<<<<<<<<<
@@ -767,9 +767,10 @@ void G17XY::BuildActiveBands() {
 		BF128 ws2 = bands_active_pairs & myb.isguasocket2;
 		BF128 ws3 = bands_active_triplets & myb.isguasocket3;
 		// switch to mini rows patterns
-		int tix[81], ntix = ws2.Table3X27(tix),
-			mini_bf1 = 0, mini_bf2 = 0, mini_bf3 = 0,
-			pairsbf = 0, 
+		int tix[81], ntix = ws2.Table3X27(tix);
+		uint32_t mini_bf1 = 0, mini_bf2 = 0, mini_bf3 = 0,
+			pairsbf = 0,
+			pairs27 = 0,
 			mini_triplet = 0;
 		for (int i = 0; i < ntix; i++) {// switch from i_81 to mini rows
 			int i81= tix[i],
@@ -780,6 +781,7 @@ void G17XY::BuildActiveBands() {
 			if (mini_bf1&bit) mini_bf2 |= bit;
 			mini_bf1 |= bit;
 			pairsbf |= myb.ua_pair[i81];
+			pairs27 |= 1<< myb.ua2_i27[i81];
 		}
 		ntix = ws3.Table3X27(tix);// now triplets to mini rows
 		for (int i = 0; i < ntix; i++) {// switch from i_81 to mini rows
@@ -789,6 +791,7 @@ void G17XY::BuildActiveBands() {
 		}
 
 		//___________________________ prepare a new band to process later
+		uint32_t all_used_minis = mini_bf1 | mini_triplet;
 		memset(&wg3, 0, sizeof wg3);
 		wg3.ib3 = ib3;
 
@@ -806,15 +809,18 @@ void G17XY::BuildActiveBands() {
 		wg3.count.u16[2] = mini_bf3;
 		
 		wg3.countstack.u64 = stacksxy.u64;
-		wg3.pairs.u64 = pairsbf;
+		wg3.pairs.u32[0] = pairs27;
 		// min count per stack
 		wg3.countsum.u16[3] = mincount;
-		wg3.countsum.u16[0] = _popcnt32(mini_bf1&7) + _popcnt32(mini_bf2 & 7)
-			+ _popcnt32(mini_bf3&7)		+ _popcnt32(mini_triplet&7);
-		wg3.countsum.u16[1] = _popcnt32(mini_bf1 & 070) + _popcnt32(mini_bf2 & 070) 
-			+ _popcnt32(mini_bf3 & 070) + _popcnt32(mini_triplet & 070);
-		wg3.countsum.u16[2] = _popcnt32(mini_bf1 & 0700) + _popcnt32(mini_bf2 & 0700) 
-			+ _popcnt32(mini_bf3 & 0700) + _popcnt32(mini_triplet & 0700);
+		register int s = 0111;
+		wg3.countsum.u16[0] = _popcnt32(mini_bf1&s) + _popcnt32(mini_bf2 & s)
+			+ _popcnt32(mini_bf3&s)		+ _popcnt32(mini_triplet&s);
+		s = 0222;
+		wg3.countsum.u16[1] = _popcnt32(mini_bf1 & s) + _popcnt32(mini_bf2 & s)
+			+ _popcnt32(mini_bf3 & s) + _popcnt32(mini_triplet & s);
+		s = 0444;
+		wg3.countsum.u16[2] = _popcnt32(mini_bf1 & s) + _popcnt32(mini_bf2 & s)
+			+ _popcnt32(mini_bf3 & s) + _popcnt32(mini_triplet & s);
 		{ // setup sum and check stacks
 			register uint64_t R = stacksxy.u64 + wg3.countsum.u64;
 			wg3.countstack.u64 = R;
@@ -822,58 +828,128 @@ void G17XY::BuildActiveBands() {
 			R >>= 16; if ((R & 0xf) > 6) continue;
 			R >>= 16; if ((R & 0xf) > 6) continue;
 		}
-		p_cpt2g[19] ++;
-		if (p_cpt2g[19] > 2) return;
-		wg3.Debug();
-		//{// add possible triplets in empty mini rows (not very common)
-		//	// fill active triplets in wg3.pairs.u32[1] 
-		//	wg3.pairs.u32[1] |= tbr[A & 7];
-		//	wg3.pairs.u32[1] |= (tbr[(A >> 3) & 7] << 9);
-		//	wg3.pairs.u32[1] |= (tbr[(A >> 6) & 7] << 18);
-		//}
+		// set up pair + triplet bitfield
+		wg3.pairs.u32[1] = pairsbf;
+		if (wg3.minirows_triplets) {// must add triplet minirow
+			for (int i = 0, bit = 1, field = 7; i < 9; i++, bit <<= 1, field <<= 3)
+				if (wg3.minirows_triplets&bit)
+					wg3.pairs.u32[1] |= field;
+		}
+		
+		// try to add triplets in empty minirows
+		all_used_minis ^= 0777;// now free minis
+		if (all_used_minis &&(p_cpt2g[8]<30)) {
+			Find_More_Sockets3(all_used_minis);
+		}
+
 		g17tb3go[ntb3++] = wg3;
 	}
 }
+int G17XY::Find_More_Sockets3(uint32_t free_minis) {
+	int rmini = 0;
+	cout << "test more sockets 3" << endl;
+	STD_B3::GUAs & myb = genb12.bands3[wg3.ib3].guas;
+	for (int imini = 0,bit=1; imini < 9; imini++,bit<<=1) {
+		if (!(free_minis & bit))continue;
+		int i81 = myb.triplet[imini];
+		// is there a socket3 from a previous check
+		if (more_checked_triplet.On_c(i81)) {// already cheked
+			if (more_active_triplets.Off_c(i81)) {// already cheked
+				more_active_triplets.Set_c(i81);
+			}
+			continue;
+		}
 
+		GEN_BANDES_12::SGUA3 &w = genb12.tsgua3[i81];
+		int bita = 1 << w.dig1, bitb = 1 << w.dig2, bitc = 1 << w.dig3,
+			digs = bita | bitb | bitc;
+		int triplet_perms[2][3];
+		if (g17xy.xygang[w.col1] & digs)continue;// not valid here
+		if (g17xy.xygang[w.col1+1] & digs)continue;// not valid here
+		if (g17xy.xygang[w.col1 + 2] & digs)continue;// not valid here
+
+		int * p = triplet_perms[0];// for per abc -> bca
+		p[0] = bita | bitb; p[1] = bitb | bitc; p[2] = bitc | bita;
+
+		p = triplet_perms[1];// for per abc -> cab
+		p[0] = bita | bitc; p[1] = bitb | bita; p[2] = bitc | bitb;
+		int tp3f[2][3] = { {1,2,0},{2,0,1} };// perms no valid digit
+		for (int ip = 0; ip < 2; ip++) {
+			// build revised gangster
+			int rgangcols[9];// revised gangster
+			memcpy(rgangcols, genb12.gangb12, sizeof rgangcols);
+			p = triplet_perms[ip];
+			int c1 = w.col1, c2 = c1 + 1, c3 = c1 + 2;
+			rgangcols[c1] ^= p[0];
+			rgangcols[c2] ^= p[1];
+			rgangcols[c3] ^= p[2];
+			// this is a possible  socket3 try to find a gua
+			cout << "call MoreSocket3 i81=" << i81 << endl;
+			zh2b_g.test = 1;
+			uint64_t new_ua = zh2b_g.MoreSocket2(genb12.gangb12, rgangcols,
+				g17xy.tclues, g17xy.nclues, digs);
+			zh2b_g.test = 0;
+			cout << Char2Xout(new_ua) << " retour zhou" << endl;
+		}
+	}
+	return rmini;
+}
 
 void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in band 3
-	int tcluesb3[20], ntb3a = 0;
-	for (int i = 0; i < nbx; i++)tcluesb3[ntb3a++] = xxe.cells.u8[i];
-	for (int i = 0; i < nby; i++)tcluesb3[ntb3a++] = yye.cells.u8[i];
-	if (zhou[0].PartialInitSearch17(tclues, ntb3a))return;// would be  bug 
+	//cout <<Char2Xout(g17xy.cellsbf)<< "entry Go_ValideB12() ntb3=" << ntb3 << endl;
+	int zinitdone = 0;
 	for (int i3 = 0; i3 < ntb3; i3++){
 		wg3 = g17tb3go[i3];
-		memcpy(&genb12.grid0[54], genb12.bands3[wg3.ib3].band0, 4*27);
-		zhou[0].InitBand3PerDigit(genb12.bands3[wg3.ib3].band0);
-		g17hh0.Init(wg3);
+		int nmiss= 17 - wg3.countstack.u16[3];
+		if(nmiss<2)p_cpt2g[10+nmiss] ++;
+		else if (nmiss < 5)p_cpt2g[12] ++;
+		else p_cpt2g[13] ++;
+		if(wg3.minirows_triplets)p_cpt2g[14] ++;
+		p_cpt2g[19] ++;
+		if (p_cpt2g[19] > 10) continue;
+		if (1) {
+			wg3.Debug();
 
-		//if (g17b.debug17 > 1)		cout << " valide b12 go"  << endl;
-
+		}
 		//============= collect Gua46 and uas b3 for the band split them "in-field" "out-field"
 		nuasb3_1 = nuasb3_2 = 0;
-		// first GUA46 usually shorter than UAs band3
 		register int  Rfilt = g17tb3go[i3].pairs.u32[1];
-		int * tpat = genb12.tbands_UA4_6s_pat[wg3.ib3];
-		for (int i = 0; i < 3; i++){
-			register unsigned long dres = 27 * i;
-			register uint32_t res;
-			register int x = bands_active_pairs.bf.u32[i];				
-			x |= more_active_pairs.bf.u32[i];
-			x &= genb12.tbands_UA4_6s[wg3.ib3].bf.u32[i];
-			while (bitscanforward(res, x)){
-				x ^= 1 << res;// clear bit
-				res += dres;
-				register int Ru = tpat[res];
-				if (Ru & Rfilt)	uasb3_1[nuasb3_1++] = Ru;
-				else		uasb3_2[nuasb3_2++] = Ru;
-			}
+		// first GUA46 usually shorter than UAs band3
+		BF128  socket4 = genb12.bands3[wg3.ib3].guas.isguasocket4;// i81 3X
+		socket4 &= bands_active_pairs;
+		int * ua_46 = genb12.bands3[wg3.ib3].guas.ua_pair; // ua pattern
+		if (0) {
+			char ws[82];
+			cout << socket4.String3X(ws) << "socket4" << endl;
 		}
+		int i81;
+		while ((i81 = socket4.getFirsCell()) >= 0) {
+			socket4.Clear_c(i81);// clear bit
+			continue;
+			register int Ru = ua_46[i81];
+			if (Ru & Rfilt)	uasb3_1[nuasb3_1++] = Ru;
+			else		uasb3_2[nuasb3_2++] = Ru;
+		}
+		if ((!nmiss) && nuasb3_2) continue; // critical + outfield uas
 		uint32_t * to = genb12.bands3[wg3.ib3].tua;
-		for (uint32_t i= 0; i < genb12.bands3[wg3.ib3].nua; i++){
+		for (uint32_t i = 0; i < genb12.bands3[wg3.ib3].nua; i++) {
 			register int Ru = to[i];
 			if (Ru & Rfilt)			uasb3_1[nuasb3_1++] = Ru;
 			else uasb3_2[nuasb3_2++] = Ru;
 		}
+		if ((!nmiss) && nuasb3_2) continue; // critical + outfield uas
+		p_cpt2g[15] ++;
+		if (p_cpt2g[15]!=2) continue;
+		if (!zinitdone) {
+			zinitdone = 1;
+			if (zhou[0].PartialInitSearch17(g17xy.tclues, g17xy.nclues))
+				return;// would be  bug 
+			//zhou[0].ImageCandidats();
+		}
+		memcpy(&genb12.grid0[54], genb12.bands3[wg3.ib3].band0, 4*27);
+		zhou[0].InitBand3PerDigit(genb12.bands3[wg3.ib3].band0);
+
+		//if (g17b.debug17 > 1)		cout << " valide b12 go"  << endl;
 		g17hh0.Go();
 	}
 }
@@ -894,21 +970,19 @@ void G17XY::FoutValid17(int bf3, int ib3){
 }
 
 //================ part 2  band procvessing
-void G17B3HANDLER::Init(G17TB3GO & wgo){
-	wg3 = wgo;
-	nmiss = g17xy.b3lim - wg3.countsum.u16[3];
-	known_b3 = 0;
-	ncritical = wg3.countsum.u16[3];// to update assigning critical 2 pairs
-	ndead = BIT_SET_27;
-}
+
 int G17B3HANDLER::IsMultiple(int bf){
-	//if (g17b.debug17 > 1) cout << "is multiple ntuab3=" << g17xy.ntuab3 << endl;
+	//if (g17b.debug17 > 1) 
+	cout << "is multiple ntuab3=" << g17xy.ntuab3 << endl;
+
 	// check first if all tuab3 is hit
 	for (int i = 0; i < g17xy.ntuab3; i++)
 		if (!(bf&g17xy.tuab3[i])) return 1;// previous UA not hit
 	int rua = zhou[1].CallMultipleB3(zhou[0], bf);
-	//if (g17b.debug17 > 1) cout<<Char27out(rua) << "===========rua  is multiple all hit"  << endl;
-	if (rua){
+	//if (g17b.debug17 > 1) 
+	cout<<Char27out(rua) << "===========rua  is multiple all hit"  << endl;
+	if (0 &&rua){
+		/*
 		if (g17xy.ntuab3 < 40)g17xy.tuab3[g17xy.ntuab3++] = rua;
 		int nrua = _popcnt32(rua);
 		//cout << Char2Xout(zhou[0].glb.b12nextua) << " ";
@@ -940,6 +1014,7 @@ int G17B3HANDLER::IsMultiple(int bf){
 			else g17moreg[2].Add_If_New(w.u64);
 		}
 		//else 		cout << Char27out(rua) << "ua de sortie"<< endl;
+		*/
 	}
 
 	return rua;
@@ -972,15 +1047,19 @@ void  G17B3HANDLER::Not_Critical_wactive(){// find active cells
 	wactive0 = Ractive_out&ndead;
 }
 void  G17B3HANDLER::Go(){
+	wg3 = g17xy.wg3;
+	nmiss = 17 - wg3.countstack.u16[3];
+	known_b3 = 0;
+	ncritical = wg3.countsum.u16[3];// to update assigning critical 2 pairs
+	ndead = BIT_SET_27;
+	cout << " call handler go p_cpt2g[8]=" << p_cpt2g[8] << endl;
 	if (0 &&g17b.debug17 > 1){
-		cout << " call handler go" << endl;
-		Print_Ok3();
+		//Print_Ok3();
 	}
-	p_cpt[7]++;
 	rknown_b3 = 0;
 	g17xy.ntuab3 = 0;
 	if (nmiss){
-		p_cpt[20 + nmiss]++;
+		if (1) return;
 		Not_Critical_wactive();// if the band is full all cells outfield are dead
 		if (nmiss == g17xy.b3lim){// no ua2_3 expand the uas table within the limits
 			SPOT17_NOUAS2_3 s;
@@ -999,18 +1078,16 @@ void  G17B3HANDLER::Go(){
 		}
 	}
 	else {
-		if (g17xy.nuasb3_2)return;// some uas outfield 
-		p_cpt[8]++;
 		Go_Critical();
 	}
 }
 //================= critical process
 void G17B3HANDLER::Critical2pairs(){// assign 2 pairs in minirow to common cell
 	int tbitsrows[8] = { 0, 07, 07000, 07007, 07000000, 07000007, 07007000, 07007007 };
-	if (wg3.count.u16[2]){// and 2 pairs in minirow forced to common cell
+	if (wg3.count.u16[1]){// and 2 pairs in minirow forced to common cell
 		register int Rst = 07007007;// stack 0 pattern 
 		for (int ist = 0; ist < 3; ist++){
-			int shrink = TblShrinkMask[wg3.count.u16[2] & (0111 << ist)];
+			int shrink = TblShrinkMask[wg3.count.u16[1] & (0111 << ist)];
 			if (shrink){// minirows 2 pairs in that stack
 				register int Mask = tbitsrows[shrink] << (3 * ist);
 				active_b3 &= (~Mask); // clear the minirow
@@ -1043,10 +1120,15 @@ void G17B3HANDLER::CriticalAssignCell(int Ru){// assign a cell within the critic
 
 void G17B3HANDLER::Go_Critical(){// critical situation all clues in pairs tripl:ets
 	//if (g17b.debug17 > 1 && known_b3)cout << Char27out(known_b3) << " entry critical" << endl;
+
 	active_b3 = wg3.pairs.u32[1];
-	rknown_b3 = known_b3| active_b3;
-	if(IsMultiple(rknown_b3))	return;	
 	Critical2pairs();// assign 2 pairs in minirow to common cell
+	rknown_b3 = known_b3| active_b3;
+	cout << Char27out(known_b3) << " known b2" << endl;
+	cout << Char27out(active_b3) << " active_b3" << endl;
+	cout<<Char27out(rknown_b3) << "entry critical appel ismultiple" << endl;
+	if(IsMultiple(rknown_b3))	return;
+	if (1)return;
 	if (ShrinkUas1(g17xy.uasb3_1, g17xy.nuasb3_1)) return;// dead branch
 	int wknown = known_b3 | active_b3;
 	if (rknown_b3 != wknown)
@@ -1537,6 +1619,11 @@ void G17B3HANDLER::Print_Ok3() {
 
 void G17TB3GO::Debug() {
 	cout << "status G17TB3GO ib3=" << ib3 << endl;
+	char ws[82];
+	cout << g17xy.bands_active_triplets.String3X(ws)
+		<< "g17xy active triplets" << endl;
+	cout << genb12.bands3[ib3].band << " \tbande3" << endl;
+	cout << Char27out(pairs.u32[1]) << " in field bf" << endl << endl;
 	cout << Char27out(pairs.u32[0]) << " pairs bf" << endl<<endl;
 	cout << Char9out(count.u16[3]) << " all minis2" << endl;
 	cout << Char9out(count.u16[0]) << "     minis2/1" << endl;

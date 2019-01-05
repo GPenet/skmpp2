@@ -305,7 +305,7 @@ int STD_B3::IsGua(int i81) {
 	if (r1 == r2) {// gua2
 		guas.ua_pair[i81] = ua;
 		int i27 = 9 * r1 + w81.i9;// index 0-26 of the pair
-		guas.pairs[i27] = i81;
+		guas.ua2_i27[i81] = i27;
 		guas.isguasocket2.Set_c(i81);
 		guas.ua2_imini[i81] = 3 * r1 + w81.i9 / 3;
 		return 1;

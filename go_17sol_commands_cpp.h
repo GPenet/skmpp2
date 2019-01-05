@@ -14,16 +14,16 @@ const char * libs_c17_00_cpt2g[20] = {
 	"7 more sockets2 searched found",//7
 	"8 valid b12 after build active",//8
 	"9 band3 active after build active",//9
-	"10 ",//10
-	"11 ",//11
-	"12 ",//12
-	"",//13
-	"",//14
-	"",//15
+	"10 critical band3",//10
+	"11 not critical 1",//11
+	"12 not critical 234",//12
+	"13 not critical 56",//13
+	"14 using socket 3",//14
+	"15 entry band3 handler excluding critical+ua outfield",//15
 	"",//16
 	"",//17
 	"",//18
-	"19 control valib12// band3",//19
+	"19 control  band3 processed",//19
 };
 void Go_c17_00( ) {// p2 process
 	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;
@@ -49,7 +49,7 @@ void Go_c17_00( ) {// p2 process
 	genb12.Start(0);
 	genb12.NewBand1(sgo.vx[0]);
 	cout << "print final stats" << endl;
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 20; i++) {
 		if (!p_cpt2g[i])continue;
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}

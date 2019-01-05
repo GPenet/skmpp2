@@ -37,7 +37,8 @@ struct ZH_GLOBAL { // global variables for the game table
 	char puz[82]; // the solved puzzle (after morph)
 	//given and singles found
 	GINT16 tgiven[81];
-	int ngiven, tsingles[40], nsingles;
+	int ngiven, digitsbf,// digitsbf to check minimum 8 digits
+		tsingles[40], nsingles;
 
 	BF128 digit_sol[9]; // final solution per digit original sort sequence
 	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
@@ -136,6 +137,8 @@ struct ZHOU{// size 32 bytes
 	int ApplySingleOrEmptyCells_B12();
 	int ApplySingleOrEmptyCells();
 	int FullUpdate();
+	int FullUpdateV2();
+	int ApplySingleOrEmptyCellsV2();
 	void SetaCom(int digit, int cell, int xcell);
 	inline void SetFloor(int cell){ FD[0][0] &= AssignMask_Digit[cell]; }
 	inline void Seta_c(int digit, int cell){ SetaCom(digit, cell, C_To128[cell]); }
@@ -148,6 +151,7 @@ struct ZHOU{// size 32 bytes
 	int SolveHiddenTriplet_Box_Row();
 	int GuessHiddenTriplet();
 	void Guess();
+	void GuessV2(BF128 * tres);
 	// located in zh4_doc_debug
 
 	//inline void Copy(ZHOU & o)	{ int rind = index; *this = o; index = rind; }
@@ -288,32 +292,7 @@ struct ZHOU{// size 32 bytes
     inline void SetPat(char * pat, char * zsol, char * puzfinal){
 		zh_g.pat = pat; zh_g.zsol = zsol; zh_g.puzfinal = puzfinal;
 	};
-    // located in zh_uacollector.cpp  generation of UAs on a multi floor
-	void InitGenUas(char * zpuz);
-	void GenUas( int floors);
-	void GenUasBands12(int floors);
-	void GenUasBands12LessMinirow(int floors,int c1,int c2,int c3);
-	void GenUas2();
-	void GenUas3();
-	void GenUas4();
-	void GenUas5();
-	void GenUas6();
-	void GenMinirows2();
-	void GenMinirows3();
-	int Update2();
-	int Update3();
-	int Update4();
-	int Update5();
-	int Update6();
-	void Guess2();
-	void Guess3();
-	void Guess4();
-	void Guess6();
-	void Guess5();
-	void Guess5_4();
-	void Guess5_3();
-	int CollectFinal(BF128 *td,int &lim10);
+
    */
  };
- 
  

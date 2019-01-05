@@ -118,7 +118,6 @@ struct G17B3HANDLER{
 		irloop, *uasb3, nuasb3, wua;
 	int diagh;
 	// ================== entry in the proces
-	void Init(G17TB3GO & wgo);
 	void Not_Critical_wactive();
 	int IsMultiple(int bf);
 	inline int ShrinkUas1(int * to, int no){
@@ -186,6 +185,7 @@ struct G17B3HANDLER{
 
 struct G17XY{
 	BF128 bands_active_pairs, bands_active_triplets;
+	BF128 more_checked_triplet;
 	BF128 more_active_pairs, more_active_triplets;
 	uint64_t vxg[G17BLOCGSUA], vyg[G17BLOCGSUA], vw[G17BLOCGSUA + 1];// one dummy in vw
 	uint64_t vm1xg[3], vm1yg[3], vm2xg[3], vm2yg[3];
@@ -208,6 +208,7 @@ struct G17XY{
 	int FirstCheckActiveBands();
 	int CheckValidBand12();
 	void BuildActiveBands();
+	int Find_More_Sockets3(uint32_t free_minis);
 	void Go_ValideB12();
 	void FoutValid17(int bf3, int ib3);
 };

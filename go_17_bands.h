@@ -41,11 +41,11 @@ struct STD_B1_2 :STD_B416 {
 struct STD_B3 :STD_B416 {// data specific to bands 3
 	struct GUAs {
 		BF128 isguasocket2, isguasocket3, isguasocket4;// active i81
-		int pairs[27];// gua2s i81  bf of active
 		int triplet[9];//same gua3s
 		int triplet_imini[81];
 		int ua_pair[81], ua_triplet[81]; // storing ua bitfields
 		int ua2_imini[81], ua3_imini[81];
+		int ua2_i27[81];
 	}guas;
 	int minirows_bf[9];
 	int triplet_perms[9][2][3];

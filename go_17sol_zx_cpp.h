@@ -24,16 +24,20 @@ void ZHOU::InitBand3PerDigit(int * grid0b3){
 	zh_g.digsols = zh2b_g.digsols;// catch pointer to solution per digit
 }
 int ZHOU::PartialInitSearch17(uint32_t * t, int n){
+	zh_g.digitsbf = 0;
 	memset(zh_g.Digit_cell_Assigned, 0, sizeof zh_g.Digit_cell_Assigned);
 	*this=zhou_i;
 	for (int icell = 0; icell<n; icell++)   {
 		int cell = t[icell], digit = zh_g.grid0[cell];
+		zh_g.digitsbf |= 1 << digit;
 		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
 		if (FD[digit][0].Off(xcell))  return 1;// check not valid entry
 		Assign(digit, cell, xcell);
 		zh_g.Digit_cell_Assigned[digit].Set(xcell);
 	}
-	for (int i = 0; i<9; i++)  FD[i][0] &= cells_unsolved | zh_g.Digit_cell_Assigned[i];
+	BF128 w = cells_unsolved;
+	w.bf.u32[3] = ~0;// keep rowunsolved settled
+	for (int i = 0; i<9; i++)  FD[i][0] &= w | zh_g.Digit_cell_Assigned[i];
 	return 0;
 }
 int ZHOU::EndInitSearch17(ZHOU & o, int * t, int n) {
@@ -47,7 +51,9 @@ int ZHOU::EndInitSearch17(ZHOU & o, int * t, int n) {
 		Assign(digit, cell, xcell);
 		Digit_cell_Assigned[digit].Set(xcell);
 	}
-	for (int i = 0; i < 9; i++)  FD[i][0] &= cells_unsolved | Digit_cell_Assigned[i];
+	BF128 w = cells_unsolved;
+	w.bf.u32[3] = ~0;// keep rowunsolved settled
+	for (int i = 0; i < 9; i++)  FD[i][0] &= w | Digit_cell_Assigned[i];
 	return 0;
 }
 void ZHOU::GuessB12() {// band3 solved "false"
@@ -157,23 +163,31 @@ int ZHOU::CallMultipleB3(ZHOU & o, int bf) {
 }
 int ZHOU::MultipleB3(int bf) {// bf is band3 known cells bit field
 	BF128 dca[9];
+	int digitsbf = zh_g.digitsbf;
 	memcpy(dca, zh_g.Digit_cell_Assigned, sizeof dca);
-	{
-		uint32_t cc;
+	{	uint32_t cc;
 		register int x = bf;
 		while (bitscanforward(cc, x)) {
 			x ^= 1 << cc; //clear bit
-
 			int cell = cc + 54, digit = zh_g.grid0[cell];
-			int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
+			digitsbf |= 1 << digit;
+			int xcell = cc+64; // the cell value in 3x32 of a 128 bits map
 			if (FD[digit][0].Off(xcell))  return 1;// check not valid entry
 			Assign(digit, cell, xcell);
 			dca[digit].Set(xcell);
 		}
-
 	}
-	for (int i = 0; i < 9; i++)  FD[i][0] &= cells_unsolved | dca[i];
-	if (FullUpdate() == 2) return 0;// solved can not be multiple
+	if (_popcnt32(digitsbf < 8)) return 1;// can not be one solution
+	BF128 w = cells_unsolved;
+	w.bf.u32[3] = ~0;// keep rowunsolved settled
+	for (int i = 0; i < 9; i++)  FD[i][0] &= w | dca[i];
+	if (FullUpdateV2() == 2) return 0;// solved can not be multiple
+
+	ImageCandidats();
+	BF128 tres[1000]; // buffer for perms
+	GuessV2(tres);
+	if (1) return 0;
+
 	// solve a stack in band 3 as guess take the smallest
 	int R3 = cells_unsolved.bf.u32[2];
 	if (!cells_unsolved.bf.u32[2]) return 0; //band 3 solved, unique

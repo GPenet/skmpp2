@@ -102,7 +102,8 @@ struct GEN_BANDES_12{// encapsulating global data
 	//same as A exchanging bands 2/3
 
 	//================= UA and GUAs collection
-	int Get_I_81(int c1, int d1, int c2, int d2){// c1,c2 same box
+	/*
+int Get_I_81x(int c1, int d1, int c2, int d2){// c1,c2 same box
 		int stack = C_box[c1], col1 = c1 - 3 * stack, col2 = c2 - 3 * stack;
 		int p1 = 0, p2 = 0;
 		for (int i = 0; i < 3; i++) if (gang[c1][i] == d1){ p1 = i; break; }
@@ -113,14 +114,14 @@ struct GEN_BANDES_12{// encapsulating global data
 		return i_81;
 	}
 
-	inline int Where3(int * t, int v){// extract digit gangster index
+	inline int Where3x(int * t, int v){// extract digit gangster index
 		if (*t == v) return 0;
 		t++;
 		if (*t == v) return 1;
 		return 2;
 	}
 
-	int GetSocket(int bf, int i3){// UA; band 3 index
+	int GetSocketx(int bf, int i3){// UA; band 3 index
 		register int cc = _popcnt32(bf);
 		if (cc > 3) return -1; // can not be a mini row
 		if (cc <2) return -1; // can not be a mini row
@@ -136,7 +137,7 @@ struct GEN_BANDES_12{// encapsulating global data
 				bitscanforward(cell, x);		x ^= 1 << cell;		v1 = bb[cell];
 				cell1 = cell % 3;
 				bitscanforward(cell, x);		x ^= 1 << cell;		v2 = bb[cell];
-				if (cc == 3){// triplet 
+				if (cc == 3){// triplet
 					bitscanforward(cell, x);		v3 = bb[cell];
 					return 27 * ibox + 9 * Where3(tcol1, v1) +
 						3 * Where3(tcol2, v2) + Where3(tcol3, v3);
@@ -153,12 +154,8 @@ struct GEN_BANDES_12{// encapsulating global data
 		}
 		return-1;// not a guA2 GUA3 socket
 	}
-
-	//void GenUABands12(int limsize);// collect the base set fof UAs for ba,ds 1+2
-	//void CollectUA2s();// collect GUA2s
-	//void CollectUA2sBox(int ibox);
-	//void CollectUA3s();//collect GUA3s
-	//void CollectUA3sBox(int ibox);
+	*/
+	
 
 	//============= loops control for UAs 5;6;7 digits collection (collect more=
 	int iband, ibox, iminirow, ibox2, iminirow2, pat1, pat2, ncells;
