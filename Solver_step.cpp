@@ -1,7 +1,7 @@
 /* solving a batch of puzzles.
 */
 #define _CRT_SECURE_NO_DEPRECATE
-#define SKMPPV2
+#define ISSOLVERSTEP
 
 #include <fstream>
 #include <iostream>
@@ -26,6 +26,7 @@ PM_GO pm_go;
 
 extern ZHOU    zhou[50], zhou_i, zhou_solve;
 extern ZH_GLOBAL zh_g;
+extern ZH_GLOBAL2 zh_g2;
 extern SGO sgo;
 
 #include "solver_step_dyn_cpp.h"
@@ -99,11 +100,11 @@ int BUG::Init(){
 	// set the parity of digits for bivalue cells in all elements
 	or_plus_tot = 0;
 	int nn = 0;
-	while ((cell = ww.getFirsCell()) >= 0){
+	while ((cell = ww.getFirstCell()) >= 0){
 		ww.Clear_c(cell);
 		zz &= cell_z3x[cell];
 		if (zz.isEmpty())return 1; // must have cells seen by all wplus
-		register int wd = zh_g.dig_cells[cell];
+		register int wd = zh_g2.dig_cells[cell];
 		or_plus_tot |= wd;
 		tplus[nn] = cell; tplus_digits[nn++] = wd;
 		CELL_FIX &p = cellsFixedData[cell];
@@ -117,9 +118,9 @@ int BUG::Init(){
 		cout << oct << r_c.f << endl << c_c.f << endl << b_c.f << dec << endl;
 	}
 	ww = zh_g.pairs;
-	while ((cell = ww.getFirsCell()) >= 0){
+	while ((cell = ww.getFirstCell()) >= 0){
 		ww.Clear_c(cell);
-		register int wd = zh_g.dig_cells[cell];
+		register int wd = zh_g2.dig_cells[cell];
 		CELL_FIX &p = cellsFixedData[cell];
 		el_par_ch[p.el] ^= wd;	el_par_ch[p.plu] ^= wd;	el_par_ch[p.ebu] ^= wd;
 	}
@@ -173,7 +174,7 @@ void WWUR2::Init(int eunit){
 	digits_ur = digs | digitsothers;
 	for (int idig = 0; idig < 9; idig++){// find cells
 		register int bit = 1 << idig;
-		BF128 w = zh_g.pm.pmdig[idig] & wcells;
+		BF128 w = zh_g2.pm.pmdig[idig] & wcells;
 		if (w.isEmpty())continue;
 		if (digs & bit)cells_ur |= w;
 		if (digitsothers & bit)cells_others_ur |= w;
@@ -194,7 +195,7 @@ void WWUR2::Init(int eunit){
 }
 int  WWUR2::Hidden_pair(){
 	if (cells_ur.Count() == 1 && go_naked){// hidden pair see if active
-		int cell = cells_ur.getFirsCell(), dcell = zh_g.dig_cells[cell];
+		int cell = cells_ur.getFirstCell(), dcell = zh_g2.dig_cells[cell];
 		if (dcell != digs){// some elimination
 			zhou_solve.CleanCellForDigits(cell, dcell^digs);
 			pm_go.hint.Done(rbase);	det_mess = " hidden pair ";
@@ -228,17 +229,17 @@ void WWUR2::InitFreeDigits(){
 	dfree = 0x1ff ^ digits_ur;
 	nfree = 0;
 	for (int i = 0; i < 9; i++)
-		if ((dfree & (1 << i)) && (wcells & zh_g.pm.pmdig[i]).isNotEmpty())
+		if ((dfree & (1 << i)) && (wcells & zh_g2.pm.pmdig[i]).isNotEmpty())
 			tfree[nfree++] = i;
 }
 int  WWUR2::Hidden_triplet(){
 	if (!nfree) return 0;
 	for (int i1 = 0; i1 < nfree; i1++){
-		BF128 wd1 = cells_ur | (wcells & zh_g.pm.pmdig[tfree[i1]]);
+		BF128 wd1 = cells_ur | (wcells & zh_g2.pm.pmdig[tfree[i1]]);
 		if (wd1.Count() != 2) continue;
 		int aig = 0, dw = digs | (1 << tfree[i1]);
 		for (int i = 0; i < 9; i++) if (!(dw & (1 << i))){
-			BF128 clean = zh_g.pm.pmdig[i] & wd1;
+			BF128 clean = zh_g2.pm.pmdig[i] & wd1;
 			if (clean.isNotEmpty()){
 				aig = 1;
 				zhou_solve.FD[i][0] -= clean;
@@ -261,14 +262,14 @@ int WWUR2::Naked_triplet21(){
 	if (nothers - 2 || !nfree) return 0;
 	if (locdiag)cout << "try  naked triplet 2+1" << endl;
 	for (int i1 = 0; i1 < nfree; i1++){
-		BF128 wd1 = w_b  & zh_g.pm.pmdig[tfree[i1]];
+		BF128 wd1 = w_b  & zh_g2.pm.pmdig[tfree[i1]];
 		if (wd1.Count() >= 2) {		// check that no other digit is there
 			for (int i2 = 0; i2 < nfree; i2++) if (i2 - i1){
-				wd1 -= zh_g.pm.pmdig[tfree[i2]];
+				wd1 -= zh_g2.pm.pmdig[tfree[i2]];
 			}
 			if (wd1.Count() != 2) continue;
 			int  dw = digitsothers | (1 << tfree[i1]);
-			BF128 clean = cells_others_ur | (zh_g.pm.pmdig[tfree[i1]] & wcells);
+			BF128 clean = cells_others_ur | (zh_g2.pm.pmdig[tfree[i1]] & wcells);
 			clean -= wd1;
 			if (zhou_solve.CleanCellsForDigits(clean, dw)){
 				pm_go.hint.Done(rbase + 2); det_mess = " naked triplet 2+1 "; return 1;
@@ -281,14 +282,14 @@ int WWUR2::Hidden_quad(){
 	if (nfree < 2) return 0;
 	if (locdiag)cout << "try hidden  quad 2+2" << endl;
 	for (int i1 = 0; i1 < nfree - 1; i1++){
-		BF128 wd1 = cells_ur | (wcells & zh_g.pm.pmdig[tfree[i1]]);
+		BF128 wd1 = cells_ur | (wcells & zh_g2.pm.pmdig[tfree[i1]]);
 		if (wd1.Count() > 3) continue;
 		for (int i2 = i1 + 1; i2 < nfree; i2++){// test all pairs of digits
-			BF128 wd2 = wd1 | (wcells & zh_g.pm.pmdig[tfree[i2]]);
+			BF128 wd2 = wd1 | (wcells & zh_g2.pm.pmdig[tfree[i2]]);
 			if (wd2.Count() != 3) continue;
 			int aig = 0, dw = digs | (1 << tfree[i1]) | (1 << tfree[i2]);
 			for (int i = 0; i < 9; i++) if (!(dw & (1 << i))){
-				BF128 clean = zh_g.pm.pmdig[i] & wd2;
+				BF128 clean = zh_g2.pm.pmdig[i] & wd2;
 				if (clean.isNotEmpty()){
 					aig = 1;
 					zhou_solve.FD[i][0] -= clean;
@@ -314,17 +315,17 @@ int WWUR2::Naked_quad31(){
 	for (int i1 = 0; i1 < 9; i1++){// can be any digit not other digits
 		int bit1 = 1 << i1;
 		if (digitsothers & bit1) continue;// not other digits
-		BF128 w1 = cells_others_ur  & zh_g.pm.pmdig[i1];
+		BF128 w1 = cells_others_ur  & zh_g2.pm.pmdig[i1];
 		if (w1.isEmpty())continue;
 		BF128 wd1 = w1 | wnaked;
 		if (wd1.Count() >= 3) {		// check that no other digit is there
 			int dw = digitsothers | bit1;
 			for (int i2 = 0; i2 <9; i2++){
 				if (dw & (1 << i2)) continue;
-				wd1 -= zh_g.pm.pmdig[i2];
+				wd1 -= zh_g2.pm.pmdig[i2];
 			}
 			if (wd1.Count() != 3) continue;
-			BF128 clean = cells_others_ur | (zh_g.pm.pmdig[i1] & wcells);
+			BF128 clean = cells_others_ur | (zh_g2.pm.pmdig[i1] & wcells);
 			clean -= wd1;
 			if (zhou_solve.CleanCellsForDigits(clean, dw)){
 				pm_go.hint.Done(rbase + 3); det_mess = " naked quad 3+1 "; return 1;
@@ -349,25 +350,25 @@ int WWUR2::Naked_quad22(){
 		for (int i1 = 0; i1 < 8; i1++){
 			int bit1 = 1 << i1;
 			if (digitsothers & bit1) continue;// not other digits
-			BF128 w1 = cells_others_ur  & zh_g.pm.pmdig[i1];
+			BF128 w1 = cells_others_ur  & zh_g2.pm.pmdig[i1];
 			if (w1.isEmpty())continue;
 			BF128 wd1 = w1 | wnaked;
 			for (int i2 = i1 + 1; i2 <9; i2++){
 				int bit2 = 1 << i2;
 				if (digitsothers & bit2) continue;// not other digits
-				BF128 w2 = cells_others_ur  & zh_g.pm.pmdig[i2];
+				BF128 w2 = cells_others_ur  & zh_g2.pm.pmdig[i2];
 				if (w2.isEmpty())continue;
-				BF128 pci1i2 = wcells &zh_g.pm.pmdig[i1] & zh_g.pm.pmdig[i2] & zh_g.pairs;
+				BF128 pci1i2 = wcells &zh_g2.pm.pmdig[i1] & zh_g2.pm.pmdig[i2] & zh_g.pairs;
 				BF128 wd2 = wd1 | w2;
 				wd2 |= pci1i2;
 				if (wd2.Count() >= 3) {		// check that no other digit is there
 					int dw = digitsothers | bit1 | bit2;
 					for (int i3 = 0; i3 < 9; i3++) {
 						if (dw & (1 << i3)) continue;
-						wd2 -= zh_g.pm.pmdig[i3];
+						wd2 -= zh_g2.pm.pmdig[i3];
 					}
 					if (wd2.Count() != 3) continue;
-					BF128 clean = cells_others_ur | ((zh_g.pm.pmdig[i1] | zh_g.pm.pmdig[i2]) & wcells);
+					BF128 clean = cells_others_ur | ((zh_g2.pm.pmdig[i1] | zh_g2.pm.pmdig[i2]) & wcells);
 					clean -= wd2;
 					if (zhou_solve.CleanCellsForDigits(clean, dw)){
 						pm_go.hint.Done(rbase + 3); det_mess = " naked quad 2+2 "; return 1;
@@ -515,14 +516,14 @@ int WWUR2::Go_serate_unit(int eunit, int hdegree, int ndegree){
 void XSTATUS::Init(int dig){
 	digit = dig;
 	maxpas = 20;
-	active = zh_g.active_floor & (1 << digit);
+	active = zh_g2.active_floor & (1 << digit);
 	if (!active) return;
 	if (pm_go.opprint2 & 2)cout << "init active digit " << dig + 1 << endl;
-	memcpy(dig_sets, zh_g.dig_rows[digit], 36);
-	memcpy(&dig_sets[9], zh_g.dig_cols[digit], 36);
-	memcpy(&dig_sets[18], zh_g.dig_boxes[digit], 36);
-	pm = zh_g.pm.pmdig[dig];
-	elims = zh_g.elim_floor[dig];
+	memcpy(dig_sets, zh_g2.dig_rows[digit], 36);
+	memcpy(&dig_sets[9], zh_g2.dig_cols[digit], 36);
+	memcpy(&dig_sets[18], zh_g2.dig_boxes[digit], 36);
+	pm = zh_g2.pm.pmdig[dig];
+	elims = zh_g2.elim_floor[dig];
 	pmbiv.SetAll_0();
 	bivsets.f=0;
 	for (int iu = 0; iu < 27; iu++){
@@ -898,7 +899,7 @@ int XCOM::XBackNishio(GINT16 x0, GINT16 * tretr,XSTATUS * xst){
 		// now this comes from a set last in region
 		int unit = y.u8[0] ,ucell; 
 		BF128 w = units3xBM[unit];   w &= xst->pm;		w.Clear_c(x.u8[0]);
-		while ((ucell = w.getFirsCell()) >= 0){
+		while ((ucell = w.getFirstCell()) >= 0){
 			w.Clear_c(ucell);
 			if (back_bf.Off_c(ucell)) 
 				tretw[itret++].u16 = (uint16_t)(ucell + 0x100);// add cell off
@@ -953,7 +954,7 @@ int  XSTATUS::XexpandNishio(int cell1){
 					int nbc = w81.Count();
 					if (nbc > 1)continue; // not last in region
 					if (nbc == 1){
-						wcell2 = w81.getFirsCell();
+						wcell2 = w81.getFirstCell();
 						if (onold.On_c(wcell2)) continue;
 						if (expon.Off_c(wcell2)) {
 							expon.Set_c(wcell2);
@@ -988,7 +989,7 @@ int  XSTATUS::XexpandNishio(int cell1){
 					int rncand = xcom.ntcand++;
 					if (xcom.fast) return 2;
 					wu.Clear_c(wcell);
-					while ((wcell2 = wu.getFirsCell()) >= 0){
+					while ((wcell2 = wu.getFirstCell()) >= 0){
 						wu.Clear_c(wcell2);
 						xcom.tcand[rncand].u16 = (uint16_t)wcell2; // on status
 						if (nn_start<3)	texon[wcell2] = wc;// direct 
@@ -1003,7 +1004,7 @@ int  XSTATUS::XexpandNishio(int cell1){
 				GINT16 * texoff = xcom.tex[1];
 				BF128 wz = cell_z3x[wcell], wzcont = wz & onold;
 				if (wzcont.isNotEmpty()){// contradiction
-					while ((wcell2 = wzcont.getFirsCell()) >= 0){
+					while ((wcell2 = wzcont.getFirstCell()) >= 0){
 						wzcont.Clear_c(wcell2);
 						xcom.tcand[xcom.ntcand++].u16 = (uint16_t)(wcell2 + 0x100);// off status
 						texoff[wcell2] = wc;
@@ -1012,7 +1013,7 @@ int  XSTATUS::XexpandNishio(int cell1){
 					continue;
 				}
 				wz &= (pm - expoff);
-				while ((wcell2 = wz.getFirsCell()) >= 0){
+				while ((wcell2 = wz.getFirstCell()) >= 0){
 					wz.Clear_c(wcell2);
 					texoff[wcell2] = wc;
 					xcom.tcand[xcom.ntcand++].u16 = (uint16_t)(wcell2 + 0x100); // off status
@@ -1130,13 +1131,13 @@ int YLSEARCH::Search(int fast ){// search using zh_g.digit_sol as compulsory
 	int iret = 0,tunit[3];
 	
 	for (idig = 0; idig < 9; idig++){
-		BF128 wdok = zh_g.pairs & zh_g.digit_sol[idig];// start to consider
+		BF128 wdok = zh_g.pairs & zh_g2.digit_sol[idig];// start to consider
 		while ((xcell1 = wdok.getFirst128()) >= 0){
 			wdok.clearBit(xcell1);
 			int cell1 = From_128_To_81[xcell1];
 			CELL_FIX  &cf=cellsFixedData[cell1];
 			tunit[0] = cf.el; tunit[1] = cf.plu; tunit[2] = cf.ebu;
-			BF128 wd1 = cell_z3x[cell1]; wd1 &= zh_g.pm.pmdig[idig];
+			BF128 wd1 = cell_z3x[cell1]; wd1 &= zh_g2.pm.pmdig[idig];
 			for (int iu = 0; iu < 3; iu++){// try a unit with cleaning potential
 				int unit = tunit[iu];
 				BF128 wd1u = wd1; wd1u &= units3xBM[unit];
@@ -1201,11 +1202,11 @@ int YLSEARCH::Expand(){//search start idig;xcell1;xcell2 end
 		ntd = nt;
 		for (int i = ntp; i < ntd; i++){
 			GINT64 &c = t[i];// source cell
-			int dc = zh_g.dig_cells[c.u16[0]];
+			int dc = zh_g2.dig_cells[c.u16[0]];
 			dc ^= 1 << c.u16[1];// clear digit off
 			bitscanforward(d2, dc); // catch the second digit
 			c.u16[2]=(uint16_t)d2;// store it for later use
-			BF128 w2 = zh_g.pm.pmdig[d2] & zh_g.pairs; 
+			BF128 w2 = zh_g2.pm.pmdig[d2] & zh_g.pairs; 
 			w2 &= cell_z3x[c.u16[0]];// bi value cells same digit seen, no way back
 			if (w2.On(xcell1) && t[0].u16[2] != (uint16_t)d2){// it is a loop
 				t[0].u16[1] = (uint16_t)d2;
@@ -1248,7 +1249,7 @@ int YLSEARCH::ExpandOut(){//search start c1 target c2
 			FindWcells();
 		}
 		inline int Nextcell(){
-			cell = wcells.getFirsCell();
+			cell = wcells.getFirstCell();
 			if (cell < 0)return 0;
 			wcells.Clear_c(cell);
 			return 1;
@@ -1262,10 +1263,10 @@ int YLSEARCH::ExpandOut(){//search start c1 target c2
 			FindWcells();
 		}
 		void FindWcells(int diag = 0){
-			int dc = zh_g.dig_cells[mycell];
+			int dc = zh_g2.dig_cells[mycell];
 			dc ^= 1 << digit;// clear digit off
 			bitscanforward(d2, dc); // catch the second digit
-			wcells = zh_g.pm.pmdig[d2] & zh_g.pairs;
+			wcells = zh_g2.pm.pmdig[d2] & zh_g.pairs;
 			wcells &= cell_z3x[mycell];// bi value cells same digit seen, no way back
 			wcells -= used_cells;
 			if (diag){// || ispot<4){
@@ -1366,11 +1367,11 @@ int YLSEARCH::SearchOut(int fast){// search using zh_g.digit_sol as compulsory
 	mode = 1;
 	int iret = 0,  xclean, tpstart[200], ntpstart = 0,xc1,xc2;
 	for (idig = 0; idig < 9; idig++){// this is the digit to clear
-		BF128 wdok = zh_g.pairs & zh_g.pm.pmdig[idig]; 
-		BF128 wdok_true = wdok & zh_g.digit_sol[idig];// start to consider
+		BF128 wdok = zh_g.pairs & zh_g2.pm.pmdig[idig]; 
+		BF128 wdok_true = wdok & zh_g2.digit_sol[idig];// start to consider
 		BF128 wdok_false = wdok -wdok_true;//possible second cell
 		if (wdok_true.isEmpty() || wdok_false.isEmpty()) continue;
-		BF128 dclean = zh_g.pm.pmdig[idig] - zh_g.digit_sol[idig];// possible clean out
+		BF128 dclean = zh_g2.pm.pmdig[idig] - zh_g2.digit_sol[idig];// possible clean out
 		while ((xclean = dclean.getFirst128()) >= 0){
 			dclean.clearBit(xclean);
 			c0 = From_128_To_81[xclean];
@@ -1482,7 +1483,7 @@ void  XYSEARCH::AddUnit(int unit, int source){
 	//cout << "addunit" << endl;
 	BF128 w = units3xBM[unit]; w &= wb;
 	if (w.isEmpty()) return;
-	int cc = w.getFirsCell();
+	int cc = w.getFirstCell();
 	//cout << "do add unit=" << unit << "digit=" << digit + 1 << cellsFixedData[cc].pt << endl;
 	if (used_on_digits.Off_c(digit, cc)){
 		Addt(cc, digit, source);
@@ -1493,7 +1494,7 @@ void  XYSEARCH::AddUnit(int unit, int source){
 
 void XYSEARCH::OffToOn(int i){
 	if (pairs.On_c(cell)){
-		int dig = zh_g.dig_cells[cell] ^ (1 << digit);
+		int dig = zh_g2.dig_cells[cell] ^ (1 << digit);
 		bitscanforward(d2, dig);
 		if (used_on_digits.Off_c(d2, cell)){
 			Addt(cell, d2, i);
@@ -1511,7 +1512,7 @@ void XYSEARCH::OffToOn(int i){
 void XYSEARCH::OffToOn_Dyn(int i){
 
 	if (pairs.On_c(cell)){
-		int dig = zh_g.dig_cells[cell] ^ (1 << digit);
+		int dig = zh_g2.dig_cells[cell] ^ (1 << digit);
 		bitscanforward(d2, dig);
 		if (used_on_digits.Off_c(d2, cell)){
 			tex[d2][cell] = nt;// priority to direct
@@ -1528,7 +1529,7 @@ void XYSEARCH::OffToOn_Dyn(int i){
 	}
 	else{// and now last in cell or empty cell
 		int nfree = 0, free;
-		int dig = zh_g.dig_cells[cell] ^ (1 << digit);
+		int dig = zh_g2.dig_cells[cell] ^ (1 << digit);
 		while ( dig){
 			bitscanforward(d2, dig);
 			dig ^= 1 << d2;
@@ -1550,7 +1551,7 @@ void XYSEARCH::OffToOn_Dyn(int i){
 			}
 		}
 		else{// empty cell (no "on") set "on" all "off"  
-			int digs = zh_g.dig_cells[cell] ^ (1 << digit);;
+			int digs = zh_g2.dig_cells[cell] ^ (1 << digit);;
 			while ( digs){
 				bitscanforward(d2, digs);
 				digs ^= 1 << d2;
@@ -1568,14 +1569,14 @@ void XYSEARCH::OffToOn_Dyn(int i){
 	cf.GetRegions(tu);
 	for (int iu = 0; iu < 3; iu++){// process each set
 		int unit = tu[iu];
-		BF128 wu = units3xBM[unit]; wu &= zh_g.pm.pmdig[digit];
+		BF128 wu = units3xBM[unit]; wu &= zh_g2.pm.pmdig[digit];
 		int  nn_start = wu.Count();
 		BF128 w81 = wu - used_off_digits.pmdig[digit];
 		if ((w81&used_on_digits.pmdig[digit]).isNotEmpty()) continue;// no on
 		int nbc = w81.Count(),wcell2;
 		if (nbc > 1)continue; // not last in region
 		if (nbc == 1){
-			wcell2 = w81.getFirsCell();
+			wcell2 = w81.getFirstCell();
 			if (nn_start == 2){// bi value
 				if (used_on_digits.Off_c(digit, wcell2)){
 					tex[digit][wcell2] = nt;// priority to direct
@@ -1607,7 +1608,7 @@ void XYSEARCH::OffToOn_Dyn(int i){
 		}
 		else {//empty unit set(no "on)  "on" all  
 			wu.Clear_c(cell);
-			while ((wcell2 = wu.getFirsCell()) >= 0){
+			while ((wcell2 = wu.getFirstCell()) >= 0){
 				wu.Clear_c(wcell2);
 				if (used_on_digits.Off_c(digit, wcell2)){
 					tex[digit][wcell2] = nt;// first
@@ -1621,7 +1622,7 @@ void XYSEARCH::OffToOn_Dyn(int i){
 
 void XYSEARCH::OnToOff(int i){
 	if (cells_all.On_c(cell)){//all cells with biv or pair
-		int digs = zh_g.dig_cells[cell] ^ (1 << digit);// can be more than one
+		int digs = zh_g2.dig_cells[cell] ^ (1 << digit);// can be more than one
 		while ( digs){
 			bitscanforward(d2, digs);
 			digs ^= 1 << d2;
@@ -1633,17 +1634,17 @@ void XYSEARCH::OnToOff(int i){
 
 	}
 	BF128 wb = cell_z3x[cell],
-		wb1 = (pairs & zh_g.pm.pmdig[digit] )| dbiv.pmdig[digit];
+		wb1 = (pairs & zh_g2.pm.pmdig[digit] )| dbiv.pmdig[digit];
 	wb &= wb1;
 	wb -= used_off_digits.pmdig[digit];
 	used_off_digits.pmdig[digit] |= wb;
-	while ((c2 = wb.getFirsCell()) >= 0){
+	while ((c2 = wb.getFirstCell()) >= 0){
 		wb.Clear_c(c2);
 		Addt(c2, digit, i);
 	}
 }
 void XYSEARCH::OnToOff_Dyn(int i){// no bi value filter
-	int digs = zh_g.dig_cells[cell] ^ (1 << digit);// can be more than one
+	int digs = zh_g2.dig_cells[cell] ^ (1 << digit);// can be more than one
 	while ( digs){
 		bitscanforward(d2, digs);
 		digs ^= 1 << d2;
@@ -1654,11 +1655,11 @@ void XYSEARCH::OnToOff_Dyn(int i){// no bi value filter
 	}
 	CELL_FIX & cf = cellsFixedData[cell];
 	BF128 wb = cell_z3x[cell];
-	wb &= zh_g.pm.pmdig[digit];
+	wb &= zh_g2.pm.pmdig[digit];
 	wb -= used_off_digits.pmdig[digit];
 	wb.Clear_c(dcell);// be sure not to use it
 	used_off_digits.pmdig[digit] |= wb;
-	while ((c2 = wb.getFirsCell()) >= 0){
+	while ((c2 = wb.getFirstCell()) >= 0){
 		wb.Clear_c(c2);
 		Addt(c2, digit, i);
 	}
@@ -1687,14 +1688,14 @@ int XYSEARCH::Expand_true_false(){// start is {cell c1 digit idig} false exit lo
 	// one step is �=b-c all belonging to bi-values 
 	int diag = 0;
 	//if (fastmode && idig == 4 && c1 >63)		diag = 1;
-	int ichain, c1digs = zh_g.dig_cells[c1];;
+	int ichain, c1digs = zh_g2.dig_cells[c1];;
 	mode=nsteps = 0;// start with 1 step and mode loop
 	nt = 1;	t[0].u64 = c1 | (idig << 16);	// source to 0
 	used_off_digits.SetAll_0();
 	used_on_digits.SetAll_0();
 	used_off_digits.Set_c(idig, c1);
 	BF128 zc1_idig = cell_z3x[c1]; 
-	zc1_idig &= zh_g.pm.pmdig[idig];
+	zc1_idig &= zh_g2.pm.pmdig[idig];
 	if (diag) cout << "start xyexpand " << idig + 1 << cellsFixedData[c1].pt <<
 		" maxpas=" << maxpas << endl;
 	int  i; 
@@ -1733,7 +1734,7 @@ int XYSEARCH::Expand_true_false(){// start is {cell c1 digit idig} false exit lo
 			else{
 				if (z.On_c(c1)){
 					if (c1digs & (1 << digit))ichain = i;
-					if (zh_g.dig_cells[cell] & (1 << idig))ichain = i;
+					if (zh_g2.dig_cells[cell] & (1 << idig))ichain = i;
 				}
 
 			}
@@ -1802,9 +1803,9 @@ void XYSEARCH::Init(){//Collect bi values
 	memset(dig_sets3, 0, sizeof dig_sets3);
 	for (int idig = 0; idig < 9; idig++){
 		int * wds = dig_sets[idig];
-		memcpy(wds, zh_g.dig_rows[idig], 36);
-		memcpy(&wds[9], zh_g.dig_cols[idig], 36);
-		memcpy(&wds[18], zh_g.dig_boxes[idig], 36);
+		memcpy(wds, zh_g2.dig_rows[idig], 36);
+		memcpy(&wds[9], zh_g2.dig_cols[idig], 36);
+		memcpy(&wds[18], zh_g2.dig_boxes[idig], 36);
 		BF128 & pmb = dbiv.pmdig[idig];
 		for (int iu = 0; iu < 27; iu++){
 			int nc = _popcnt32(wds[iu]);
@@ -1814,10 +1815,10 @@ void XYSEARCH::Init(){//Collect bi values
 			}
 			else if (nc>2) dig_sets3[idig].Set(iu);
 		}
-		pmb &= zh_g.pm.pmdig[idig];
+		pmb &= zh_g2.pm.pmdig[idig];
 		if (idig)cells_biv_all |= (pmb & cells_all);
 		cells_all |= pmb;
-		dig_b_true[idig] = pmb & zh_g.digit_sol[idig];
+		dig_b_true[idig] = pmb & zh_g2.digit_sol[idig];
 		cells_biv_true |= dig_b_true[idig];
 	}
 }
@@ -1832,9 +1833,9 @@ void XYSEARCH::Init2(){// if multi_chains level reached
 	}
 	int cell;
 	for (int i = 0; i < 9; i++){
-		BF128 wd = zh_g.pm.pmdig[i], wwd = wd,
+		BF128 wd = zh_g2.pm.pmdig[i], wwd = wd,
 			wdb = dbiv.pmdig[i] | (pairs & wd);
-		while ((cell = wwd.getFirsCell()) >= 0){// check each candidate
+		while ((cell = wwd.getFirstCell()) >= 0){// check each candidate
 			wwd.Clear_c(cell);			// must have a digit pair seen 
 			BF128 seen =cell_z3x[cell];
 			if ((seen&wdb).isEmpty())wd.Clear_c(cell);
@@ -1842,7 +1843,7 @@ void XYSEARCH::Init2(){// if multi_chains level reached
 		active_all.pmdig[i] = wd;
 		active_unit.pmdig[i] =wd;
 		active_unit.pmdig[i] |= singles - dbiv.pmdig[i];
-		active_unit.pmdig[i] |= cells_biv_all & zh_g.pm.pmdig[i];
+		active_unit.pmdig[i] |= cells_biv_all & zh_g2.pm.pmdig[i];
 
 	}
 }
@@ -1850,8 +1851,8 @@ void XYSEARCH::InitCandidatesTable(){
 	ntcands = 0;
 	int nb = 0;
 	for (idig = 0; idig < 9; idig++){
-		BF128 wd = zh_g.pm.pmdig[idig];
-		while ((cell = wd.getFirsCell()) >= 0){
+		BF128 wd = zh_g2.pm.pmdig[idig];
+		while ((cell = wd.getFirstCell()) >= 0){
 			wd.Clear_c(cell);
 			GINT w; w.u32 = cell + (idig << 8); 
 			//if (dbiv.On_c(idig, cell)				|| pairs.On_c(cell))	w.u16[1] = ++nb;// index to off_store
@@ -1894,7 +1895,7 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	BF128 wbon = cells_biv_true;// expand all trues in bi values
 	while ((xc1 = wbon.getFirst128()) >= 0){
 		wbon.clearBit(xc1);
-		c1 = From_128_To_81[xc1]; idig = zh_g.zerobased_sol[c1];
+		c1 = From_128_To_81[xc1]; idig = zh_g2.zerobased_sol[c1];
 		if (locdiag>1) cout << "start xyexpand " << idig + 1 << cellsFixedData[c1].pt << endl;
 		if (Expand_true_false()){
 			if (locdiag && fastmode) cout << "back xyexpand ok nsteps= "<<nsteps<<endl;
@@ -1973,10 +1974,10 @@ int XYSEARCH::SearchMulti(int fast){
 		active_all.Print(" dig_active all");
 		active_unit.Print(" dig_active unit");
 	}
-	BF128 w3 = zh_g.cells_unsolved_e - pairs;
-	while ((cell = w3.getFirsCell()) >= 0){// see cells to process 
+	BF128 w3 = zh_g2.cells_unsolved_e - pairs;
+	while ((cell = w3.getFirstCell()) >= 0){// see cells to process 
 		w3.Clear_c(cell);
-		int digs = zh_g.dig_cells[cell], n = 0; 
+		int digs = zh_g2.dig_cells[cell], n = 0; 
 		for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1){
 			if (!(digs & bit))continue;
 			if (active_all.Off_c(idig,cell)){
@@ -1988,7 +1989,7 @@ int XYSEARCH::SearchMulti(int fast){
 	nextcell:;
 	}
 	for (int idig = 0; idig < 9; idig++){// try now regions
-		BF128 wd = active_unit.pmdig[idig], pm = zh_g.pm.pmdig[idig];
+		BF128 wd = active_unit.pmdig[idig], pm = zh_g2.pm.pmdig[idig];
 		BF32 ds3 = dig_sets3[idig];
 		for (int iu = 0; iu < 27; iu++)if (ds3.On(iu)){
 			BF128 wiu = units3xBM[iu]; wiu &= pm;
@@ -2003,7 +2004,7 @@ int XYSEARCH::SearchMulti(int fast){
 			}
 			if (!n)goto tryiu;
 			if (n > 3) goto nextiu;
-			while ((cell2 = wiun.getFirsCell()) >= 0){
+			while ((cell2 = wiun.getFirstCell()) >= 0){
 				wiun.Clear_c(cell2);
 				wseen &= cell_z3x[cell2];
 			}
@@ -2026,7 +2027,7 @@ int XYSEARCH::SearchMulti(int fast){
 void XYSEARCH::StartMulti( int dig, int cell){
 	cleanstart.SetAll_0();
 	cleanstart.pmdig[dig] = cell_z3x[cell];
-	cleanstart.pmdig[dig] &= zh_g.pm.pmdig[dig];// cleang.pmdig[dig];
+	cleanstart.pmdig[dig] &= zh_g2.pm.pmdig[dig];// cleang.pmdig[dig];
 	for (int i = 0; i < 9; i++)if (i - dig){
 		if (zhou_solve.IsOnCandidate_c(i, cell))
 			cleanstart.pmdig[i].Set_c(cell);
@@ -2037,16 +2038,16 @@ int XYSEARCH::MultiUnit(int udigit, int unit){
 	int diagloc = 0;
 	//if (pm_go.cycle == 5 && opprint&&udigit == 3 && unit==24) diagloc = 2;
 	locdiag =  diagloc;
-	BF128 wiu = units3xBM[unit]; wiu &= zh_g.pm.pmdig[udigit];
+	BF128 wiu = units3xBM[unit]; wiu &= zh_g2.pm.pmdig[udigit];
 	int ncells = wiu.Count(),wcell;
 	if (diagloc){
 		cout << "start region for dig " << udigit + 1 << " unit" << unit
 			<< " ncells=" << ncells << endl;
 	}
-	cleang = zh_g.pm;
+	cleang = zh_g2.pm;
 	npaths = 0;
 	BF128 wiuw = wiu;
-	while ((wcell = wiuw.getFirsCell()) >= 0){
+	while ((wcell = wiuw.getFirstCell()) >= 0){
 		wiuw.Clear_c(wcell);
 		PATH &wp = paths[npaths++];
 		wp.dig = udigit; wp.cell = wcell;
@@ -2088,9 +2089,9 @@ int XYSEARCH::MultiCell(int c0){
 	//if (c0 == 68)diagloc = 2;
 	locdiag = 0;// diagloc;
 	if (diagloc>1)cout << "start Multicell for " << cellsFixedData[c0].pt << endl;
-	cleang = zh_g.pm;
+	cleang = zh_g2.pm;
 	if (diagloc>1)	cleang.Print("cleang at start");
-	int digs = zh_g.dig_cells[c0]; 
+	int digs = zh_g2.dig_cells[c0]; 
 	npaths = 0;
 	for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1){
 		if (!(digs & bit))continue;
@@ -2132,7 +2133,7 @@ int XYSEARCH::MultiCell(int c0){
 
 void XYSEARCH::PrintBackMulti(int elim_dig, int elim_cell){
 	cout << "Print back multi elim " << elim_dig + 1 << cellsFixedData[elim_cell].pt << endl;
-	BF128 seen = cell_z3x[elim_cell]; seen &= zh_g.pm.pmdig[elim_dig];
+	BF128 seen = cell_z3x[elim_cell]; seen &= zh_g2.pm.pmdig[elim_dig];
 	for (int ipath = 0; ipath < npaths; ipath++){
 		PATH &pth = paths[ipath];
 		cout << pth.dig + 1 << cellsFixedData[pth.cell].pt << " ";
@@ -2178,10 +2179,10 @@ int XYSEARCH::Do_Clean(){
 		BF128 w = cleang.pmdig[idig];
 		if (w.isEmpty())continue;
 		int cell;
-		while ((cell = w.getFirsCell()) >= 0){
+		while ((cell = w.getFirstCell()) >= 0){
 			w.Clear_c(cell);
 			if (locdiag)cout << "test clean elim" << idig + 1 << cellsFixedData[cell].pt << endl;
-			BF128 seen = cell_z3x[cell]; seen &= zh_g.pm.pmdig[idig];
+			BF128 seen = cell_z3x[cell]; seen &= zh_g2.pm.pmdig[idig];
 			int length = 0;
 			for (int ipath = 0; ipath < npaths; ipath++){
 				PATH &pth = paths[ipath];
@@ -2293,9 +2294,9 @@ void XYSEARCH::Expand_Multi(PM3X & cleanstart){// start is t;nt falses
 		for (i = ntd; i < nt; i++){// added in this step
 			cell = t[i].u16[0];		 digit = t[i].u16[1];
 			if (locdiag) cout << digit + 1 << cellsFixedData[cell].pt<<" added true" << endl;
-			BF128 wb = cell_z3x[cell]; wb &= zh_g.pm.pmdig[digit];
+			BF128 wb = cell_z3x[cell]; wb &= zh_g2.pm.pmdig[digit];
 			cleanstart.pmdig[digit] |= wb;
-			int digs = zh_g.dig_cells[cell];
+			int digs = zh_g2.dig_cells[cell];
 			for (int id = 0,bit=1; id < 9; id++,bit<<=1) 
 				if( (id - digit) && (digs & bit)){
 					cleanstart.pmdig[id].Set_c(cell);
@@ -2316,7 +2317,7 @@ void XYSEARCH::ExpandDynamic(GINT cand){// start with cand on
 	//if (pm_go.cycle == 16 && maxpas>6 &&  ddig == 1 && dcell == 5)diag = 3;
 	nsteps = is_contradiction = 0;// start with 1 step 
 	//if (zh_g.zerobased_sol[c1] == idig)is_contradiction = 2;// skip test if valid
-	if (zh_g.zerobased_sol[dcell] == idig)is_contradiction = 2;// skip test if valid
+	if (zh_g2.zerobased_sol[dcell] == idig)is_contradiction = 2;// skip test if valid
 	nt = 1;	t[0].u64 = dcell | (ddig << 16);	// source to 0
 	used_off_digits.SetAll_0();	used_on_digits.SetAll_0();
 	used_on_digits.Set_c(ddig, dcell);
@@ -2430,12 +2431,12 @@ void XYSEARCH::SearchDynPass(int nmax){	// try a  pass limited to nmax steps
 	// try all bi values in mode x->~a and y->~a adding one in length
 	BF128 wp = pairs;
 	uint32_t  dc1,dc2;
-	while ((cell = wp.getFirsCell()) >= 0){
+	while ((cell = wp.getFirstCell()) >= 0){
 		if (opprint){
 			cout << "cells "<<cellsFixedData[cell].pt << endl;
 		}
 		wp.Clear_c(cell);
-		int digs = zh_g.dig_cells[cell];
+		int digs = zh_g2.dig_cells[cell];
 		bitscanforward(dc1, digs);
 		bitscanreverse(dc2, digs);
 		int i1 = ind_pm[dc1][cell], i2 = ind_pm[dc2][cell];// pointers to tcands
@@ -2450,10 +2451,10 @@ void XYSEARCH::SearchDynPass(int nmax){	// try a  pass limited to nmax steps
 		for (int iu = 0; iu < 27; iu++){
 			if (dig_bivsets[id].Off(iu))continue;
 			//if (nmax > 10)cout << "unit=" << iu << endl;
-			BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id];
-			int cell1 = wu.getFirsCell();
+			BF128 wu = units3xBM[iu]; wu &= zh_g2.pm.pmdig[id];
+			int cell1 = wu.getFirstCell();
 			wu.Clear_c(cell1);
-			int cell2 = wu.getFirsCell();
+			int cell2 = wu.getFirstCell();
 			int i1 = ind_pm[id][cell1], i2 = ind_pm[id][cell2];// pointers to tcands
 			GINT cand1 = tcands[i1], cand2 = tcands[i2];
 			PM3X welims = off_status[cand1.u16[1]]; welims &= off_status[cand2.u16[1]];
@@ -2472,14 +2473,14 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 	if (ntelims && maxrating <= 88) return;
 	if (opprint)cout << "try cells not bi values" << endl;
 	// try all bi values in mode x->~a and y->~a adding one in length
-	BF128 wp = zh_g.cells_unsolved_e-pairs;
+	BF128 wp = zh_g2.cells_unsolved_e-pairs;
 	GINT target,p;
 	GINT64 tbn[9][400];
 	int ntbn[9], nx,xcell;
 	PM3X welims;
-	while ((xcell = wp.getFirsCell()) >= 0){
+	while ((xcell = wp.getFirstCell()) >= 0){
 		wp.Clear_c(xcell);
-		int digs = zh_g.dig_cells[xcell], ndigs=_popcnt32(digs);
+		int digs = zh_g2.dig_cells[xcell], ndigs=_popcnt32(digs);
 		if (nmax < 8 && ndigs>3)continue;
 		welims.SetAll_1();
 		while ( digs){
@@ -2501,11 +2502,11 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 		for (int id = 0; id < 9; id++) if (welims.pmdig[id].isNotEmpty()){
 			BF128 elimd = welims.pmdig[id];
 			int elim_cell;
-			while ((elim_cell = elimd.getFirsCell()) >= 0){
+			while ((elim_cell = elimd.getFirstCell()) >= 0){
 				elimd.Clear_c(elim_cell);
 				target.u32 = elim_cell | (id << 16);
 				int length = 0, n = 0;
-				digs = zh_g.dig_cells[xcell];
+				digs = zh_g2.dig_cells[xcell];
 				while (digs){
 					bitscanforward(d2, digs);
 					digs ^= 1 << d2;
@@ -2542,7 +2543,7 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 	for (int id1 = 0; id1 < 9; id1++){
 		for (int iu = 0; iu < 27; iu++){
 			if (dig_bivsets[id1].On(iu))continue;
-			BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id1];
+			BF128 wu = units3xBM[iu]; wu &= zh_g2.pm.pmdig[id1];
 			if (wu.isEmpty())continue;
 			int tcu[10], ntcu = wu.Table3X27(tcu);
 			welims.SetAll_1();
@@ -2564,7 +2565,7 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 			for (int id = 0; id < 9; id++) if (welims.pmdig[id].isNotEmpty()){
 				BF128 elimd = welims.pmdig[id];
 				int elim_cell;
-				while ((elim_cell = elimd.getFirsCell()) >= 0){
+				while ((elim_cell = elimd.getFirstCell()) >= 0){
 					elimd.Clear_c(elim_cell);
 					target.u32 = elim_cell | (id << 16);
 					if (locdiag)cout << "try unit elim" << id + 1 << cellsFixedData[elim_cell].pt << endl;
@@ -2613,22 +2614,22 @@ int XYSEARCH::SearchDyn(int fast){
 		if (opprint)cout << "85 dyn fast 1" << endl;
 		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
 			GINT wc = tcands[icand];
-			if ((char)wc.u8[1] == zh_g.zerobased_sol[wc.u8[0]]) continue;
+			if ((char)wc.u8[1] == zh_g2.zerobased_sol[wc.u8[0]]) continue;
 			ExpandDynamic(wc);
 		}
 		if (elim_done) return 1;
 		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
 			GINT wc = tcands[icand];
-			if ((char)wc.u8[1] == zh_g.zerobased_sol[wc.u8[0]]) 
+			if ((char)wc.u8[1] == zh_g2.zerobased_sol[wc.u8[0]]) 
 			ExpandDynamic(wc);// expand the good candidates
 		}
 		if (opprint)cout << "try fast  cells bi values" << endl;
 		// try all bi values in mode x->~a and y->~a adding one in length
 		BF128 wp = pairs;
 		uint32_t  dc1, dc2;
-		while ((cell = wp.getFirsCell()) >= 0) {
+		while ((cell = wp.getFirstCell()) >= 0) {
 			wp.Clear_c(cell);
-			int digs = zh_g.dig_cells[cell];
+			int digs = zh_g2.dig_cells[cell];
 			bitscanforward(dc1, digs);
 			bitscanreverse(dc2, digs);
 			int i1 = ind_pm[dc1][cell], i2 = ind_pm[dc2][cell];// pointers to tcands
@@ -2644,10 +2645,10 @@ int XYSEARCH::SearchDyn(int fast){
 		for (int id = 0; id < 9; id++) {
 			for (int iu = 0; iu < 27; iu++) {
 				if (dig_bivsets[id].Off(iu))continue;
-				BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id];
-				int cell1 = wu.getFirsCell();
+				BF128 wu = units3xBM[iu]; wu &= zh_g2.pm.pmdig[id];
+				int cell1 = wu.getFirstCell();
 				wu.Clear_c(cell1);
-				int cell2 = wu.getFirsCell();
+				int cell2 = wu.getFirstCell();
 				int i1 = ind_pm[id][cell1], i2 = ind_pm[id][cell2];// pointers to tcands
 				GINT cand1 = tcands[i1], cand2 = tcands[i2];
 				welims = off_status[cand1.u16[1]]; 
@@ -2661,11 +2662,11 @@ int XYSEARCH::SearchDyn(int fast){
 		if (elim_done) return 1;
 		if (opprint)cout << "try fast multi cells" << endl;
 		// try all bi values in mode x->~a and y->~a adding one in length
-		wp = zh_g.cells_unsolved_e - pairs;
+		wp = zh_g2.cells_unsolved_e - pairs;
 		int  xcell;
-		while ((xcell = wp.getFirsCell()) >= 0) {
+		while ((xcell = wp.getFirstCell()) >= 0) {
 			wp.Clear_c(xcell);
-			int digs = zh_g.dig_cells[xcell];
+			int digs = zh_g2.dig_cells[xcell];
 			if (_popcnt32(digs) <3)continue;
 			welims.SetAll_1();
 			while (digs) {
@@ -2683,7 +2684,7 @@ int XYSEARCH::SearchDyn(int fast){
 		for (int id1 = 0; id1 < 9; id1++) {
 			for (int iu = 0; iu < 27; iu++) {
 				if (dig_bivsets[id1].On(iu))continue;
-				BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id1];
+				BF128 wu = units3xBM[iu]; wu &= zh_g2.pm.pmdig[id1];
 				if (wu.isEmpty())continue;
 				int tcu[10], ntcu = wu.Table3X27(tcu);
 				welims.SetAll_1();
@@ -2739,7 +2740,7 @@ void XYSEARCH::DynamicSolveContradiction(GINT cand,PM3X cont){// find path and e
 	for (int id = 0; id < 9; id++) if (cont.pmdig[id].isNotEmpty()){
 		BF128 elimd = cont.pmdig[id];
 		int elim_cell;
-		while ((elim_cell = elimd.getFirsCell()) >= 0){
+		while ((elim_cell = elimd.getFirstCell()) >= 0){
 			elimd.Clear_c(elim_cell);
 			GINT64 target_on, target_off;
 			int n = 0;
@@ -2817,7 +2818,7 @@ void XYSEARCH::DynamicSolveContradiction(int dig1, int cell1, int dig2, int cell
 	for (int id = 0; id < 9; id++) if (cont.pmdig[id].isNotEmpty()){
 		BF128 elimd = cont.pmdig[id];
 		int elim_cell;
-		while ((elim_cell = elimd.getFirsCell()) >= 0){
+		while ((elim_cell = elimd.getFirstCell()) >= 0){
 			elimd.Clear_c(elim_cell);
 			target.u32 = elim_cell | (id <<16);
 			if (locdiag) cout << "to elim " << id + 1 << cellsFixedData[elim_cell].pt << endl;
@@ -2898,7 +2899,7 @@ int XYSEARCH::BackDynamic(GINT64 target, GINT64 * tb, int ntb) {
 		int xcell = x.u16[0], xdig = x.u16[1];
 		switch (x.u16[2] >> 12){
 		case 1:{// last in cell
-			int digs = zh_g.dig_cells[xcell] ^ (1 << xdig);
+			int digs = zh_g2.dig_cells[xcell] ^ (1 << xdig);
 			while (digs){
 				bitscanforward(d2, digs);
 				digs ^= 1 << d2;
@@ -2914,12 +2915,12 @@ int XYSEARCH::BackDynamic(GINT64 target, GINT64 * tb, int ntb) {
 		}
 		case 2:{// last in region
 			int unit = x.u8[4], ucell;
-			BF128 wu = units3xBM[unit]; wu &= zh_g.pm.pmdig[xdig];
+			BF128 wu = units3xBM[unit]; wu &= zh_g2.pm.pmdig[xdig];
 			if (diag){
 				char ws[82];
 				cout << wu.String3X(ws) << " wu to backload for last" << endl;
 			}
-			while ((ucell = wu.getFirsCell()) >= 0){
+			while ((ucell = wu.getFirstCell()) >= 0){
 				wu.Clear_c(ucell);
 				if (back_bf.On_c(xdig, ucell))	continue;
 				back_bf.Set_c(xdig, ucell);
@@ -3055,7 +3056,7 @@ int PM_GO::CleanOr(int d1, int c1, int d2, int c2){
 		return zhou_solve.CleanCellsForDigits(clean, digits);
 	}
 	else if (c1 == c2) {
-		int digs_c = zh_g.dig_cells[c1];
+		int digs_c = zh_g2.dig_cells[c1];
 		if (_popcnt32(digs_c) < 3) return 0;
 		digs_c &= (~digits);
 		zhou_solve.CleanCellForDigits(c1, digs_c);
@@ -3063,12 +3064,12 @@ int PM_GO::CleanOr(int d1, int c1, int d2, int c2){
 	}
 	else {// must be cell + digit
 		if (clean.Off_c(c2)) return 0;// cells must be same unit
-		int digs = zh_g.dig_cells[c1];
+		int digs = zh_g2.dig_cells[c1];
 		if (digs & (1 << d2)){
 			zhou_solve.ClearCandidate_c(d2, c1);
 			return 1;
 		}
-		digs = zh_g.dig_cells[c2];
+		digs = zh_g2.dig_cells[c2];
 		if (digs & (1 << d1)){
 			zhou_solve.ClearCandidate_c(d1, c2);
 			return 1;
@@ -3095,20 +3096,27 @@ void PM_GO::Status(const char * lib, int option){
 	}
 
 }
-int PM_GO::SolveGetLow44(int pack) {
+int PM_GO::SolveGetLow44(int pack,int diag) {
 	//===========================================================
 	zh_g.diag = opprint = opprint2 = stop_rating = cycle = assigned = rat_er = rat_ep = rat_ed = 0;
-	zh_g.nsol = 0; zh_g.lim = 1;	ur_serate_mode = 1;
+	zh_g.Init(1);	ur_serate_mode = 1;
+	if (diag) {
+		cout << "\n<<<<<<<<entry   unsolved=" << zhou_solve.cells_unsolved.Count() << " assigned=" << assigned << endl;
+		zhou_solve.ImageCandidats();
+	}
 	while (cycle++ < 150) {
 		if (cycle > 148 || stop_rating) return 0;
 		if (zhou_solve.cells_unsolved.isEmpty())break; // solved below 4.5
-		zh_g.Init_Assign();
+		if (diag) {
+			cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<next cycle=" << cycle
+				<< " rating=" << rat_er
+				<< " unsolved=" << zhou_solve.cells_unsolved.Count() << " assigned=" << assigned << endl;
+			zhou_solve.ImageCandidats();
+		}
+		zh_g2.Init_Assign();
 		if (rat_er < 28){ if (Next10_28()) continue; }
 		else if (Next28()) continue;
 		if (Next30_44()) continue;
-		//Status("after no WXYZwing", 2);
-		//to test Rate45_52_Fast () smal additional risk with multi URs ULs
-		//if (Rate45_52()) continue;
 		if (!rat_ed)rat_er = rat_ep = rat_ed = 200; else rat_er = 200;
 		return 0;
 	}
@@ -3138,7 +3146,7 @@ int PM_GO::Solved_xx(int lim) {
 	while (cycle++ < 150) {
 		if (cycle > 148 || stop_rating) return 0;
 		if (zhou_solve.cells_unsolved.isEmpty())return 1; // solved 
-		zh_g.Init_Assign();
+		zh_g2.Init_Assign();
 		if (rat_er < 28){ if (Next10_28()) continue; }
 		else if (Next28()) continue;
 		if (Next30_44()) continue;
@@ -3187,7 +3195,7 @@ int PM_GO::Solved_xx(int lim) {
 void PM_GO::SolveSerate110() {
 	//===========================================================
 	zh_g.diag = sgo.vx[9];	opprint = sgo.bfx[8];	opprint2 = sgo.bfx[8];
-	if (opprint2)cout << zh_g.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
+	if (opprint2)cout << zh_g2.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
 	stop_rating = cycle = assigned = 0;
 	rat_er = rat_ep = rat_ed = 0;
 	zh_g.nsol = 0; zh_g.lim = 1;
@@ -3212,8 +3220,8 @@ void PM_GO::SolveSerate110() {
 				return;
 			}
 		}
-		zh_g.Init_Assign();
-		if (rat_er < 28){ if (Next10_28()) continue; }
+		zh_g2.Init_Assign();
+		if (rat_er < 28) { if (Next10_28()) continue; }
 		else if (Next28()) continue;
 		if (Next30_44()) continue;
 		//to test Rate45_52_Fast () smal additional risk with multi URs ULs
@@ -3226,7 +3234,7 @@ void PM_GO::SolveSerate110() {
 		SetupActiveDigits();
 		if (pm_go.opprint2 & 2){
 			//Status("start 65", 2);
-			cout << Char9out(zh_g.active_floor) << " active digits" << endl;
+			cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
 		}
 		XStatusPrepare();
 		if (Rate65Xcycle(0)) continue;
@@ -3251,14 +3259,14 @@ void PM_GO::SolveSerate110() {
 	//next_cycle:;
 	}
 	if (stop_rating){
-		cout << zh_g.puz << "; puz n=" << zh_g.npuz << " unsolved stop_rating = " << stop_rating << endl;
-		fout1 << zh_g.puz << ";0;0;0;" << stop_rating <<" stop======"<< endl;
+		cout << zh_g2.puz << "; puz n=" << zh_g2.npuz << " unsolved stop_rating = " << stop_rating << endl;
+		fout1 << zh_g2.puz << ";0;0;0;" << stop_rating <<" stop======"<< endl;
 	}
-	else fout1 << zh_g.puz << ";" << rat_er / 10 << "." << rat_er % 10 << ";" << rat_ep / 10 << "." << rat_ep % 10
+	else fout1 << zh_g2.puz << ";" << rat_er / 10 << "." << rat_er % 10 << ";" << rat_ep / 10 << "." << rat_ep % 10
 		<< ";" << rat_ed / 10 << "." << rat_ed % 10 << endl;
 	return;
 exit_limit:
-	if (sgo.bfx[7] & 1)fout2 << zh_g.puz << endl;
+	if (sgo.bfx[7] & 1)fout2 << zh_g2.puz << endl;
 }
 void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 
@@ -3271,7 +3279,7 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 	while (cycle++ < 150) {
 		if (stop_rating) 	return;// should never be skip it
 		if (zhou_solve.cells_unsolved.isEmpty())break;
-		zh_g.Init_Assign();
+		zh_g2.Init_Assign();
 		if (rat_er < 28){ if (Next10_28()) continue; }
 		else if (Next28()) continue;
 		if (Next30_44()) continue;
@@ -3291,7 +3299,7 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 	UINT rr = ((rat_er * 100) + rat_ep) * 100 + rat_ed;
 	if (rr > ratfound[i]){
 		ratfound[i] = rr;
-		fout1 << zh_g.puz << ";" << rat_er << ";" << rat_ep	<< ";" << rat_ed << endl;
+		fout1 << zh_g2.puz << ";" << rat_er << ";" << rat_ep	<< ";" << rat_ed << endl;
 		return;
 	}
 	return;// ask to ignore it
@@ -3304,7 +3312,7 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 		if (cycle > 148) { stop_rating = 7;	break; }
 		if (stop_rating) 	break;
 		if (zhou_solve.cells_unsolved.isEmpty())break;
-		zh_g.Init_Assign();
+		zh_g2.Init_Assign();
 		if (Next28()) continue;
 		if (Next30_44()) continue;
 	phase2:// entry phase 2 not solved below 45
@@ -3341,23 +3349,23 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 	//cout << "end std " << rat_er / 10 << "." << rat_er % 10 << ";" << rat_ep / 10 << "." << rat_ep % 10
 	//	<< ";" << rat_ed / 10 << "." << rat_ed % 10 << " stop=" << stop_rating << endl;
 	if (stop_rating){
-		fout3 << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed  << "; unsolved" << stop_rating << endl;
+		fout3 << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed  << "; unsolved" << stop_rating << endl;
 	}
 	else if (rat_ed==rat_er)		
-		fout_diam << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
+		fout_diam << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
 	else if (rat_ep == rat_er)
-		fout_pearl << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
+		fout_pearl << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
 	else if (rat_er<65)
-		fout_l65  << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
-	else fout2 << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
+		fout_l65  << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
+	else fout2 << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
 
 }
 
 void PM_GO::Solve199test() {
 	//===========================================================
 	if (!Solved_xx(96))
-		fout2 << zh_g.puz << endl;
-	else fout1 << zh_g.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
+		fout2 << zh_g2.puz << endl;
+	else fout1 << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
 }
 
 
@@ -3367,7 +3375,7 @@ int PM_GO::Next10_28(){
 	if (Rate12())return 1;
 	if (Rate15())return 1;		
 	if (Rate17())return 1;
-	zh_g.Pm_Status(&zhou_solve);
+	zh_g2.Pm_Status(&zhou_solve);
 	zhou_solve.FindNakedPairsTriplets_NoSingle();
 	zhou_solve.Naked_Pairs_Seen();
 	if (Rate20())return 1;		
@@ -3379,6 +3387,7 @@ int PM_GO::Next10_28(){
 }
 int PM_GO::Next28(){
 	BF128 ru = zhou_solve.cells_unsolved;
+	//zhou_solve.Debug(1);
 	if (zhou_solve.FullUpdate() == 2) return 1;// solved in full update
 	if (zhou_solve.Rate15_SingleColumn()){
 		assigned = 1;
@@ -3387,12 +3396,12 @@ int PM_GO::Next28(){
 	}
 	if (ru != zhou_solve.cells_unsolved)assigned = 1;
 	if (zhou_solve.cells_unsolved.isEmpty()) return 1;
-	zh_g.Pm_Status(&zhou_solve);
+	zh_g2.Pm_Status(&zhou_solve);
 	zhou_solve.FindNakedPairsTriplets_NoSingle();
 	zhou_solve.Naked_Pairs_Seen();
 	if (Rate20())return 1;		
 	if (Rate25())return 1;
-	if (Rate26())return 1;		
+	if (Rate26())return 1;
 	if (Rate28())return 1;
 	return 0;// can continue in the same cycle 
 }
@@ -3400,7 +3409,7 @@ int PM_GO::Next30_44(){
 	if (Rate30())return 1;
 	if (Rate32())return 1;		
 	if (Rate34())return 1;
-	zh_g.Pm_Status_End();// cell digits and box digit/cells
+	zh_g2.Pm_Status_End();// cell digits and box digit/cells
 	if (Rate36())return 1;
 	if (Rate38())return 1;
 	if (Rate40())return 1;		
@@ -3670,7 +3679,7 @@ int PM_GO::Rate62() {
 	return 0;
 }
 void PM_GO::SetupActiveDigits(){
-	zh_g.active_floor = 0;// no elim with a single digit
+	zh_g2.active_floor = 0;// no elim with a single digit
 	for (int i = 0; i < 9; i++){
 		if (!zhou_solve.FD[i][0].bf.u32[3]) continue; // solved digit
 		zhou[0].StartFloor(i, zhou_solve);
@@ -3848,7 +3857,7 @@ if (degree * 2 <= nbEmptyCells) {
 */
 int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 	nt = 0;
-	BF128 & uns = zh_g.cells_unsolved_e;
+	BF128 & uns = zh_g2.cells_unsolved_e;
 	int iret = 0,tcells[4];
 	int cellbox0[9] = { 0, 3, 6, 27, 30, 33, 54, 57, 60 };
 	//PM_DATA & wmyd= (dynamic)? zpmd[1]:zpmd[0];
@@ -3859,12 +3868,12 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 				for (int cr1 = 0; cr1 < 3; cr1++){// first cell
 					int cell1 = startbox + ((bande < 3) ? (9 * rc1 + cr1) : (9 * cr1 + rc1));
 					if (uns.Off_c(cell1)) continue;
-					int digs1 = zh_g.dig_cells[cell1];
+					int digs1 = zh_g2.dig_cells[cell1];
 					for (int rc2 = rc1 + 1; rc2 < 3; rc2++){
 						int cell2 = startbox + ((bande<3) ? (9 * rc2 + cr1) : (9 * cr1 + rc2));
 						if (uns.Off_c(cell2)) continue;
-						int digs2 = zh_g.dig_cells[cell2]& digs1,
-							digsor2= zh_g.dig_cells[cell2] | digs1;
+						int digs2 = zh_g2.dig_cells[cell2]& digs1,
+							digsor2= zh_g2.dig_cells[cell2] | digs1;
 						if (_popcnt32(digs2) < 2) continue;
 						for (int ib2 = ib1 + 1; ib2 < 3; ib2++){// box2
 							int box2 = (bande < 3) ? (3 * bande + ib2) : (bande - 3 + 3 * ib2),
@@ -3873,8 +3882,8 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 								// set to turn  0 -> 1 -> 2 -> 3 -> 0
 								int cell4 = startbox2 + ((bande<3) ? (9 * rc1 + cr2) : (9 * cr2 + rc1));
 								int cell3 = startbox2 + ((bande<3) ? (9 * rc2 + cr2) : (9 * cr2 + rc2));
-								int digs = zh_g.dig_cells[cell3] & digs2 & zh_g.dig_cells[cell4],
-									digsor= zh_g.dig_cells[cell3] | digsor2 | zh_g.dig_cells[cell4];
+								int digs = zh_g2.dig_cells[cell3] & digs2 & zh_g2.dig_cells[cell4],
+									digsor= zh_g2.dig_cells[cell3] | digsor2 | zh_g2.dig_cells[cell4];
 								if (_popcnt32(digs) < 2) continue;
 								// we have a potential UR in serate mode max 2 consecutive cells more than 2
 								if (zh_g.pairs.Off_c(cell1) && zh_g.pairs.On_c(cell4)){
@@ -3896,7 +3905,7 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 									uint32_t exd; bitscanforward(exd, extra_dig);
 									BF128 clean = cell_z3x[tcells[0]]; clean &= cell_z3x[tcells[1]];
 									if (zh_g.pairs.Off_c(tcells[2]))clean &= cell_z3x[tcells[2]];
-									clean &= zh_g.pm.pmdig[exd];
+									clean &= zh_g2.pm.pmdig[exd];
 									if (clean.isNotEmpty()) {
 										iret = 1;
 										if (opprint2 & 2)cout << "UR one extra digit "
@@ -3909,7 +3918,7 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 								
 								if (zh_g.pairs.Off_c(tcells[2]) ) continue; // not serate mode
 								int c1 = tcells[0],c2 = tcells[1];
-								int digc1 = zh_g.dig_cells[c1], digc2 = zh_g.dig_cells[c2];
+								int digc1 = zh_g2.dig_cells[c1], digc2 = zh_g2.dig_cells[c2];
 								if (zh_g.pairs.On_c(c2)){// type 1 UR 
 									iret = 1;
 									if (opprint2 & 2)cout << "UR type1 " 
@@ -3956,7 +3965,7 @@ int PM_GO::Rate2cellsGo(GINT64 & w){
 		return 1;
 	}
 	else{// nothing more if the 2 cells are filled by other digits
-		int digstrue = (1 << zh_g.zerobased_sol[cell1]) | (1 << zh_g.zerobased_sol[cell2]);
+		int digstrue = (1 << zh_g2.zerobased_sol[cell1]) | (1 << zh_g2.zerobased_sol[cell2]);
 		if (!(digstrue & digs)){
 			w.u16[1] = 0;
 		}
@@ -4026,7 +4035,7 @@ int PM_GO::Rate45_el(GINT64 & t, int unit,int degree){
 	cells_ur.clear(); cells_others_ur.clear(); cells_3.clear();
 	wcells.Clear_c(cell1); wcells.Clear_c(cell2);// now cells to consider
 
-	int digits_ur = (zh_g.dig_cells[cell1] | zh_g.dig_cells[cell2]),
+	int digits_ur = (zh_g2.dig_cells[cell1] | zh_g2.dig_cells[cell2]),
 		digitsothers = digits_ur & ~digs;// all digits of the UR not base digits
 	int nothers = _popcnt32(digitsothers);
 	if (rbase  > hint.rating) return 0;
@@ -4034,7 +4043,7 @@ int PM_GO::Rate45_el(GINT64 & t, int unit,int degree){
 
 	for (int idig = 0; idig < 9; idig++){// find cells
 		register int bit = 1 << idig;
-		BF128 w = zh_g.pm.pmdig[idig] & wcells;
+		BF128 w = zh_g2.pm.pmdig[idig] & wcells;
 		if (w.isEmpty())continue;
 		if (digs & bit)cells_ur |= w;
 		if (digitsothers & bit)cells_others_ur |= w;
@@ -4052,7 +4061,7 @@ int PM_GO::Rate45_el(GINT64 & t, int unit,int degree){
 
 	//============================ plus 1 hidden naked pair
 	if (cells_ur.Count() == 1 && go_naked){// hidden pair see if active
-		int cell = cells_ur.getFirsCell(), dcell = zh_g.dig_cells[cell];
+		int cell = cells_ur.getFirstCell(), dcell = zh_g2.dig_cells[cell];
 		if (dcell != digs){// some elimination
 			zhou_solve.CleanCellForDigits(cell, dcell^digs);
 			hint.Done(rbase );	det_mess = " hidden pair ";
@@ -4075,19 +4084,19 @@ int PM_GO::Rate45_el(GINT64 & t, int unit,int degree){
 	BF128 w_b = cells_others_ur - cells_ur;// only extra digits in w_c
 
 	int dfree = 0x1ff ^ digits_ur, tfree[10], nfree = 0; // digits that can contribute ot the 2+2
-	for (int i = 0; i < 9; i++) if ((dfree & (1 << i)) && (wcells & zh_g.pm.pmdig[i]).isNotEmpty()) tfree[nfree++] = i;
+	for (int i = 0; i < 9; i++) if ((dfree & (1 << i)) && (wcells & zh_g2.pm.pmdig[i]).isNotEmpty()) tfree[nfree++] = i;
 
 	//=== serate degree is now 2 mini 5 cells for a hidden, 4 for a naked
 	//============== same rating 4.6 can be hidden triplet 
-	BF128 serate_filter = cells_ur &(zh_g.pm.pmdig[cell1] | zh_g.pm.pmdig[cell2]);
+	BF128 serate_filter = cells_ur &(zh_g2.pm.pmdig[cell1] | zh_g2.pm.pmdig[cell2]);
 	if (serate_filter.Count() != 2) goto skip_hiddentriplet;
 	if (nfree&& go_naked){// minimum to have a hidden triplet and serate filter
 		for (int i1 = 0; i1 < nfree; i1++){
-			BF128 wd1 = cells_ur | (wcells & zh_g.pm.pmdig[tfree[i1]]);
+			BF128 wd1 = cells_ur | (wcells & zh_g2.pm.pmdig[tfree[i1]]);
 			if (wd1.Count() != 2) continue;
 			int aig = 0, dw = digs | (1 << tfree[i1]);
 			for (int i = 0; i < 9; i++) if (!(dw & (1 << i))){
-				BF128 clean = zh_g.pm.pmdig[i] & wd1;
+				BF128 clean = zh_g2.pm.pmdig[i] & wd1;
 				if (clean.isNotEmpty()){
 					aig = 1;
 					zhou_solve.FD[i][0] -= clean;
@@ -4118,18 +4127,18 @@ int PM_GO::Rate45_el(GINT64 & t, int unit,int degree){
 	if (nothers - 2 || !nfree) goto go_plus3;
 	if (locdiag)cout << "try  naked triplet 2+1" << endl;
 	for (int i1 = 0; i1 < nfree; i1++){
-		BF128 wd1 = w_b  & zh_g.pm.pmdig[tfree[i1]];
+		BF128 wd1 = w_b  & zh_g2.pm.pmdig[tfree[i1]];
 		//cout << "try  naked triplet 2+1 dig plus=" << tfree[i1] + 1 << endl;
 		//char ws[82];
 		//cout << wd1.String3X(ws) << " possible cells" << endl;
 		if (wd1.Count() >= 2) {		// check that no other digit is there
 			for (int i2 = 0; i2 < nfree; i2++) if (i2 - i1){
-				wd1 -= zh_g.pm.pmdig[tfree[i2]];
+				wd1 -= zh_g2.pm.pmdig[tfree[i2]];
 			}
 			if (wd1.Count() != 2) continue;
 			//cout << wd1.String3X(ws) << " final cells" << endl;
 			int  dw = digitsothers | (1 << tfree[i1]);
-			BF128 clean = cells_others_ur | (zh_g.pm.pmdig[tfree[i1]] & wcells);
+			BF128 clean = cells_others_ur | (zh_g2.pm.pmdig[tfree[i1]] & wcells);
 			clean -= wd1;
 			if (zhou_solve.CleanCellsForDigits(clean, dw)){
 				hint.Done(rbase); det_mess = " naked triplet 2+1 "; return 1;
@@ -4146,14 +4155,14 @@ go_plus3:
 	if (nfree >= 2){// minimum to have a hidden quad
 		if (locdiag)cout << "try hidden  quad 2+2" << endl;
 		for (int i1 = 0; i1 < nfree - 1; i1++){
-			BF128 wd1 = cells_ur | (wcells & zh_g.pm.pmdig[tfree[i1]]);
+			BF128 wd1 = cells_ur | (wcells & zh_g2.pm.pmdig[tfree[i1]]);
 			if (wd1.Count()>3) continue;
 			for (int i2 = i1 + 1; i2 < nfree; i2++){// test all pairs of digits
-				BF128 wd2 = wd1 | (wcells & zh_g.pm.pmdig[tfree[i2]]);
+				BF128 wd2 = wd1 | (wcells & zh_g2.pm.pmdig[tfree[i2]]);
 				if (wd2.Count() != 3) continue;
 				int aig = 0, dw = digs | (1 << tfree[i1]) | (1 << tfree[i2]);
 				for (int i = 0; i < 9; i++) if (!(dw & (1 << i))){
-					BF128 clean = zh_g.pm.pmdig[i] & wd2;
+					BF128 clean = zh_g2.pm.pmdig[i] & wd2;
 					if (clean.isNotEmpty()){
 						aig = 1;
 						zhou_solve.FD[i][0] -= clean;
@@ -4176,17 +4185,17 @@ go_plus3:
 	if (nothers == 3 && nfree) {//___________ naked quad 3+1
 		if (locdiag)cout << "try  naked quad 3+1" << endl;
 		for (int i1 = 0; i1 < nfree; i1++){
-			BF128 wd1 = (w_b  & zh_g.pm.pmdig[tfree[i1]]) | wnaked;
+			BF128 wd1 = (w_b  & zh_g2.pm.pmdig[tfree[i1]]) | wnaked;
 			//char ws[82];
 			//cout << wd1.String3X(ws) << " possible cells dig " << tfree[i1]+1 << endl;
 			if (wd1.Count() >= 3) {		// check that no other digit is there
 				for (int i2 = 0; i2 < nfree; i2++) if (i2 - i1){
-					wd1 -= zh_g.pm.pmdig[tfree[i2]];
+					wd1 -= zh_g2.pm.pmdig[tfree[i2]];
 				}
 				//cout << wd1.String3X(ws) << " final cells" << endl;
 				if (wd1.Count() != 3) continue;
 				int  dw = digitsothers | (1 << tfree[i1]);
-				BF128 clean = cells_others_ur | (zh_g.pm.pmdig[tfree[i1]] & wcells);
+				BF128 clean = cells_others_ur | (zh_g2.pm.pmdig[tfree[i1]] & wcells);
 				clean -= wd1;
 				if (zhou_solve.CleanCellsForDigits(clean, dw)){
 					hint.Done(rbase); det_mess = " naked quad 3+1 "; return 1;
@@ -4202,21 +4211,21 @@ go_plus3:
 	if (nothers == 2 && nfree>1){// try 2 plus 2 extra digit
 		if (locdiag)cout << "try  naked quad 2+2 " << endl;
 		for (int i1 = 0; i1 < nfree - 1; i1++){
-			BF128 wd1 = (w_b  & zh_g.pm.pmdig[tfree[i1]]) | wnaked;
+			BF128 wd1 = (w_b  & zh_g2.pm.pmdig[tfree[i1]]) | wnaked;
 			for (int i2 = i1 + 1; i2 < nfree; i2++){
-				BF128 pci1i2 = wcells &zh_g.pm.pmdig[tfree[i1]] & zh_g.pm.pmdig[tfree[i2]] & zh_g.pairs;
-				BF128 wd2 = wd1 | (w_b  & zh_g.pm.pmdig[tfree[i2]]);
+				BF128 pci1i2 = wcells &zh_g2.pm.pmdig[tfree[i1]] & zh_g2.pm.pmdig[tfree[i2]] & zh_g.pairs;
+				BF128 wd2 = wd1 | (w_b  & zh_g2.pm.pmdig[tfree[i2]]);
 				wd2 |= pci1i2;
 				//char ws[82];
 				//cout << wd1.String3X(ws) << " possible cells" << endl;
 				if (wd2.Count() >= 3) {		// check that no other digit is there
 					for (int i3 = 0; i3 < nfree; i3++) if (i3 - i1 && i3 - i2){
-						wd2 -= zh_g.pm.pmdig[tfree[i3]];
+						wd2 -= zh_g2.pm.pmdig[tfree[i3]];
 					}
 					if (wd2.Count() != 3) continue;
 					//cout << wd1.String3X(ws) << " final cells" << endl;
 					int  dw = digitsothers | (1 << tfree[i1]) | (1 << tfree[i2]);
-					BF128 clean = cells_others_ur | ((zh_g.pm.pmdig[tfree[i1]] | zh_g.pm.pmdig[tfree[i2]]) & wcells);
+					BF128 clean = cells_others_ur | ((zh_g2.pm.pmdig[tfree[i1]] | zh_g2.pm.pmdig[tfree[i2]]) & wcells);
 					clean -= wd2;
 					if (zhou_solve.CleanCellsForDigits(clean, dw)){
 						hint.Done(rbase); det_mess = " naked quad 2+2 "; return 1;
@@ -4231,7 +4240,7 @@ go_plus3:
 int PM_GO::RateUL_base(STORE_UL & wul){// try to rate the UL table
 	int locdiag = 0;
 	int cell1 = (int)wul.ur2.u8[0], cell2 = (int)wul.ur2.u8[1],
-		digs = wul.ur2.u16[1] , digc1 = zh_g.dig_cells[cell1];
+		digs = wul.ur2.u16[1] , digc1 = zh_g2.dig_cells[cell1];
 
 	if (locdiag)cout << "rate_uls base  plus=" << " wul.type=" << wul.type << " my_plus=" << (int)wul.ur2.u8[4]
 		<< " c1=" << cellsFixedData[cell1].pt << " c2=" << cellsFixedData[cell2].pt << endl;
@@ -4287,10 +4296,10 @@ int PM_GO::Rate46_Find_ULs(){
 	ntul = 0;
 	if(locdiag>1)cout << "start uls search "  << endl;
 	for (int idig1 = 0; idig1 < 8; idig1++){
-		BF128 & wp1 = zh_g.digits_cells_pair_bf[idig1];
+		BF128 & wp1 = zh_g2.digits_cells_pair_bf[idig1];
 		if (wp1.Count() < 2)continue;
 		for (int idig2 = idig1+1; idig2 < 9; idig2++){
-			BF128  wp = wp1 &zh_g.digits_cells_pair_bf[idig2];
+			BF128  wp = wp1 &zh_g2.digits_cells_pair_bf[idig2];
 			if (wp.Count() < 2)continue;
 			if (locdiag)cout << "search " << idig1 + 1 << idig2 + 1 << endl;
 			for (int iu = 0; iu < 18; iu++){// look for a start
@@ -4298,13 +4307,13 @@ int PM_GO::Rate46_Find_ULs(){
 				if (wpu.Count() != 2) continue;
 				if (locdiag)cout << "search unit" << iu  << endl;
 				s = spots;
-				int cell1 = wpu.getFirsCell(), cell2;
+				int cell1 = wpu.getFirstCell(), cell2;
 				uint32_t digit_one=0;
 				wpu.Clear_c(cell1);
-				cell2 = wpu.getFirsCell();
+				cell2 = wpu.getFirstCell();
 				s->Init(wpu, wp, cell1, cell2);
-				s->digst = zh_g.dig_cells[cell1];
-				BF128 allcells = zh_g.pm.pmdig[idig1] & zh_g.pm.pmdig[idig2];
+				s->digst = zh_g2.dig_cells[cell1];
+				BF128 allcells = zh_g2.pm.pmdig[idig1] & zh_g2.pm.pmdig[idig2];
 				allcells.Clear_c(cell1); // never in wgo
 				int ispot = 0, scell, ndigst;
 				s->wgo = allcells - s->loop;
@@ -4323,7 +4332,7 @@ int PM_GO::Rate46_Find_ULs(){
 					if (ispot > 18) return 0; // safety control
 					sp = s++;		ispot++;		*s = *sp;
 					{
-					int digs = zh_g.dig_cells[scell], ndigs = _popcnt32(digs);
+					int digs = zh_g2.dig_cells[scell], ndigs = _popcnt32(digs);
 					s->loop.Set_c(scell);
 					if(locdiag>1){
 						char ws[82];
@@ -4350,7 +4359,7 @@ int PM_GO::Rate46_Find_ULs(){
 								s->cellfirstplus = scell;
 								s->more_one = s->digst^spots[0].digst;
 								bitscanforward(digit_one, s->more_one);
-								s->bf_one_digit = zh_g.pm.pmdig[digit_one];
+								s->bf_one_digit = zh_g2.pm.pmdig[digit_one];
 							}
 							s->cellsecondplus = scell;
 							s->bf_one_digit &= cell_z3x[scell];
@@ -4401,13 +4410,13 @@ int PM_GO::Rate46_Find_ULs(){
 						z &= cell_z3x[wsul.ur2.u8[1]];
 						if (z.isEmpty())ntul--;// skipped if not same unit
 						if (locdiag) cout << "loop added 2 cells same unit" << endl;
-						wsul.ur2.u16[3] = (zh_g.dig_cells[wsul.ur2.u8[0]]| zh_g.dig_cells[wsul.ur2.u8[1]])
+						wsul.ur2.u16[3] = (zh_g2.dig_cells[wsul.ur2.u8[0]]| zh_g2.dig_cells[wsul.ur2.u8[1]])
 							^ wsul.ur2.u16[1];
 						wsul.ur2.u8[5] = (uint8_t)_popcnt32(wsul.ur2.u16[3]);
 						wsul.type++;// goto nextidig2;// only on valid UL per pair is enough
 					}
 				next:
-					while ((scell = s->wgo.getFirsCell()) >= 0){
+					while ((scell = s->wgo.getFirstCell()) >= 0){
 						s->wgo.Clear_c(scell);
 						goto nextspot;
 					}
@@ -4435,7 +4444,7 @@ int PM_GO::Rate_ULs(int plus45){// try to rate the UL table
 		if ((int)wul.ur2.u8[4]>plus45)goto skip;// not yet the time to process it
 		{
 		int cell1 = (int)wul.ur2.u8[0], cell2 = (int)wul.ur2.u8[1],
-			digs = wul.ur2.u16[1], ul_plus = wul.ur2.u8[4], digc1 = zh_g.dig_cells[cell1];
+			digs = wul.ur2.u16[1], ul_plus = wul.ur2.u8[4], digc1 = zh_g2.dig_cells[cell1];
 		if(locdiag)cout <<"iul="<<iul<< " rate_uls plus=" << plus45 
 			<< " wul.type=" << wul.type 	<< " my_plus=" << (int)wul.ur2.u8[4] 
 			<< " c1=" << cellsFixedData[cell1].pt << " c2=" << cellsFixedData[cell2].pt << endl;
@@ -4524,9 +4533,9 @@ int PM_GO::Rate56BUG() {
 			changet=bug.or_change,
 			changen=0x1ff^changet,
 			count_change = _popcnt32(changet);
-		while ((cell = wupw.getFirsCell()) >= 0){// analyse and store pairs
+		while ((cell = wupw.getFirstCell()) >= 0){// analyse and store pairs
 			wupw.Clear_c(cell);
-			register int d = zh_g.dig_cells[cell];
+			register int d = zh_g2.dig_cells[cell];
 			or_pairs |= d;
 			//if (!(d&changet)) continue; // forget cells with only digits not change in plus cells
 			tpairs[ntpairs] = cell;
@@ -4641,7 +4650,7 @@ int PM_GO::Rate62_APE(){
 		base -= bpairs; // minimum triplet as base 
 		if (base.isEmpty()) continue;
 		for (int idig = 0; idig < 9; idig++){//Find possible active digits
-			digs_pairs[idig] = zh_g.pm.pmdig[idig]&bpairs;
+			digs_pairs[idig] = zh_g2.pm.pmdig[idig]&bpairs;
 			npdigs[idig] = digs_pairs[idig].Count();
 			//BF128 bfdig = band3xBM[iband]; bfdig &= zh_g.pm.pmdig[idig];
 			//BF128 bfdig_pairs = bfdig&bpairs;
@@ -4654,9 +4663,9 @@ int PM_GO::Rate62_APE(){
 			//continue;
 		}
 		int cell_base;// source where on digit can be cleaned (any number of digits
-		while ((cell_base = base.getFirsCell()) >= 0){
+		while ((cell_base = base.getFirstCell()) >= 0){
 			base.Clear_c(cell_base);
-			int cbase_digs = zh_g.dig_cells[cell_base]; // must have links to pairs
+			int cbase_digs = zh_g2.dig_cells[cell_base]; // must have links to pairs
 
 			BF128 wp = cell_z3x[cell_base]; wp &= bpairs;// pairs seen by cell_base
 			// try to find a digit to check
@@ -4664,7 +4673,7 @@ int PM_GO::Rate62_APE(){
 				int bit = 1 << idig;
 				if (!(active_digs & bit)) continue;
 				BF128 wd = wp & digs_pairs[idig];
-				BF128 seen = band3xBM[iband]; seen &= zh_g.pm.pmdig[idig];
+				BF128 seen = band3xBM[iband]; seen &= zh_g2.pm.pmdig[idig];
 				int wdigs = cbase_digs;
 				if (wdigs & bit){// the base contains the clearing digit
 					seen &= cell_z3x[cell_base];
@@ -4675,11 +4684,11 @@ int PM_GO::Rate62_APE(){
 				cout << "more for digit " << idig + 1 << " cell base " << cellsFixedData[cell_base].pt << endl;
 				// digit of the base cell must see a pair of the digit
 				for (int idig2 = 0; idig2 < 9; idig2++) if (wdigs & (1 << idig2)){
-					BF128 wd_dig2 = wd&zh_g.pm.pmdig[idig2];
+					BF128 wd_dig2 = wd&zh_g2.pm.pmdig[idig2];
 					if (wd_dig2.isEmpty()) goto nextidig;
 					BF128 wseen; wseen.SetAll_0();//  must or if several pairs
 					int cellp;
-					while ((cellp = wd_dig2.getFirsCell()) >= 0){
+					while ((cellp = wd_dig2.getFirstCell()) >= 0){
 						wd_dig2.Clear_c(cellp);
 						wseen |= cell_z3x[cellp];
 					}
@@ -4708,19 +4717,19 @@ int PM_GO::Rate75_ATE() {
 		zbaset;	// set of cells that are visible by one potential excluding cells
 	z23t.SetAll_0(); zbaset.SetAll_0();
 	for (int i = 0; i < 81; i++) {
-		int ncd = _popcnt32(zh_g.dig_cells[i]);
+		int ncd = _popcnt32(zh_g2.dig_cells[i]);
 		if (ncd < 2 || ncd > 3)			continue;
 		z23t.Set_c(i);
 		zbaset |= cell_z3x[i];
 	}
-	zbaset &= zh_g.cells_unsolved_e; // possible base cells reduced to cells that have no value
+	zbaset &= zh_g2.cells_unsolved_e; // possible base cells reduced to cells that have no value
 	for (int iband = 0; iband < 6; iband++){
 		BF128 z23 = z23t&band3xBM[iband], zbase = zbaset&band3xBM[iband],usedi1;
 		int i1, i2, i3,see_1_2,see_1_3,see_2_3;
-		while ((i1 = zbase.getFirsCell()) >= 0){
+		while ((i1 = zbase.getFirstCell()) >= 0){
 			zbase.Clear_c(i1);
 			BF128 zbase2 = zbase;
-			while ((i2 = zbase2.getFirsCell()) >= 0){
+			while ((i2 = zbase2.getFirstCell()) >= 0){
 				zbase2.Clear_c(i2);
 				BF128 z1 = cell_z3x[i1], z2 = cell_z3x[i2],
 					zand = z1&z2, zor = z1 | z2, z23or = z23 & zor;
@@ -4729,25 +4738,25 @@ int PM_GO::Rate75_ATE() {
 				if (0){
 					cout << cellsFixedData[i1].pt << " " << cellsFixedData[i2].pt << endl;
 				}
-				while ((i3 = z23or.getFirsCell()) >= 0){// third base in z23 sees one of i1,i2
+				while ((i3 = z23or.getFirstCell()) >= 0){// third base in z23 sees one of i1,i2
 					z23or.Clear_c(i3);
 					BF128 z23f = cell_z3x[i3]; // exclusion sees the 3 base cells
 					z23f &= (zand&z23);// where to take exclusion cells
 					int texclude[81], nexclude = z23f.Table3X27(texclude);
 					see_1_3 = z1.On_c(i3); see_2_3 = z2.On_c(i3);
 					uint32_t d1, d2, d3; // digit of triplets to check
-					int cd1 = zh_g.dig_cells[i1], find1 = 0, find2 = 0, find3 = 0;
+					int cd1 = zh_g2.dig_cells[i1], find1 = 0, find2 = 0, find3 = 0;
 					while ( cd1){
 						bitscanforward(d1, cd1);
 						int bit1 = 1 << d1;
 						cd1^=bit1;// erase the bit
-						int cd2 = zh_g.dig_cells[i2];
+						int cd2 = zh_g2.dig_cells[i2];
 						if (see_1_2) cd2 &= ~bit1;// bit1 dead if same region
 						while (cd2){
 							bitscanforward(d2, cd2);
 							int bit2 = 1 << d2;
 							cd2^=bit2;// erase the bit
-							int cd3 = zh_g.dig_cells[i3];
+							int cd3 = zh_g2.dig_cells[i3];
 							if (see_1_3) cd3 &= ~bit1;// bit1 dead if same region
 							if (see_2_3) cd3 &= ~bit2;// bit2 dead if same region
 							while ( cd3){// a possible triplet in base
@@ -4756,7 +4765,7 @@ int PM_GO::Rate75_ATE() {
 								cd3^=bit3;// erase the bit, now si if an excluding cell
 								int nbits = ~(bit1 | bit2 | bit3);
 								for (int ie = 0; ie < nexclude; ie++){
-									if (!(zh_g.dig_cells[texclude[ie]] & nbits))goto nextd3;
+									if (!(zh_g2.dig_cells[texclude[ie]] & nbits))goto nextd3;
 								}
 								find1 |= bit1; find2 |= bit2; find3 |= bit3;
 							nextd3:;// exit from the loop if excluded
@@ -4764,9 +4773,9 @@ int PM_GO::Rate75_ATE() {
 						}// end2
 					}// end1
 					// check if a digit is never valid for the triplet
-					find1 ^= zh_g.dig_cells[i1];
-					find2 ^= zh_g.dig_cells[i2];
-					find3 ^= zh_g.dig_cells[i3];
+					find1 ^= zh_g2.dig_cells[i1];
+					find2 ^= zh_g2.dig_cells[i2];
+					find3 ^= zh_g2.dig_cells[i3];
 					if (find1 || find2 || find3){//elimination found
 						iret = 1;
 						if (find1) zhou_solve.CleanCellForDigits(i1, find1);
@@ -4786,15 +4795,15 @@ int PM_GO::Rate75_ATE() {
 	return iret;
 }
 
-void ZH_GLOBAL::DebugNacked(){
-	if (pairs.isNotEmpty()){
+void ZH_GLOBAL2::DebugNacked(){
+	if (zh_g.pairs.isNotEmpty()){
 		char ws[82];
-		pairs.String3X(ws);
+		zh_g.pairs.String3X(ws);
 		cout << ws << " biv cells seen" << endl;
 	}
-	if (triplets.isNotEmpty()){
+	if (zh_g.triplets.isNotEmpty()){
 		char ws[82];
-		triplets.String3X(ws);
+		zh_g.triplets.String3X(ws);
 		cout << ws << " triplets cells seen" << endl;
 	}
 	if (locked_nacked_brc_seen[0].isNotEmpty()){
@@ -4819,11 +4828,11 @@ void ZH_GLOBAL::DebugNacked(){
 int ZHOU::CheckStatus(){// check that the solution is still there
 	//BF128 digit_sol[9];
 	for (int id = 0; id < 9; id++){
-		BF128 w = zh_g.digit_sol[id] & FD[id][0];
+		BF128 w = zh_g2.digit_sol[id] & FD[id][0];
 		if (w.Count() != 9){
 			cout << " missing solution digit for digit " << id + 1 << endl;
 			char ws[82];
-			w ^= zh_g.digit_sol[id];
+			w ^= zh_g2.digit_sol[id];
 			cout << w.String3X(ws) << " digit pattern of missings" << endl;
 			return 1;
 		}

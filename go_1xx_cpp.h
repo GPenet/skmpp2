@@ -33,8 +33,8 @@ void Go_c110(){// template serate mode
 	while (finput.GetPuzzle(ze)){
 		npuz++;
 		if (npuz < sgo.vx[0]) continue;
-		if(pm_go.opprint2)cout << finput.ze << "to process npuz=" << npuz << endl;
-		zh_g.npuz = npuz;
+		if(sgo.bfx[8])cout << finput.ze << "to process npuz=" << npuz << endl;
+		zh_g2.npuz = npuz;
 		if (zh_g.Go_InitSolve(ze)) {
 			cout << finput.ze << "invalid or multiple solutions npuz=" << npuz << endl;
 			continue;
@@ -70,7 +70,7 @@ void Go_c111(){// fast serate mode
 	while (finput.GetPuzzle(ze)){
 		npuz++;
 		if (0)cout << finput.ze << "to process npuz=" << npuz << endl;
-		zh_g.npuz = npuz;
+		zh_g2.npuz = npuz;
 		if (zh_g.Go_InitSolve(ze)) {
 			cout << finput.ze << "invalid or multiple solutions npuz=" << npuz << endl;
 			continue;
@@ -94,7 +94,7 @@ void Go_c199(){// test on demand
 		npuz++;
 		if (npuz < sgo.vx[0]) continue;
 		//cout << finput.ze << "to process npuz=" << npuz << endl;
-		zh_g.npuz = npuz;
+		zh_g2.npuz = npuz;
 		if (zh_g.Go_InitSolve(ze)) {
 			cout << finput.ze << "invalid or multiple solutions npuz=" << npuz << endl;
 			continue;

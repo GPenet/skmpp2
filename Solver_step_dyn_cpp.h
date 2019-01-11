@@ -141,7 +141,7 @@ void XYSEARCHDYNPLUS::SearchInit(int fast) {
 	maxrating = 200;
 	pm_go.xysearch.elim_stored.SetAll_0();
 	if(opprint)cout << "start build " << endl;
-	BuildHiddenBiv_Xwings(zh_g.pm, zh_g.pmdiag, hp_biv_0, xw_biv_0);
+	BuildHiddenBiv_Xwings(zh_g2.pm, zh_g2.pmdiag, hp_biv_0, xw_biv_0);
 	if (opprint)cout << "end build " << endl;
 }
 
@@ -176,7 +176,7 @@ void XYSEARCHDYNPLUS::Clean_digs_cell(int digs, int cell, int source) {
 void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 
 	if (pairs.On_c(cell)){
-		int dig = zh_g.dig_cells[cell] ^ (1 << digit);
+		int dig = zh_g2.dig_cells[cell] ^ (1 << digit);
 		bitscanforward(d2, dig);
 		if (pm_go.xysearch.used_on_digits.Off_c(d2, cell)){
 			pm_go.xysearch.tex[d2][cell] = nt;// priority to direct
@@ -204,7 +204,7 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 			}
 		}
 		else{// empty cell (no "on") set "on" all "off"  
-			int digs = zh_g.dig_cells[cell] ^ (1 << digit);;
+			int digs = zh_g2.dig_cells[cell] ^ (1 << digit);;
 			while ( digs){
 				bitscanforward(d2, digs);
 				digs ^= 1 << d2;
@@ -222,14 +222,14 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 	cf.GetRegions(tu);
 	for (int iu = 0; iu < 3; iu++){// process each set
 		int unit = tu[iu];
-		BF128 wu = units3xBM[unit]; wu &= zh_g.pm.pmdig[digit];
+		BF128 wu = units3xBM[unit]; wu &= zh_g2.pm.pmdig[digit];
 		int  nn_start = wu.Count();
 		BF128 w81 = wu - pm_go.xysearch.used_off_digits.pmdig[digit];
 		if ((w81&pm_go.xysearch.used_on_digits.pmdig[digit]).isNotEmpty()) continue;// no on
 		int nbc = w81.Count(),wcell2;
 		if (nbc > 1)continue; // not last in region
 		if (nbc == 1){
-			wcell2 = w81.getFirsCell();
+			wcell2 = w81.getFirstCell();
 			if (nn_start == 2){// bi value
 				if (pm_go.xysearch.used_on_digits.Off_c(digit, wcell2)){
 					pm_go.xysearch.tex[digit][wcell2] = nt;// priority to direct
@@ -260,7 +260,7 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 		}
 		else {//empty unit set(no "on)  "on" all  
 			wu.Clear_c(cell);
-			while ((wcell2 = wu.getFirsCell()) >= 0){
+			while ((wcell2 = wu.getFirstCell()) >= 0){
 				wu.Clear_c(wcell2);
 				if (pm_go.xysearch.used_on_digits.Off_c(digit, wcell2)){
 					pm_go.xysearch.tex[digit][wcell2] = nt;// first
@@ -272,7 +272,7 @@ void XYSEARCHDYNPLUS::OffToOn_Plus(int isource){
 	}
 }
 void XYSEARCHDYNPLUS::OnToOff_Plus(int isource){// no bi value filter
-	int digs = zh_g.dig_cells[cell] ^ (1 << digit);// can be more than one
+	int digs = zh_g2.dig_cells[cell] ^ (1 << digit);// can be more than one
 	while ( digs){
 		bitscanforward(d2, digs);
 		digs ^= 1 << d2;
@@ -283,11 +283,11 @@ void XYSEARCHDYNPLUS::OnToOff_Plus(int isource){// no bi value filter
 	}
 	CELL_FIX & cf = cellsFixedData[cell];
 	BF128 wb = cell_z3x[cell];
-	wb &= zh_g.pm.pmdig[digit];
+	wb &= zh_g2.pm.pmdig[digit];
 	wb -= pm_go.xysearch.used_off_digits.pmdig[digit];
 	wb.Clear_c(dcell);// be sure not to use it
 	//used_off_digits.pmdig[digit] |= wb;
-	while ((c2 = wb.getFirsCell()) >= 0){
+	while ((c2 = wb.getFirstCell()) >= 0){
 		wb.Clear_c(c2);
 		Addt(c2, digit,1, isource);
 	}
@@ -360,7 +360,7 @@ void XYSEARCHDYNPLUS::ExpandPlusInit(GINT cand,int off) {// start with cand on
 	zdyn = zhou_solve_start;
 	zhgdyn = zh_g;
 	// initial status for cells pair hid pairs and xwings
-	memcpy(dig_cells_live, zh_g.dig_cells, sizeof dig_cells_live);
+	memcpy(dig_cells_live, zh_g2.dig_cells, sizeof dig_cells_live);
 	pairs_step_old = zh_g.pairs;
 	hp_biv_old = hp_biv_0;
 	xw_biv_old = xw_biv_0;
@@ -370,7 +370,7 @@ void XYSEARCHDYNPLUS::ExpandPlusInit(GINT cand,int off) {// start with cand on
 	dsign = off;
 	dind = cand.u16[1];
 	nsteps = is_contradiction = 0;// start with 1 step 
-	if (zh_g.zerobased_sol[dcell] == idig || dsign)
+	if (zh_g2.zerobased_sol[dcell] == idig || dsign)
 		is_contradiction = 2;// skip test if valid or start off
 	//nt = 1;	
 	//t[0].u64 = dcell | (ddig << 8)|(dsign<<16);	// source to 0
@@ -461,7 +461,7 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 				BF128 wu= units3xBM[tunit[iu]];
 				wu &= seenpairs;// 0 or 1 cell (more???)
 				if (wu.isEmpty())continue;
-				int celln2 = wu.getFirsCell();
+				int celln2 = wu.getFirstCell();
 				if (diagexpand) cout << "gopair2 with cell " << cellsFixedData[celln2].pt << endl;
 				BF128 clean= cell_z3x[celln1];
 				clean &= cell_z3x[celln2];//cells to clean
@@ -491,7 +491,7 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 				wu &= pm.pmdig[d2];// now wu has 2 cells see if naked
 				wu-= pairs_step_old;// nothing to do in bivalue cells
 				if (wu.isEmpty())continue;
-				int c1 = wu.getFirsCell(), c2 = wu.getLastCell();
+				int c1 = wu.getFirstCell(), c2 = wu.getLastCell();
 				if (diagexpand) {
 					char ws[82];
 					cout<<wu.String3X(ws) << "try hidden pairs unit "<<unit << endl;
@@ -519,7 +519,7 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 					BF128 wu = units3xBM[rr1];
 					wu |= units3xBM[rr2];
 					wu &= pm.pmdig[digit];
-					int c1 = wu.getFirsCell(), c2 = wu.getLastCell();
+					int c1 = wu.getFirstCell(), c2 = wu.getLastCell();
 					int col1 = cellsFixedData[c1].plu, col2 = cellsFixedData[c2].plu;
 					BF128 wu2 = units3xBM[col1];
 					wu2 |= units3xBM[col2];
@@ -537,7 +537,7 @@ void XYSEARCHDYNPLUS::OffToOff_Plus() {
 					BF128 wu = units3xBM[rr1+9];
 					wu |= units3xBM[rr2+9];
 					wu &= pm.pmdig[digit-9];
-					int c1 = wu.getFirsCell(), c2 = wu.getLastCell();
+					int c1 = wu.getFirstCell(), c2 = wu.getLastCell();
 					int row1 = cellsFixedData[c1].el, row2 = cellsFixedData[c2].el;
 					BF128 wu2 = units3xBM[row1];
 					wu2 |= units3xBM[row2];
@@ -892,14 +892,14 @@ int XYSEARCHDYNPLUS::SearchDynPlus(int fast){
 		if (opprint)cout << "fast 1" << endl;
 		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
 			ExpandPlusInit(pm_go.xysearch.tcands[icand]);
-			if ((int)ddig == (int)zh_g.zerobased_sol[dcell]) continue;
+			if ((int)ddig == (int)zh_g2.zerobased_sol[dcell]) continue;
 			ExpandPlusGo();
 		}
 		if(elim_done) return 1;
 		if (opprint)cout << "fast 2" << endl;
 		for (int icand = 0; icand < pm_go.xysearch.ntcands; icand++) {// all candidates processed 
 			ExpandPlusInit(pm_go.xysearch.tcands[icand]);
-			if ((int)ddig == (int)zh_g.zerobased_sol[dcell])
+			if ((int)ddig == (int)zh_g2.zerobased_sol[dcell])
 				ExpandPlusGo();// add missing candidates off status (no contradiction)
 		}
 		// test on and off (includes all bivalues) no contradiction
@@ -918,13 +918,13 @@ int XYSEARCHDYNPLUS::SearchDynPlus(int fast){
 		// test multis cells >2 digits units >2 cells
 		if (opprint)cout << "try fast multi cells" << endl;
 		// try all bi values in mode x->~a and y->~a adding one in length
-		BF128 wp = zh_g.cells_unsolved_e - pairs;
+		BF128 wp = zh_g2.cells_unsolved_e - pairs;
 		int  xcell;
-		while ((xcell = wp.getFirsCell()) >= 0) {
+		while ((xcell = wp.getFirstCell()) >= 0) {
 			wp.Clear_c(xcell);
 			int locdiag = 0;
 			//if (pm_go.cycle == 7 && xcell == 44)		locdiag = 2;
-			int digs = zh_g.dig_cells[xcell];
+			int digs = zh_g2.dig_cells[xcell];
 			if (_popcnt32(digs) < 3)continue;
 			welims.SetAll_1();
 			if (locdiag)cout << "multi cell dplus r5c9" << endl;
@@ -949,7 +949,7 @@ int XYSEARCHDYNPLUS::SearchDynPlus(int fast){
 		for (int id1 = 0; id1 < 9; id1++) {
 			for (int iu = 0; iu < 27; iu++) {
 				if (dig_bivsets[id1].On(iu))continue;
-				BF128 wu = units3xBM[iu]; wu &= zh_g.pm.pmdig[id1];
+				BF128 wu = units3xBM[iu]; wu &= zh_g2.pm.pmdig[id1];
 				if (wu.isEmpty())continue;
 				int tcu[10], ntcu = wu.Table3X27(tcu);
 				welims.SetAll_1();

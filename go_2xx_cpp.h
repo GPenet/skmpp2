@@ -132,22 +132,29 @@ struct GENSTEP{
 
 
 int GENSTEP::PuzzleToTest(){
+	//int diag = 0;
+	//const char * ptest =  "..1..2....3..4..1.4..6....31....5.4...7.2.8...9.4....53....8..1.6..5..7....2..9.." ;
 	//PrintPartial(nclues-1);
 	int digits = 0,nguess=0;
 	for (int i = 0; i < nclues; i++) digits |= 1<<tclues[i].u8[1];
 	if (_popcnt32(digits) < 8) return 0;// minimum 8 digits given to have a sudoku
 	if (zh_g.Go_InitSolve(tclues, nclues))goto no;
-	nguess = (int)zh_g.cpt[1];
-	strcpy(puz, zh_g.puz);
-	zh_g.zsol = 0; // be sure to keep the solution 
+	//if (!strcmp(ptest, zh_g2.puz)) diag=1;
+	//if(diag )	cout<< zh_g2.puz << "yes puzzle seen" << endl;
+	//else goto no;
+	nguess = (int)zh_g2.cpt[1];
+	strcpy(puz, zh_g2.puz);
+	zh_g2.zsol = 0; // be sure to keep the solution 
 	if (!zhou[0].IsMinimale(tclues, nclues)) goto no;
+	//if (diag)cout << puz << "yes 2" << endl;
 	if (modegame) {
+		//if (diag)cout   << " call pm_go.SolveGetLow44(1,diag);  " << endl;
 		int ir = pm_go.SolveGetLow44(1);// pack the low ratings
+		//if (diag)cout << puz<< ";" << pm_go.rat_er << ";" << pm_go.rat_ep << ";" << pm_go.rat_ed	<< endl;
 		if (ir < 0) return 0;
 		if (ir) {
-			fout1 << puz
-				<< ";" << pm_go.rat_er << ";" << pm_go.rat_ep << ";" << pm_go.rat_ed
-				<< endl; return 1;
+			fout1 << puz<< ";" << pm_go.rat_er << ";" << pm_go.rat_ep << ";" << pm_go.rat_ed	<< endl; 
+			return 1;
 		}
 		if (pm_go.rat_ed > 23) { fout3 << puz << ";" << nguess << endl; return 3; }
 		fout2 << puz << ";" << nguess << endl;
@@ -172,10 +179,10 @@ void GENSTEP::PuzzleToSplit(){
 	char puz[82];
 	strcpy(puz, empty_puzzle);
 	for (int i = 0; i < nclues; i++) puz[tclues[i].u8[0]] = (char)tclues[i].u8[1] + '1';
-	zh_g.InitCount(0);
+	zh_g.Init(0);
 	if (zhou[0].InitSudoku(tclues, nclues))return;
 	if (zhou[0].Isvalid() != 1)return;
-	uint64_t nguess = zh_g.cpt[1];
+	uint64_t nguess = zh_g2.cpt[1];
 	if (!nguess) { fout1 << puz << ";" << nguess << endl; return; }
 	fout3 << puz << ";" << nguess << endl;
 }
@@ -184,11 +191,6 @@ void GENSTEP::Gengo(int istart){
 	int ilim = nclues - 1;
 	iclue = istart;
 	Find_free_minimal_change();
-	//PrintPartial(istart);
-	//Debug(istart);
-	//cout << "start free" << oct << tc[iclue].free << dec 	
-	//	<<" cell "<<cellsFixedData[tclues[iclue].u8[0] ].pt
-	//	<< (int)tclues[iclue].u8[0] << endl;
 
 next:
 	uint32_t iw;
@@ -341,8 +343,8 @@ case 219:  Go_c219(); break;// restore a data base
 
 void Go_c200(){// just split the entry file 
 	if (!sgo.foutput_name) return;	
-	memset(zh_g.cptg, 0, sizeof zh_g.cptg);
-	zh_g.npuz = 0;
+	memset(zh_g2.cptg, 0, sizeof zh_g2.cptg);
+	zh_g2.npuz = 0;
 	zh_g.diag = (int)sgo.vx[9];
 	if (!sgo.finput_name) return;
 	finput.open(sgo.finput_name);
@@ -350,7 +352,7 @@ void Go_c200(){// just split the entry file
 	char ze[82]; ze[81] = 0;
 	while (finput.GetPuzzle(ze)){
 		if (zh_g.diag)cout << ze << "trait�" << endl;
-		zh_g.npuz++;
+		zh_g2.npuz++;
 		gscom.Init();
 		for (int i = 0; i < 81; i++)if (ze[i] != '.'){// catch given
 			int c = ze[i] - '1';
@@ -358,13 +360,13 @@ void Go_c200(){// just split the entry file
 			gscom.tclues[gscom.nclues++].u16 = (uint16_t)((c << 8) | i);
 		}
 		gscom.PuzzleToSplit();
-		for (int i = 0; i < 10; i++) zh_g.cptg[i] += zh_g.cpt[i];
+		for (int i = 0; i < 10; i++) zh_g2.cptg[i] += zh_g2.cpt[i];
 		//if (zh_g.cptg[7]>20)break;
 		//if (zh_g.npuz>1000)break;
 	}
-	cout << "summary npuz=" << zh_g.npuz << endl;
-	for (int i = 0; i < 10; i++) if (zh_g.cptg[i])
-		cout << zh_g_cpt[i] << "\t" << zh_g.cptg[i] << endl;
+	cout << "summary npuz=" << zh_g2.npuz << endl;
+	for (int i = 0; i < 10; i++) if (zh_g2.cptg[i])
+		cout << zh_g2.cpt[i] << "\t" << zh_g2.cptg[i] << endl;
 }
 
 void Go_c201(){
@@ -968,7 +970,7 @@ void Go_c219(){// restore a database on  a pattern
 			for (int j = 0; j < nclues; j++)	ze[tclues[j]] = ze2[j];
 			if (gfilter){
 				if (!zh_g.Go_InitSolve(ze)){
-					int nguess = (int)zh_g.cpt[1];
+					int nguess = (int)zh_g2.cpt[1];
 					if (nguess>=gfilter)
 						fout1 << ze << ";" << nguess << endl;
 					else cout << ze << "ignored" << endl;

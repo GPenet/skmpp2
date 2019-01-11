@@ -503,7 +503,7 @@ public:
 
 	//int Solve();
 	int Solved_xx(int lim);// internal call valid puzzle 
-	int SolveGetLow44(int pack=0);// internal call valid puzzle 
+	int SolveGetLow44(int pack=0,int diag=0);// internal call valid puzzle 
 	void SolveSerate110();
 	void SolveSerate111();
 	void Solve199test();

@@ -18,13 +18,7 @@ XYWing=42,					///< XYWing
 XYZWing=44,					///< XYZWing
 */
 
-void ZH_GLOBAL::Debug(){
-	cout << "zh_g debug digits maps" << endl;
-	for (int i = 0; i < 9; i++) cout <<zhou_i.FD[i][1].bf.u32[3]+1;
-	cout << "\t";
-	for (int i = 0; i < 9; i++) cout << x3_dmap_inv[i] + 1;
-	cout << endl << "cells maps" << endl;
-	for (int i = 0; i < 81; i++)cout << x3_cmap[i] + 1;
+void ZH_GLOBAL2::Debug(){
 	cout << endl << "list of given" << endl;
 	for (int i = 0; i < ngiven; i++)
 		cout << (int)(tgiven[i].u8[1] + 1) << "_" << (int)(tgiven[i].u8[0] + 1) << "  ";
@@ -47,7 +41,7 @@ void ZHOU::Debug(int all){
 		for(int ir=0;ir<3;ir++){
 			for(int idig=0;idig<9;idig++){
 				uint32_t vf = FD[idig][0].bf.u32[ib],
-					wr = (vf >> (9 * ir)) & 0x1ff, digit = FD[idig][1].bf.u32[3] + 1;
+					wr = (vf >> (9 * ir)) & 0x1ff, digit = idig + 1;
 				for(int k=0;k<9;k++){
 					if(wr & (1<<k))		cout <<digit;
 					else 		cout<<".";
@@ -64,11 +58,11 @@ void ZHOU::Debug(int all){
 }
 int ZHOU::GetAllDigits(int cell){
 	int ir = 0, xcell = C_To128[cell];;
-	for (int i = 0; i < 9; i++) if (FD[i][0].On(xcell))ir |= (1 << FD[i][1].bf.u32[3]);
+	for (int i = 0; i < 9; i++) if (FD[i][0].On(xcell))ir |= (1 << i);
 	return ir;
 }
 void ZHOU::ImageCandidats() {// only active digits ??
-	int dig_cells[81];for(int i=0;i<81;i++) dig_cells[i]=GetAllDigits(i);
+	int dig_cells[81]; for (int i = 0; i < 81; i++) dig_cells[i] = GetAllDigits(i);
 	int i, j, l, lcol[9], tcol = 0,ncand=0;
 	cout <<"PM map "<<endl<<endl;
 	for(i = 0; i < 9; i++) {  // attention ici i indice colonne

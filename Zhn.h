@@ -28,30 +28,28 @@ const extern int TblRowUniq[512]; // 1 is row not defined in block  mode  to 111
 const extern T128 AssignMask_Digit[81];
 //const extern T128 AssignMask_OtherDigits[81];
 struct ZHOU;
-
-struct ZH_GLOBAL { // global variables for the game table
-	uint64_t cpt[10],cptg[10],npuz;
-	// morphing a puzzle at the start
-	int x3_dmap_inv[9];// digit map 3 bands (start)
-	int x3_cmap[81];// cells map at start
-	char puz[82]; // the solved puzzle (after morph)
-	//given and singles found
+/* ZH_GLOBAL2  and ZH_GLOBAL are both "static variables for the brute force
+to have a better cache effect, ZH_GLOBAL is strictly limited to what is required 
+for the basic brute force; 
+data used in other brute force uses are in ZH_GLOBAL2
+*/
+struct ZH_GLOBAL2 {
+	uint64_t cpt[10], cptg[10], npuz;
+	BF128 Digit_cell_Assigned[9];// init sequence
 	GINT16 tgiven[81];
-	int ngiven, digitsbf,// digitsbf to check minimum 8 digits
-		tsingles[40], nsingles;
-
-	BF128 digit_sol[9]; // final solution per digit original sort sequence
-	int nsol, lim, icount, ntsol, single_applied, new_single_in_Update,
-		go_back, goadduas,// usually 0, special treatment for a solution
-		rdigit, loop, diag, modeguess,maxindex;
-	BF128 Digit_cell_Assigned[9];
-	BF128 init_3x, init_digit, pairs,triplets, pairs_naked;
-	char * zsol, *puzfinal, *pat, 
+	int ngiven, digitsbf;// digitsbf to check minimum 8 digits
+	int * grid0; // using a process with known solution grid
+	char * zsol,
 		stdfirstsol[82],
 		zerobased_sol[81];
-//#ifdef SKMPPV2
+
+
+	void Debug();
+	BF128 digit_sol[9]; // final solution per digit original sort sequence
+	char  *puzfinal, *pat;
+	char puz[82]; // the solved puzzle (after morph)
 	// switching to solver mode
-	PM3X pm, pmdiag,pmelims;
+	PM3X pm, pmdiag, pmelims;
 	BF128  cells_unsolved_e, cells_unsolved_diag,// pm status direct and diagonal
 		cells_assigned;// to avoid redundancy in new assignments 
 	// in locked.. column "[2]" is in diagonal mode 
@@ -62,48 +60,21 @@ struct ZH_GLOBAL { // global variables for the game table
 	int dig_cells[81], cells_count[81];//cells digits  in 9 bits mode
 	int unsolved_r_count[9], unsolved_c_count[9]; // pm status unsolved rows columns per digit
 	int row_col_x2[9][2], dig_unsolved_col[9], oldcount;
-	BF128 digits_cells_pair_bf[9]; 
+	BF128 digits_cells_pair_bf[9];
 	ZHOU * zhou_current;
 	// specific to symmetry of given generation
 	USHORT * ptcor;
-//#endif
-    //=================== floor analysis (one digit)
-	int current_digit,active_floor;
+	int tsingles[40], nsingles;
+	inline void Init_Assign() { nsingles = 0; cells_assigned.SetAll_0(); }
+	//=================== floor analysis (one digit)
+	int current_digit, active_floor;
 	BF128  or_floor[9], elim_floor[9];
 
 	// specific to the attempt to optimize the X+Y+27 process
 	char *entry_base0, zdebug[82];
-	int * grid0; // using a process with known solution grid
 
-#ifdef SEARCH17SOL
-	// specific to the search 17 process
-	int s2_ind, naddtable;// see go_17sol
-	BF128 * addtable;
-	int band3digits[9], band3nextua;// specific to 17 search
-	uint64_t * digsols, b12nextua; // pointer to solution grid per digit
-#endif
-
-	ZH_GLOBAL();
-	inline void InitCount(int elim){
-		memset(cpt, 0, sizeof cpt);
-		nsol = 0;
-		lim = elim;
-	}
-	void MorphPat(char * ze);
-	void Morph_digits(int morph);
-	void Morph_digits(GINT16 * td, int nc);
-	//void Map_Morph_digits(GINT16 * td, int nc);
-	void NoMorph();
-	int InitSudoku();
-	int Go_InitSudoku(char * ze);
-	int Go_InitSudoku_NoMorph(char * ze);
-	int Go_InitSolve(char * ze);
-	int Go_InitSolve(GINT16 * td, int nc);
-	void ValidPuzzle(ZHOU * z);
-	void Debug();
-//#ifdef SKMPPV2
+#ifdef ISSOLVERSTEP
 	// located in go_0xxcpp
-	inline void Init_Assign(){ nsingles = 0; cells_assigned.SetAll_0(); }
 	void Pm_Status(ZHOU * z);
 	void Pm_Status_End();// box and cells
 	void AddSingle(int band, int vband);
@@ -111,7 +82,36 @@ struct ZH_GLOBAL { // global variables for the game table
 	void Build_digits_cells_pair_bf();
 	// located in solver step
 	void DebugNacked();
-//
+#endif
+#ifdef SEARCH17SOL
+	// specific to the search 17 process
+	//int s2_ind, naddtable;// see go_17sol
+	//BF128 * addtable;
+	//int band3digits[9], band3nextua;// specific to 17 search
+	//uint64_t * digsols, b12nextua; // pointer to solution grid per digit
+#endif
+
+};
+struct ZH_GLOBAL { // global variables for the core brute force
+
+	int nsol, lim, modevalid,
+		icount, ntsol, single_applied,// new_single_in_Update,
+		go_back,
+		rdigit, loop, diag, modeguess , maxindex;
+	BF128 init_3x, init_digit, pairs,triplets, pairs_naked;
+
+
+	ZH_GLOBAL();
+	inline void Init(int maxsols,int mvalid=0){
+		nsol = go_back=0;
+		lim = maxsols;
+		modevalid = mvalid;
+	}
+	int Go_InitSudoku(char * ze);
+	int Go_InitSolve(char * ze);
+	int Go_InitSolve(GINT16 * td, int nc);
+	void ValidPuzzle(ZHOU * z);
+
 };
 /* 2 BF 128 per digit
 	equivalent to F and Fcomp in Zhou
@@ -121,54 +121,37 @@ struct ZH_GLOBAL { // global variables for the game table
 // class encapsulating the brute force 
 struct ZHOU{// size 32 bytes 
 	BF128 FD[9][2];
-	//ZHOUDIG zhd[9];
 	BF128 cells_unsolved;
-	//ZHOUDIG * dlast;//pointer to last unsolved
 	int ndigits,index,unsolved_digits,box_hidden_pair;
-
+//________________________________________
+	int CheckValidityQuick(char *puzzle);
+	int PartialInitSearch17(uint32_t * t, int n);// 17 search mode
+	int CallMultipleB3(ZHOU & o, int bf);// 17 search mode
+	int FullUpdate();
+	int ApplySingleOrEmptyCells();
+	void Guess();
+	void GuessGo(int dig, BF128& s);
+	void GuessInCell();
+	void GuessFullDigit();
+	int GuessHiddenBivalue();
 	inline void Copy(ZHOU & o);
 	void Assign(int digit, int cell, int xcell);
-	int Upd1(int digit);
 	int Update();
 	int InitSudoku(GINT16 * t, int n);
-	int InitSudoku(char * zpuz,int morph=1);
+	int InitSudoku(char * zpuz);
 	char * SetKnown(char * zs);
-	int ApplySingleOrEmptyCells_Band3();
-	int ApplySingleOrEmptyCells_B12();
-	int ApplySingleOrEmptyCells();
-	int FullUpdate();
-	int FullUpdateV2();
-	int ApplySingleOrEmptyCellsV2();
 	void SetaCom(int digit, int cell, int xcell);
 	inline void SetFloor(int cell){ FD[0][0] &= AssignMask_Digit[cell]; }
 	inline void Seta_c(int digit, int cell){ SetaCom(digit, cell, C_To128[cell]); }
 	inline void SetG(GINT16 x){ Seta_c(x.u8[1], x.u8[0]); }
 	void Setcell(int cell);
-	inline void GuessBivalueInCell(BF128 & wc);
-	inline int GuessHiddenBivalue();
-	int SolveHiddenPair_Box_Row();
-	int SolveHiddenPair_BoxB();
-	int SolveHiddenTriplet_Box_Row();
-	int GuessHiddenTriplet();
-	void Guess();
-	void GuessV2(BF128 * tres);
-	// located in zh4_doc_debug
-
-	//inline void Copy(ZHOU & o)	{ int rind = index; *this = o; index = rind; }
 
 	inline int Unsolved_Count(){ return cells_unsolved.Count(); }
 	// standard calls
-
-
-	inline void ComputeNext(){ 
-		if (FullUpdate()){
-			Guess();
-		} 
-	}
+	inline void ComputeNext(){ 	if (FullUpdate())Guess();}
 
 
 	// other calls and functions in Zh4_calls_variants
-	int CheckValidityQuick(char *puzzle);
 	int GetSol(char *puzzle);
 	int CheckOneStep(char *puzzle, char * zs);
 	inline int StatusValid(GINT16 * t, int n){
@@ -218,7 +201,7 @@ struct ZHOU{// size 32 bytes
 	int FullUpdateAtStart();
 	int CheckStatus();// located in solver_step 
 
-//#ifdef SKMPPV2
+#ifdef ISSOLVERSTEP
 	// located in go_0xx.cpp
 	int Rate10_LastInUnit();
 	int Rate12_SingleBox();
@@ -265,27 +248,6 @@ struct ZHOU{// size 32 bytes
 	void AssignSolver(int print = 0);
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
-//#endif
-
-#ifdef SEARCH17SOL
-	// see go_17sol_zx_cpp_h
-	inline void ComputeNextB3() { if (FullUpdate())GuessB3(); }
-	inline void ComputeNextB12() { if (FullUpdate())GuessB12(); }
-	// located in go_17sol_bs.cpp 
-	void SetUab3();
-	void SetUab12();
-	void InitBand3PerDigit(int * grid0b3);
-	int PartialInitSearch17(uint32_t * t, int n);
-	int EndInitSearch17(ZHOU & o, int * t, int n);
-	void GuessB12();// band 3 filled false, look for a valid band 1+2 
-	void GuessB3();// band 12 is a valid sub puzzle find small ua
-	void GuessCellB3(int field);
-	int GuessTripletInCellB3();
-	int GetNextUaB3x();
-	int CallMultipleB3(ZHOU & o, int bf);
-	int MultipleB3(int bf);// 17 search check know small uas in bloc
-	int MultipleB3loop(int bf);// 17 search check know small uas in bloc
-	int MultipleTrial();
 #endif
 
 	/*
