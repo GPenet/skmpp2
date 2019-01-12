@@ -15,7 +15,6 @@ the table is supplied by the caller
 this is somehow a private class for the brute force
 and this is part of the critical code in the brute force 
 except for easiest puzzles immediatly solved
-*/
 struct ZH_1D_GLOBAL {
 	BF128 *tsolw,t3; // belong to the caller
 	int nsolw;
@@ -25,7 +24,8 @@ struct ZH_1D_GLOBAL {
 		nsolw++;
 	}
 	int Go(BF128 & fde, BF128 *tsol);
-};
+};*/
+
 struct ZH_1D {
 	BF128 FD;// last 32 bits contains unsolved rows
 	//int GetSols(int ru);
@@ -40,7 +40,7 @@ struct ZH_1D {
 };
 
 ZH_1D_GLOBAL zh1d_g;
-ZH_1D zh1d[5];
+ZH_1D zh1d[10];
 // _______here to try to optimize the cache the ZH_1D code
 int ZH_1D_GLOBAL::Go(BF128 & fde, BF128 *tsol) {
 	tsolw = tsol;
@@ -54,6 +54,7 @@ void ZH_1D::Guess() {// not yet solved
 	uint32_t ru = FD.bf.u32[3], bu = TblShrinkMask[ru],
 		minband = 30, minbandindex;
 	if (0) {
+		cout << "index=" << this - zh1d<< "nperms="<< zh1d_g.nsolw << endl;
 		cout << Char9out(ru) << " ru" << endl;
 		cout << Char9out(bu) << " bu" << endl;
 	}
@@ -783,100 +784,3 @@ int ZHOU::EndInitSudoku(GINT16 * t, int n){// if morph, done before
 
 
 //====================== waiting for later use
-int  ZHOU::UpdateFloor() {
-	register uint32_t Shrink = 1, r_free, B, A, S, loop;
-loop_upd:
-	loop = 0;
-	if (FD[0][0].bf.u64[0] != FD[0][1].bf.u64[0]
-		|| FD[0][0].bf.u32[2] != FD[0][1].bf.u32[2]) {
-		r_free = FD[0][0].bf.u32[3];
-		UPD_012(0, 0, 1, 2)	if ((r_free & 7) != S) {
-			r_free &= 0770 | S;	loop = 1;
-		}
-	}
-	UPD_012(0, 1, 0, 2)	if (((r_free >> 3) & 7) != S) {
-		r_free &= 0707 | (S << 3);	loop = 1;
-	}
-}
-UPD_012(0, 2, 0, 1)	if (((r_free >> 6) & 7) != S) {
-	r_free &= 077 | (S << 6);	loop = 1;
-}}
-FD[0][0].bf.u32[3] = r_free;
-	}
-	if (loop) goto loop_upd;// nothing to do in the next cycle
-	return 1;
-}
-void ZHOU::StartFloor(int digit, ZHOU & o) {
-	//cout << "start floor for digit " << digit + 1 << endl;
-	zh_g2.current_digit = digit;
-	FD[0][0] = o.FD[digit][0];
-	FD[0][1].SetAll_0();
-	zh_g2.or_floor[digit].SetAll_0();
-	zh_g2.elim_floor[digit] = FD[0][0];
-	zh_g2.elim_floor[digit].bf.u32[3] = 0;// be sure to do nothing here
-	//DebugDigit(0);
-	GuessFloor();
-	if (zh_g2.or_floor[digit] == zh_g2.elim_floor[digit]) return; // no elim
-	zh_g2.elim_floor[digit] -= zh_g2.or_floor[digit];
-	zh_g2.active_floor |= 1 << digit;
-	if (0) {
-		char ws[82];
-		cout << "active floor for digit " << digit + 1 << endl;
-		cout << zh_g2.elim_floor[digit].String3X(ws) << " elims" << endl;
-	}
-}
-
-void ZHOU::GuessFloor() {
-	BF128 & fd = FD[0][0];
-
-	if (!fd.bf.u32[3]) {
-		//cout << "une solution" << endl;
-		zh_g2.or_floor[zh_g2.current_digit] |= fd;
-		//char ws[82];
-		//cout << zh_g.or_floor[zh_g.current_digit].String3X(ws) << " new or" << endl;
-		return;
-	}
-	int hidden, rows = fd.bf.u32[3], dcell = 0, dxcell = 0, bfree = 7, ccmin = 10, min, bmin;
-	uint32_t res;
-	for (int iband = 0; iband < 3; iband++, dcell += 27, dxcell += 32, bfree <<= 3) {
-		if (!(rows&bfree)) continue; // solved band
-		int  band = fd.bf.u32[iband];
-		for (int irb = 0; irb < 6; irb++) {// boxes and rows of the band
-			hidden = band & tband_box[irb];
-			int cc = _popcnt32(hidden);
-			if (cc < 2)continue;
-			if (cc == 2) goto exitok;
-			if (cc < ccmin) { ccmin = cc; min = hidden;	bmin = iband; }
-		}
-	}
-	//cout << "exit no bivalue ccmin=" << ccmin << endl;
-	//DebugDigit(0);
-	if (ccmin == 10)return;// should never be
-	{
-		dcell = 27 * bmin;
-		dxcell = 32 * bmin;
-		int tp[10], ntp = 0;
-		BitsInTable32(tp, ntp, min);
-		for (int i = 0; i < ntp; i++) {// no bi value, use the smallest set
-			int res = tp[i];
-			ZHOU * mynext = this + 1; // start next guess
-			mynext->Copy(*this);
-			mynext->SetaCom(0, res + dcell, res + dxcell);
-			mynext->GuessFloor();
-		}
-		return;
-	}
-
-exitok:
-	//cout << Char27out(hidden) << " guess band dcell=" << dcell << endl;
-
-	bitscanforward(res, hidden);
-	ZHOU * mynext = this + 1; // start next guess
-	mynext->Copy(*this);
-	mynext->SetaCom(0, res + dcell, res + dxcell);
-	mynext->GuessFloor();
-	bitscanreverse(res, hidden);
-	//if (1)cout <<Char27out(1<<res)<< "second digit biv last dcell=" <<dcell<< endl;
-	SetaCom(0, res + dcell, res + dxcell);
-	GuessFloor();
-}

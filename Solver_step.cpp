@@ -1887,7 +1887,9 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	BF128 wsloop, tsloop[20];
 	int ntsloop = 0;
 	locdiag = 0;	if (pm_go.opprint2 & 2) locdiag = 1;
-	if (locdiag)cout << "xysearch start fast =" << fast << endl;
+	if (locdiag) {
+		cout << "xysearch start fast =" << fast << endl;
+	}
 	pm_go.gintbuf.Init();
 	maxpas = 35;// don't do that would delete ylsearch stored
 	int iret = 0,   xc1;
@@ -1914,7 +1916,9 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 					ntsloop = 0;
 					pm_go.gintbuf.Init(); // clean all stored
 				}
-				if (rating == 70)iret += CleanXYChain();
+				if (rating == 70) {
+					iret += CleanXYChain();
+				}
 				else if (rating == maxrating) {// store it for later use
 					// need to store tback, nsteps mode
 					wsloop.SetAll_0();
@@ -1938,7 +1942,6 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	}
 	if (locdiag)cout << " exit search iret=" << iret<<endl<<endl;
 	if (iret){
-		if (locdiag)zhou_solve.ImageCandidats();
 		pm_go.hint.rating_done = (USHORT)maxrating;
 		return 1;
 	}
@@ -1957,7 +1960,6 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	pm_go.hint.rating_done = (USHORT)maxrating;
 	if (iret){
 		if (locdiag)cout << "exit final rating=" << maxrating << endl;
-		if (locdiag)zhou_solve.ImageCandidats();
 	}
 	return iret;
 }
@@ -3236,6 +3238,7 @@ void PM_GO::SolveSerate110() {
 			//Status("start 65", 2);
 			cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
 		}
+
 		XStatusPrepare();
 		if (Rate65Xcycle(0)) continue;
 		if (sgo.vx[2] <= 65) goto exit_limit;
@@ -3258,6 +3261,7 @@ void PM_GO::SolveSerate110() {
 		break;
 	//next_cycle:;
 	}
+
 	if (stop_rating){
 		cout << zh_g2.puz << "; puz n=" << zh_g2.npuz << " unsolved stop_rating = " << stop_rating << endl;
 		fout1 << zh_g2.puz << ";0;0;0;" << stop_rating <<" stop======"<< endl;
@@ -3682,7 +3686,7 @@ void PM_GO::SetupActiveDigits(){
 	zh_g2.active_floor = 0;// no elim with a single digit
 	for (int i = 0; i < 9; i++){
 		if (!zhou_solve.FD[i][0].bf.u32[3]) continue; // solved digit
-		zhou[0].StartFloor(i, zhou_solve);
+		zhou_solve.StartFloor(i);
 	}
 }
 int PM_GO::Rate65Xcycle(int fast){

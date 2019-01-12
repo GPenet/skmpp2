@@ -346,6 +346,52 @@ void Go_c445(){// filter on one integer parameter
 
 }
 
+void Go_c470() {//extract not equal in regressive test
+	cout << "Go_470 entry " << sgo.finput_name << " first entry" << endl;
+	FINPUT fin2;
+	if (!sgo.foutput_name) {
+		cerr << "missing output root" << endl;
+		return;
+	}
+	if (!sgo.s_strings[0]) {
+		cerr << "missing  file 2 in" << endl;
+		return;
+	}
+	cout << "Go_470 entry " << sgo.s_strings[0] << " second entry" << endl;
+
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	fin2.open(sgo.s_strings[0]);
+	if (!fin2.is_open()) {
+		cerr << "error open second entry " << sgo.s_strings[0] << endl;
+		return;
+	}
+	uint64_t cpt = 0,cpt2=0;
+	//char zc1[100], zc2[100];
+	while (1) {
+		if (!finput.GetLigne()) break;
+		if (!fin2.GetLigne()) break;
+		cpt++;
+		if (strncmp(finput.ze, fin2.ze, 81)) {
+			cout << "synchro broken" << endl;
+			break;
+		}
+		switch (sgo.vx[0]) {
+			case 0:// 2 outputs of skmppv2
+				if (strcmp(finput.ze, fin2.ze)) {
+					cout << finput.ze << endl << fin2.ze << endl;
+					cpt2++;
+				}
+				break; 
+		}
+	}
+	cerr << cpt<<" records processed "<<cpt2 <<" not equal"<<endl;
+}
+
+
 void Go_c446() {// split on ER EP ED potential hardest
 	cout << "Go_446 entry " << sgo.finput_name << " file1 pot hardest"  << endl;
 	int er = sgo.vx[0],ep = sgo.vx[1], ed = sgo.vx[2];

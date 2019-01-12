@@ -431,10 +431,10 @@ int ZHOU::Rate10_LastInUnit(){// look for a single in box
 	return zh_g2.nsingles;
 }
 int ZHOU::Rate12_SingleBox(){// look for a single in box
-	if (zh_g.diag)		cout << "single in box" << endl;
+	if ( zh_g.diag)		cout << "single in box" << endl;
 	uint32_t hidden;
 	int idig;
-	for (idig = 0; idig <9; idig++){// priority to high digits last done
+	for (idig = 0; idig <9; idig++){
 		BF128 & fd = FD[idig][0];
 		for (int iband = 0; iband < 3; iband++){
 			int  band = fd.bf.u32[iband] & cells_unsolved.bf.u32[iband];
@@ -1894,3 +1894,21 @@ int ZHOU::Rate54_HiddenQuad(){// no naked quad in fact coded as naked 5
 	return iret;
 }
 
+void ZHOU::StartFloor(int digit) {
+	BF128 w = FD[digit][0];
+	BF128  tres[5000];// to store possible perms 
+	//if (pm_go.cycle==3) 		DebugDigit(digit);
+	
+	int nperms = zh1d_g.Go(w, tres);
+	if (0 && pm_go.cycle == 3 )
+		cout << "StartFloor(int digit)=" << digit + 1
+			<< " nperms=" << nperms << endl;
+	
+	if (!nperms) return;
+	BF128 or_sol = tres[0];
+	for (int i = 1; i < nperms; i++) 		or_sol |= tres[i];
+	w.bf.u32[3] = 0;
+	if (or_sol == w) return; 
+	zh_g2.active_floor |= 1 << digit;
+	zh_g2.elim_floor[digit] = w - or_sol;
+}

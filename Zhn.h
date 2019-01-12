@@ -27,6 +27,24 @@ const extern int TblShrinkSingle[512]; // keep only rows with single
 const extern int TblRowUniq[512]; // 1 is row not defined in block  mode  to 111
 const extern T128 AssignMask_Digit[81];
 //const extern T128 AssignMask_OtherDigits[81];
+ /*ZH_1D class to solve one digit 3 bands
+all valid solutions  are stored in table
+the table is supplied by the caller
+this is somehow a private class for the brute force
+and this is part of the critical code in the brute force
+except for easiest puzzles immediatly solved
+*/
+struct ZH_1D_GLOBAL {
+	BF128 *tsolw, t3; // belong to the caller
+	int nsolw;
+	ZH_1D_GLOBAL() { t3.SetAll_1(); t3.bf.u32[3] = 0; }
+	inline void Add(BF128 & s) {
+		*tsolw++ = s & t3; // clear last 32 bits
+		nsolw++;
+	}
+	int Go(BF128 & fde, BF128 *tsol);
+}; 
+
 struct ZHOU;
 /* ZH_GLOBAL2  and ZH_GLOBAL are both "static variables for the brute force
 to have a better cache effect, ZH_GLOBAL is strictly limited to what is required 
@@ -62,6 +80,9 @@ struct ZH_GLOBAL2 {
 	int row_col_x2[9][2], dig_unsolved_col[9], oldcount;
 	BF128 digits_cells_pair_bf[9];
 	ZHOU * zhou_current;
+
+	// specific to the attempt to optimize the X+Y+27 process
+	char *entry_base0, zdebug[82];
 	// specific to symmetry of given generation
 	USHORT * ptcor;
 	int tsingles[40], nsingles;
@@ -69,11 +90,6 @@ struct ZH_GLOBAL2 {
 	//=================== floor analysis (one digit)
 	int current_digit, active_floor;
 	BF128  or_floor[9], elim_floor[9];
-
-	// specific to the attempt to optimize the X+Y+27 process
-	char *entry_base0, zdebug[82];
-
-#ifdef ISSOLVERSTEP
 	// located in go_0xxcpp
 	void Pm_Status(ZHOU * z);
 	void Pm_Status_End();// box and cells
@@ -82,14 +98,13 @@ struct ZH_GLOBAL2 {
 	void Build_digits_cells_pair_bf();
 	// located in solver step
 	void DebugNacked();
-#endif
-#ifdef SEARCH17SOL
+//#ifdef SEARCH17SOL
 	// specific to the search 17 process
 	//int s2_ind, naddtable;// see go_17sol
 	//BF128 * addtable;
 	//int band3digits[9], band3nextua;// specific to 17 search
 	//uint64_t * digsols, b12nextua; // pointer to solution grid per digit
-#endif
+//#endif
 
 };
 struct ZH_GLOBAL { // global variables for the core brute force
@@ -186,10 +201,6 @@ struct ZHOU{// size 32 bytes
 			n += FD[i][0].Count96();
 		return n;
 	}
-	//================== find active floors
-	void StartFloor(int digit, ZHOU & o);
-	int  UpdateFloor();
-	void GuessFloor();
 
 	// debugging code or print code
 	void Debug(int all = 0);
@@ -201,7 +212,7 @@ struct ZHOU{// size 32 bytes
 	int FullUpdateAtStart();
 	int CheckStatus();// located in solver_step 
 
-#ifdef ISSOLVERSTEP
+//#ifdef ISSOLVERSTEP
 	// located in go_0xx.cpp
 	int Rate10_LastInUnit();
 	int Rate12_SingleBox();
@@ -248,7 +259,8 @@ struct ZHOU{// size 32 bytes
 	void AssignSolver(int print = 0);
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
-#endif
+	void StartFloor(int digit);
+//#endif
 
 	/*
     inline void SetPat(char * pat, char * zsol, char * puzfinal){
