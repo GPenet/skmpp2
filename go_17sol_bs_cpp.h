@@ -25,7 +25,6 @@ void G17B::Go(){// search process external loop 2X2Y
 	//g17morebig.Init();
 	//for (int i = 0; i < 3; i++)g17moreg[i].Init();
 	//zh_g.grid0 = genb12.grid0;
-	zh_g.grid0= genb12.grid0;
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
@@ -909,7 +908,6 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 		if (p_cpt2g[19] > 10) continue;
 		if (1) {
 			wg3.Debug();
-
 		}
 		//============= collect Gua46 and uas b3 for the band split them "in-field" "out-field"
 		nuasb3_1 = nuasb3_2 = 0;
@@ -923,7 +921,7 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 			cout << socket4.String3X(ws) << "socket4" << endl;
 		}
 		int i81;
-		while ((i81 = socket4.getFirsCell()) >= 0) {
+		while ((i81 = socket4.getFirstCell()) >= 0) {
 			socket4.Clear_c(i81);// clear bit
 			continue;
 			register int Ru = ua_46[i81];
@@ -938,8 +936,8 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 			else uasb3_2[nuasb3_2++] = Ru;
 		}
 		if ((!nmiss) && nuasb3_2) continue; // critical + outfield uas
-		p_cpt2g[15] ++;
-		if (p_cpt2g[15]!=2) continue;
+		//p_cpt2g[15] ++;
+		//if (p_cpt2g[15]!=2) continue;
 		if (!zinitdone) {
 			zinitdone = 1;
 			if (zhou[0].PartialInitSearch17(g17xy.tclues, g17xy.nclues))
@@ -947,7 +945,8 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 			//zhou[0].ImageCandidats();
 		}
 		memcpy(&genb12.grid0[54], genb12.bands3[wg3.ib3].band0, 4*27);
-		zhou[0].InitBand3PerDigit(genb12.bands3[wg3.ib3].band0);
+//<<<<<<<<<<<<<<<<< a revoir
+//		zhou[0].InitBand3PerDigit(genb12.bands3[wg3.ib3].band0);
 
 		//if (g17b.debug17 > 1)		cout << " valide b12 go"  << endl;
 		g17hh0.Go();
@@ -978,46 +977,10 @@ int G17B3HANDLER::IsMultiple(int bf){
 	// check first if all tuab3 is hit
 	for (int i = 0; i < g17xy.ntuab3; i++)
 		if (!(bf&g17xy.tuab3[i])) return 1;// previous UA not hit
-	int rua = zhou[1].CallMultipleB3(zhou[0], bf);
+	int ir = zhou[1].CallMultipleB3(zhou[0], bf);
 	//if (g17b.debug17 > 1) 
-	cout<<Char27out(rua) << "===========rua  is multiple all hit"  << endl;
-	if (0 &&rua){
-		/*
-		if (g17xy.ntuab3 < 40)g17xy.tuab3[g17xy.ntuab3++] = rua;
-		int nrua = _popcnt32(rua);
-		//cout << Char2Xout(zhou[0].glb.b12nextua) << " ";
-		if (nrua < 4){
-			int socket = genb12.GetSocket(rua, wg3.ib3),
-				nrua = _popcnt32(rua);
-			// pack rua 54 bits
-			GINT64 w;
-			{
-				uint64_t R = zh_g.b12nextua, R1 = R & 0xffffffff;
-				R >>= 32; R <<= 27; R1 |= R;
-				w.u64 = R1;
-			}
-			if (nrua == 2){
-				g17xy.more_active_pairs.Set_c(socket);
-				g17xy.more3 |= 1;
-				w.u8[7] = socket;
-				//cout << " socket b3_2=" << socket << endl;
-			}
-			else {
-				g17xy.more_active_triplets.Set_c(socket);
-				g17xy.more3 |= 2;
-				w.u8[7] = socket + 81;
-				//cout << " socket b3_3=" << socket+81 << endl;
-			}
-			uint64_t nb12 = _popcnt64(zh_g.b12nextua);
-			if (nb12 <= 14)g17moreg[0].Add_If_New(w.u64);
-			else if (nb12 <= 18)g17moreg[1].Add_If_New(w.u64);
-			else g17moreg[2].Add_If_New(w.u64);
-		}
-		//else 		cout << Char27out(rua) << "ua de sortie"<< endl;
-		*/
-	}
-
-	return rua;
+	cout<<ir << " =========   is multiple return end if not 1"  << endl;
+	return ir;
 }
 
 void  G17B3HANDLER::Not_Critical_wactive(){// find active cells
@@ -1120,14 +1083,16 @@ void G17B3HANDLER::CriticalAssignCell(int Ru){// assign a cell within the critic
 
 void G17B3HANDLER::Go_Critical(){// critical situation all clues in pairs tripl:ets
 	//if (g17b.debug17 > 1 && known_b3)cout << Char27out(known_b3) << " entry critical" << endl;
-
+	p_cpt2g[19]++;
 	active_b3 = wg3.pairs.u32[1];
 	Critical2pairs();// assign 2 pairs in minirow to common cell
 	rknown_b3 = known_b3| active_b3;
 	cout << Char27out(known_b3) << " known b2" << endl;
 	cout << Char27out(active_b3) << " active_b3" << endl;
-	cout<<Char27out(rknown_b3) << "entry critical appel ismultiple" << endl;
-	if(IsMultiple(rknown_b3))	return;
+	cout<<Char27out(rknown_b3) << "entry critical appel ismultiple p_cpt2g[19]="<< p_cpt2g[19] << endl;
+	//if (p_cpt2g[19] != 8) return;
+	if(IsMultiple(rknown_b3)!=1)	return;
+	cout << "_______________________________________ a suivre" << endl;
 	if (1)return;
 	if (ShrinkUas1(g17xy.uasb3_1, g17xy.nuasb3_1)) return;// dead branch
 	int wknown = known_b3 | active_b3;

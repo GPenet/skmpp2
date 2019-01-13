@@ -42,7 +42,8 @@ struct ZH_1D {
 ZH_1D_GLOBAL zh1d_g;
 ZH_1D zh1d[10];
 // _______here to try to optimize the cache the ZH_1D code
-int ZH_1D_GLOBAL::Go(BF128 & fde, BF128 *tsol) {
+int ZH_1D_GLOBAL::Go(BF128 & fde, BF128 *tsol, int limit) {
+	lim = limit;
 	tsolw = tsol;
 	nsolw = 0;
 	zh1d[0].FD = fde;
@@ -50,6 +51,7 @@ int ZH_1D_GLOBAL::Go(BF128 & fde, BF128 *tsol) {
 	return nsolw;
 }
 void ZH_1D::Guess() {// not yet solved
+	if (zh1d_g.nsolw > zh1d_g.lim) return;
 	uint32_t rmask[3] = { 0777,0777000,0777000000 };
 	uint32_t ru = FD.bf.u32[3], bu = TblShrinkMask[ru],
 		minband = 30, minbandindex;
@@ -100,6 +102,7 @@ void ZH_1D::Guess() {// not yet solved
 		myrow ^= 1 << cell;
 		cell += dcell;
 		(this + 1)->GuessGo(cell);
+		if (zh1d_g.nsolw > zh1d_g.lim) return;
 	}
 }
 void ZH_1D::GuessGo(int cell) {

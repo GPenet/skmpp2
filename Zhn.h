@@ -36,14 +36,14 @@ except for easiest puzzles immediatly solved
 */
 struct ZH_1D_GLOBAL {
 	BF128 *tsolw, t3; // belong to the caller
-	int nsolw;
+	int nsolw,lim;
 	ZH_1D_GLOBAL() { t3.SetAll_1(); t3.bf.u32[3] = 0; }
 	inline void Add(BF128 & s) {
 		*tsolw++ = s & t3; // clear last 32 bits
 		nsolw++;
 	}
-	int Go(BF128 & fde, BF128 *tsol);
-}; 
+	int Go(BF128 & fde, BF128 *tsol,int limit=5000);
+};
 
 struct ZHOU;
 /* ZH_GLOBAL2  and ZH_GLOBAL are both "static variables for the brute force
@@ -260,7 +260,8 @@ struct ZHOU{// size 32 bytes
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
 	void StartFloor(int digit);
-//#endif
+	void StartFloorOld(int digit);
+	//#endif
 
 	/*
     inline void SetPat(char * pat, char * zsol, char * puzfinal){

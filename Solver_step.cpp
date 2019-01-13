@@ -2473,7 +2473,7 @@ void XYSEARCH::SearchDynPass(int nmax){	// try a  pass limited to nmax steps
 void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 	if (elim_done) return;
 	if (ntelims && maxrating <= 88) return;
-	if (opprint)cout << "try cells not bi values" << endl;
+	if (opprint)cout << "try dyn multi cells not bi values" << endl;
 	// try all bi values in mode x->~a and y->~a adding one in length
 	BF128 wp = zh_g2.cells_unsolved_e-pairs;
 	GINT target,p;
@@ -2514,10 +2514,11 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 					digs ^= 1 << d2;
 					p.u32 = xcell | (d2 << 16);
 					if (!ExpandDynamicToElim(p, target)) {// redo expansion should work
-						cout<< "anomaly in cell redo "<<d2+1<<cellsFixedData[xcell].pt
-							<<" to target "<< id+1<< cellsFixedData[elim_cell].pt << endl;
-						fout1 << "anomaly in cell redo" << endl;
-						return;
+						if (opprint) {
+							cout << "anomaly in cell redo " << d2 + 1 << cellsFixedData[xcell].pt
+								<< " to target " << id + 1 << cellsFixedData[elim_cell].pt << endl;
+						}
+						goto exitcell;
 					}
 					nx=ntbn[n] = BackDynamicOff(target);
 					if (locdiag){
@@ -2539,7 +2540,7 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 
 			}
 		}
-
+	exitcell:;
 	}
 	if (opprint)cout << "try units not bi values" << endl;
 	for (int id1 = 0; id1 < 9; id1++){
@@ -2576,11 +2577,13 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 						xcell = tcu[icu];
 						p.u32 = xcell | (id1 << 16);
 						if (!ExpandDynamicToElim(p, target)) {// redo expansion should work
-							cout << "trying unit elim" << id + 1 << cellsFixedData[elim_cell].pt << endl;
-							cout << "anomaly in unit/cell redo start "
-								<<id1+1<<cellsFixedData[xcell].pt<< endl;
-							fout1 << "anomaly in unit/cell redo" << endl;
-							return;
+							if (opprint) {
+								cout << "trying unit elim" << id + 1 << cellsFixedData[elim_cell].pt << endl;
+								cout << "anomaly in unit/cell redo start "
+									<< id1 + 1 << cellsFixedData[xcell].pt << endl;
+								//fout1 << "anomaly in unit/cell redo" << endl;
+							}
+							goto exitunit;;
 						}
 						nx = ntbn[n] = BackDynamicOff(target);
 						if (locdiag){
@@ -2601,6 +2604,7 @@ void XYSEARCH::SearchDynPassMulti(int nmax){// try multi chains if nothing low
 					}
 				}
 			}
+		exitunit:;
 		}
 	}
 }
@@ -2827,9 +2831,10 @@ void XYSEARCH::DynamicSolveContradiction(int dig1, int cell1, int dig2, int cell
 			if(!ExpandDynamicToElim(p1,target)) continue;// redo expansion should work
 			int n1 = BackDynamicOff(target);
 			if (p1.u16[0] != tback->u8[0]) {
-				cerr << " DynamicSolveContradiction illegal way back p1" << endl;
-				if(opprint)
-				DebugDynamicSolveContradiction("way back p1", p1,target);
+				if (opprint) {
+					cerr << " DynamicSolveContradiction illegal way back p1" << endl;
+					DebugDynamicSolveContradiction("way back p1", p1, target);
+				}
 				continue;;
 			}
 			if (locdiag){
@@ -2842,15 +2847,17 @@ void XYSEARCH::DynamicSolveContradiction(int dig1, int cell1, int dig2, int cell
 			if (!ExpandDynamicToElim(p2, target)) continue;// redo expansion should work
 			int n2 = BackDynamicOff(target);
 			if (p2.u16[0] != tback->u8[0]) {
-				cerr << " DynamicSolveContradiction illegal way back p2" << endl;
-				if (opprint)
+				if (opprint) {
 					DebugDynamicSolveContradiction("way back p2", p2, target);
+					cerr << " DynamicSolveContradiction illegal way back p2" << endl;
+				}
 				continue;;
 			}
 			if (!n2) {
-				cerr << "DynamicSolveContradiction pas trouve cible nt=" << nt << endl;
-				if (opprint)
+				if (opprint) {
 					DebugDynamicSolveContradiction("way back p2", p2, target);
+					cerr << "DynamicSolveContradiction pas trouve cible nt=" << nt << endl;
+				}
 				continue;;
 			}
 			if (locdiag){

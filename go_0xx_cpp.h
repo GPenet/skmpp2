@@ -1895,20 +1895,39 @@ int ZHOU::Rate54_HiddenQuad(){// no naked quad in fact coded as naked 5
 }
 
 void ZHOU::StartFloor(int digit) {
+	BF128 & wef = zh_g2.elim_floor[digit];
+	wef.SetAll_0();
+	BF128 w = FD[digit][0],w1=w&cells_unsolved,
+		 tres[10],ww;// to store possible perms 
+	int cell;
+	while ((cell = w1.getFirstCell()) >= 0) {
+		w1.Clear_c(cell);
+		ww=w& AssignMask_Digit[cell];
+		int nperms = zh1d_g.Go(ww, tres, 0);
+		if (nperms) {// no need to check cells in the solution
+			w1 -= tres[0];
+		}
+		else wef.Set_c(cell);
+	}
+	if(wef.isNotEmpty())
+		zh_g2.active_floor |= 1 << digit;
+}
+
+void ZHOU::StartFloorOld(int digit) {
 	BF128 w = FD[digit][0];
 	BF128  tres[5000];// to store possible perms 
 	//if (pm_go.cycle==3) 		DebugDigit(digit);
-	
+
 	int nperms = zh1d_g.Go(w, tres);
-	if (0 && pm_go.cycle == 3 )
+	if (0 && pm_go.cycle == 3)
 		cout << "StartFloor(int digit)=" << digit + 1
-			<< " nperms=" << nperms << endl;
-	
+		<< " nperms=" << nperms << endl;
+
 	if (!nperms) return;
 	BF128 or_sol = tres[0];
 	for (int i = 1; i < nperms; i++) 		or_sol |= tres[i];
 	w.bf.u32[3] = 0;
-	if (or_sol == w) return; 
+	if (or_sol == w) return;
 	zh_g2.active_floor |= 1 << digit;
 	zh_g2.elim_floor[digit] = w - or_sol;
 }

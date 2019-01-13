@@ -383,6 +383,9 @@ void Go_c470() {//extract not equal in regressive test
 			case 0:// 2 outputs of skmppv2
 				if (strcmp(finput.ze, fin2.ze)) {
 					cout << finput.ze << endl << fin2.ze << endl;
+					fout1 << finput.ze  << endl;
+					fout2 << fin2.ze << endl;
+					fout3 << finput.ze << &fin2.ze[81] << endl;
 					cpt2++;
 				}
 				break; 
