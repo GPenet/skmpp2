@@ -1,4 +1,4 @@
-#define SIZETGUA 100
+#define SIZETGUA 150
 struct GEN_BANDES_12{// encapsulating global data 
 	STD_B3 bands3[256];
 	//STD_B1_2 band1s, band2s;
@@ -95,8 +95,10 @@ struct GEN_BANDES_12{// encapsulating global data
 	void NewBand1(int iw);
 	void Find_band2B();
 	int ValidBand2();
+	void ValidInitGang();
 	void Find_band3B(int m10=1);
 	int DebugFreshUA(uint64_t ua);
+	int Debug17(SGUA2 & w);
 	//int FindBand3Unique();//test or  debugging code see the corresponding file
 	//================ B creating a catalogue for the 17 search 
 	//same as A exchanging bands 2/3

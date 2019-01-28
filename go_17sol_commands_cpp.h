@@ -20,10 +20,10 @@ const char * libs_c17_00_cpt2g[20] = {
 	"13 not critical 56",//13
 	"14 using socket 3",//14
 	"15 entry band3 handler excluding critical+ua outfield",//15
-	"",//16
-	"",//17
-	"",//18
-	"19 control  band3 processed",//19
+	"16 critical + sub critical",//16
+	"17 add 1 from active",//17
+	"18",//18
+	"19  ",//19
 };
 void Go_c17_00( ) {// p2 process
 	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;
@@ -41,6 +41,9 @@ void Go_c17_00( ) {// p2 process
 		cerr << "invalid value for last to process" << endl;
 		return;
 	}
+	zh_g.modevalid = 1;
+	zh_g2.grid0 = genb12.grid0;
+	zh_g2.zsol = zh_g2.stdfirstsol;
 	memset(p_cpt, 0, sizeof p_cpt);// band2 and band 3 count
 	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
 	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
@@ -54,6 +57,109 @@ void Go_c17_00( ) {// p2 process
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
 }
+//========================= known s17 file
+void Go_c17_10( ) {
+	zh_g.modevalid = 1;
+	zh_g2.grid0 = genb12.grid0;
+	zh_g2.zsol = zh_g2.stdfirstsol;
+	// search 17 using a file having known  as entry and one 17 given 6 6 5
+	char * ze = finput.ze;
+	int * zs0 = genb12.grid0, npuz = 0;
+	cout << "Go_c17_10() search 17 using a file having known 17 656 " << endl;
+	while (finput.GetLigne()) {
+		npuz++;
+		g17b.npuz = npuz;
+		g17b.a_17_found_here = 0;
+		if (npuz <= (int)sgo.vx[2]) continue;
+		if (npuz > (int)sgo.vx[3]) return;
+		g17b.debug17 = sgo.vx[0];
+		//if (npuz >5) return;
+		if (g17b.debug17) { 
+			cout << ze << " to process  n="<<dec << npuz << endl;
+		}
+		long tdeb = GetTimeMillis();
+		// =======================morph entry to have min n6 count in first
+		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
+		BANDMINLEX::PERM perm_ret;
+		bandminlex.Getmin(zs0, &perm_ret);
+		int ib1 = perm_ret.i416, ib1a = t416_to_n6[ib1];
+		bandminlex.Getmin(&zs0[27], &perm_ret);
+		int ib2 = perm_ret.i416, ib2a = t416_to_n6[ib2];
+		bandminlex.Getmin(&zs0[54], &perm_ret);
+		int ib3 = perm_ret.i416, ib3a = t416_to_n6[ib3];
+		if (ib1a > ib2a) {// change band2 <-> band1
+			for (int i = 0; i < 27; i++) {
+				char temp = ze[i];	ze[i] = ze[i + 27];	ze[i + 27] = temp;
+				temp = ze[i + 82];	ze[i + 82] = ze[i + 109]; ze[i + 109] = temp;
+				int w = ib1a;	ib1a = ib2a;	ib2a = w;
+			}
+		}
+		if (ib1a > ib3a) {// change band3 <-> band1
+			for (int i = 0; i < 27; i++) {
+				char temp = ze[i];	ze[i] = ze[i + 54];		ze[i + 54] = temp;
+				temp = ze[i + 82];	ze[i + 82] = ze[i + 136];	ze[i + 136] = temp;
+				int w = ib1a;	ib1a = ib3a;	ib3a = w;
+			}
+		}
+		//================================ to avoid the 665 case
+		int ncb3 = 0;
+		for (int i = 0; i < 27; i++) {
+			if (ze[i + 136] - '.')ncb3++;
+		}
+		if (ncb3 == 5) {// change band3 <-> band2
+			for (int i = 0; i < 27; i++) {
+				char temp = ze[i + 27];	ze[i + 27] = ze[i + 54];	ze[i + 54] = temp;
+				temp = ze[i + 109];	ze[i + 109] = ze[i + 136];	ze[i + 136] = temp;
+			}
+			int w = ib2a;	ib2a = ib3a;	ib3a = w;
+		}
+		//if (ib3a < ib2a)tb[ib1a]++; else ta[ib1a]++;
+		//if (ib3a < ib2a)tbt++; else tat++;
+		// redo id to build tables
+		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
+		bandminlex.Getmin(zs0, &perm_ret);
+		ib1 = perm_ret.i416;
+		ib1a = t416_to_n6[ib1];
+		myband1.InitBand2_3(ib1, ze, perm_ret, 0);
+		bandminlex.Getmin(&zs0[27], &perm_ret);
+		ib2 = perm_ret.i416;
+		ib2a = t416_to_n6[ib2];
+		myband2.InitBand2_3(ib2, &ze[27], perm_ret, 1);
+		bandminlex.Getmin(&zs0[54], &perm_ret);
+		ib3 = perm_ret.i416;
+		ib3a = t416_to_n6[ib3];
+		genb12.bands3[0].InitBand3(ib3, &ze[54], perm_ret);
+		genb12.nband3 = 1;
+		myband1.DoExpandBand(0);// expand band1
+
+		if (g17b.debug17)cout << ze << " morphed source n=" << npuz << endl;
+		char * ze2 = &ze[82];
+		g17b.band1_17 = g17b.band2_17 = g17b.band3_17 = 0;
+		for (int i = 0; i < 27; i++) {
+			if (ze2[i] - '.') g17b.band1_17 |= 1 << i;
+			if (ze2[i + 27] - '.') g17b.band2_17 |= 1 << i;
+			if (ze2[i + 54] - '.') g17b.band3_17 |= 1 << i;
+		}
+		g17b.band12_17 = ((uint64_t)g17b.band2_17 << 32) | g17b.band1_17;
+		cout << Char2Xout(g17b.band12_17) << " b12 pattern for the 17" << endl;
+		genb12.ValidInitGang();
+		g17b.GoM10();
+		cout << "print final stats" << endl;
+		for (int i = 0; i < 20; i++) {
+			if (!p_cpt2g[i])continue;
+			cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
+		}
+		if (!g17b.a_17_found_here) {
+			cout << "puz="<<npuz << " failed to find the searched 17" << endl;
+			cerr << "puz=" << npuz << " failed to find the searched 17" << endl;
+			return;
+		}
+	}
+
+}
+
+
+
 //=========================== regressive tests
 
 void Go_c17_91_go() {
@@ -197,3 +303,249 @@ void Go_c17_92() {// test UAs 5 6 expand
 		//wband.DebugIndex(1);
 	}
 }
+// extraction des 17 6 6 5
+
+/*
+
+void GEN_BANDES_12::Morph_ED_B12_known17(char * z, int ib1){
+	i1t16 = ib1;  it16 = tn6_to_416[ib1];
+	char zw[164], *zb1p = &z[82], *zb2p = &z[27 + 82], *zb3p = &z[54 + 82];
+	strcpy(zw, z);
+	unsigned long  g0[81], *z02 = &g0[27], *z03 = &g0[54],zcomp[27];
+	for (int i = 0; i < 81; i++)g0[i] = z[i] - '1';
+	__movsd(zcomp,z02,27);
+	n_auto_b1 = bandminlex.GetAutoMorphs(it16, t_auto_b1);
+	cout << "processing band rank=" << i1t16 << " N° 1_416=" << it16 + 1
+		<< " n auto morphs=" << n_auto_b1 << endl;
+	if (n_auto_b1){
+		for (int imorph = 0; imorph < n_auto_b1; imorph++){
+			BANDMINLEX::PERM &p = t_auto_b1[imorph];
+			unsigned long band[27];// morph the band
+			for (int i = 0; i < 9; i++){
+				band[i] = p.map[z02[p.cols[i]]];
+				band[i + 9] = p.map[z02[p.cols[i] + 9]];
+				band[i + 18] = p.map[z02[p.cols[i] + 18]];
+			}
+			if( G17ComparedOrderedBand((int *)zcomp,(int *) band)==1){//morph to p orderd
+				int tsort[3];
+				G17BuildSort((int *)band, tsort);
+				cout << p.rows[0] << p.rows[1] << p.rows[2] << " rows"<<endl;
+				for (int i = 0; i < 3; i++){
+					int ir = tsort[i] &= 3,irb1=p.rows[i];
+					__movsd(&zcomp[9*i], &band[9 * ir], 9);// new zs0
+					for (int j = 0; j < 9; j++){// new entry
+						int wc = band[9 * ir + j]+ '1',wc2=wc;
+						if (zb2p[ 9 * ir + p.cols[j]] == '.') wc2 = '.';
+						zw[27 + 9 * i + j] = wc;
+						zw[27+82 + 9 * i + j] = wc2;
+						wc = p.map[z03[9 * i + p.cols[j]] ] + '1';
+						wc2 = wc;
+						if (zb3p[ 9 * i + p.cols[j]] == '.') wc2 = '.';
+						zw[54 + 9 * i + j] = wc;
+						zw[54 + 82 + 9 * i + j] = wc2;
+						wc2 = p.map[g0[9 * irb1 + p.cols[j]]] + '1';
+						if (z[82+9 * irb1 + p.cols[j]] == '.') wc2 = '.';
+						zw[82 + 9 * i + j] = wc2;
+
+					}
+				}
+				cout << zw << "après morph une etape" << endl;
+			}
+		}
+	}
+	cout << zw << "après morph ED band 12" << endl;
+}
+*/
+
+void msp_change12(char * ze, int &ib1a, int & ib2a) {
+	for (int i = 0; i < 27; i++) {
+		char temp = ze[i];	ze[i] = ze[i + 27];	ze[i + 27] = temp;
+		temp = ze[i + 82];	ze[i + 82] = ze[i + 109]; ze[i + 109] = temp;
+		int w = ib1a;	ib1a = ib2a;	ib2a = w;
+	}
+}
+void msp_change13(char * ze, int &ib1a, int & ib3a) {
+	for (int i = 0; i < 27; i++) {
+		char temp = ze[i];	ze[i] = ze[i + 54];		ze[i + 54] = temp;
+		temp = ze[i + 82];	ze[i + 82] = ze[i + 136];	ze[i + 136] = temp;
+		int w = ib1a;	ib1a = ib3a;	ib3a = w;
+	}
+}
+void msp_change23(char * ze, int &ib2a, int & ib3a) {
+	msp_change12(&ze[27], ib2a, ib3a);
+}
+void M1_S17_Morph(char * z, BANDMINLEX::PERM & p1) {
+	char zw[164]; strcpy(zw, z); // pose 0 et ;
+	// map band 1
+	for (int ir = 0, i = 0; ir < 3; ir++)for (int ic = 0; ic < 9; ic++, i++) {
+		int iw = 9 * p1.rows[ir] + p1.cols[ic];
+		char cw1 = p1.map[z[iw] - '1'] + '1', cw2 = cw1;
+		if (z[iw + 82] == '.') cw2 = '.';
+		zw[i] = cw1; zw[i + 82] = cw2;
+	}
+	{// map band2 to band 1 reorder columns
+		int iw4 = 27 + p1.cols[0], iw5 = 36 + p1.cols[0], iw6 = 45 + p1.cols[0];
+		int cw4 = p1.map[z[iw4] - '1'], cw5 = p1.map[z[iw5] - '1'], cw6 = p1.map[z[iw6] - '1'];
+		int tsort[3], w;// sort bands / stacks increasing order of the  id
+		tsort[0] = cw4 << 8;
+		tsort[1] = 1 | (cw5 << 8);
+		tsort[2] = 2 | (cw6 << 8);
+		for (int i = 0; i < 2; i++) for (int j = i + 1; j < 3; j++)
+			if (tsort[i] > tsort[j]) { w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
+		tsort[0] &= 3;  tsort[1] &= 3; tsort[2] &= 3;
+		for (int ir = 0, i = 27; ir < 3; ir++)for (int ic = 0; ic < 9; ic++, i++) {
+			int iw = 9 * tsort[ir] + p1.cols[ic] + 27;
+			char cw1 = p1.map[z[iw] - '1'] + '1', cw2 = cw1;
+			if (z[iw + 82] == '.') cw2 = '.';
+			zw[i] = cw1; zw[i + 82] = cw2;
+		}
+
+	}
+
+	{// map band3 to band 1 reorder columns
+		int iw5 = 54 + p1.cols[0], iw6 = 63 + p1.cols[0], iw7 = 72 + p1.cols[0];
+		int cw5 = p1.map[z[iw5] - '1'], cw6 = p1.map[z[iw6] - '1'], cw7 = p1.map[z[iw7] - '1'];
+		int tsort[3], w;// sort bands / stacks increasing order of the  id
+		tsort[0] = cw5 << 8;
+		tsort[1] = 1 | (cw6 << 8);
+		tsort[2] = 2 | (cw7 << 8);
+		for (int i = 0; i < 2; i++) for (int j = i + 1; j < 3; j++)
+			if (tsort[i] > tsort[j]) { w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
+		tsort[0] &= 3;  tsort[1] &= 3; tsort[2] &= 3;
+		for (int ir = 0, i = 54; ir < 3; ir++)for (int ic = 0; ic < 9; ic++, i++) {
+			int iw = 9 * tsort[ir] + p1.cols[ic] + 54;
+			char cw1 = p1.map[z[iw] - '1'] + '1', cw2 = cw1;
+			if (z[iw + 82] == '.') cw2 = '.';
+			zw[i] = cw1; zw[i + 82] = cw2;
+		}
+
+	}
+	strcpy(z, zw);
+	//zw[54] = 0; zw[54 + 82] = 0;
+	//fout1 << zw  << endl;
+}
+void M1_S17(char * finput_name, char * foutput_name, uint32_t * vx, uint32_t * bx) {
+	// temporary code extract solution with a known 17 6 6 5
+	finput.open(finput_name);
+	if (!finput.is_open()) { cerr << "error open file " << finput_name << endl; return; }
+	fout1.open(foutput_name);
+	char * ze = finput.ze, *ze2 = &ze[82];
+	char zdiag[164], zw[164];
+	zdiag[81] = ';'; zdiag[163] = 0;
+	int count[6], zwi[81], zei[81], zdiagi[81];
+	while (finput.GetLigne()) {
+		if (strlen(ze) < 163)continue;
+		ze[163] = 0; // forget more info
+		memset(count, 0, sizeof count);
+		for (int i = 0; i < 81; i++) {
+			if (ze2[i] - '.') {
+				int band = i / 27, stack = C_stack[i] + 3;
+				++count[band];
+				++count[stack];
+			}
+			zdiag[C_transpose_d[i]] = ze[i];
+			zdiag[C_transpose_d[i] + 82] = ze[i + 82];
+		}
+		BANDMINLEX::PERM pr[6];
+		for (int ib = 0; ib < 6; ib++)if (count[ib] > 6) {
+			if (0) goto next;
+			int x;
+			// morph the puzzle to the high band in band
+			if (ib > 2)memmove(zw, zdiag, sizeof zw);
+			else memmove(zw, ze, sizeof zw);
+			// put the >6 clues band as band3
+			if (ib == 0 || ib == 3) msp_change13(zw, x, x);
+			else if (ib == 1 || ib == 4) msp_change23(zw, x, x);
+			for (int i = 0; i < 54; i++) zwi[i] = zw[i] - '1';
+			bandminlex.Getmin(zwi, &pr[0]);
+			int ib1 = pr[0].i416, ib1a = t416_to_n6[ib1];
+			bandminlex.Getmin(&zwi[27], &pr[1]);
+			int ib2 = pr[1].i416, ib2a = t416_to_n6[ib2],
+				i2 = ib2a, i1 = ib1a;
+			if (ib1a > ib2a) {
+				msp_change12(zw, i1, i2);
+				M1_S17_Morph(zw, pr[1]);
+			}
+			else 	M1_S17_Morph(zw, pr[0]);
+
+			fout1 << zw << ";" << i1 << ";" << i2 << endl;
+			cout << zw << endl;
+			//genb12.Morph_ED_B12_known17(zw, i1);
+			if (0) {// mode look for 566 656 no 7 in stack
+				char zout[164];
+				for (int i = 0; i < 81; i++) {
+					zei[i] = ze[i] - '1';
+					zdiagi[i] = zdiag[i] - '1';
+				}
+				BANDMINLEX::PERM perm_reti[6];
+				int ibi[6], ibri[6];
+				for (int i = 0; i < 3; i++) {
+					bandminlex.Getmin(&zei[27 * i], &perm_reti[i]);
+					ibi[i] = perm_reti[i].i416;
+					ibri[i] = t416_to_n6[ibi[i]];
+					bandminlex.Getmin(&zdiagi[27 * i], &perm_reti[i + 3]);
+					ibi[i + 3] = perm_reti[i + 3].i416;
+					ibri[i + 3] = t416_to_n6[ibi[i + 3]];
+				}
+				int tsort[3], w;// sort bands / stacks increasing order of the  id
+				tsort[0] = ibri[0] << 8;
+				tsort[1] = 1 | (ibri[1] << 8);
+				tsort[2] = 2 | (ibri[2] << 8);
+				for (int i = 0; i < 2; i++) for (int j = i + 1; j < 3; j++)
+					if (tsort[i] > tsort[j]) { w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
+				int ib1 = tsort[0] & 3, ib2 = tsort[1] & 3, ib3 = tsort[2] & 3;
+				tsort[0] = 3 | ibri[3] << 8;
+				tsort[1] = 4 | (ibri[4] << 8);
+				tsort[2] = 5 | (ibri[5] << 8);
+				for (int i = 0; i < 2; i++) for (int j = i + 1; j < 3; j++)
+					if (tsort[i] > tsort[j]) { w = tsort[i]; tsort[i] = tsort[j]; tsort[j] = w; }
+				int ibd1 = tsort[0] & 3, ibd2 = tsort[1] & 3, ibd3 = tsort[2] & 3;
+				char *z = ze;
+				int * cpt = count, iout = ibri[ib1];
+				if (ibri[ib1] < ibri[ibd1]) goto bands;
+				if (ibri[ib1] > ibri[ibd1]) goto stacks;
+				if (ibri[ib2] < ibri[ibd2]) goto bands;
+				if (ibri[ib2] > ibri[ibd2]) goto stacks;
+				goto bands;// not a key point, use band
+			stacks:
+				z = zdiag;
+				cpt = &count[3];
+				ib1 = ibd1 - 3; ib2 = ibd2 - 3; ib3 = ibd3 - 3;
+				iout = ibri[ibd1];
+			bands: {
+				strcpy(zout, z);
+				if (ib1) {
+					memcpy(zout, &ze[27 * ib1], 27);
+					memcpy(&zout[82], &ze[27 * ib1 + 82], 27);
+				}
+				if (count[ib3] == 5) {//  must be pass2b
+					if (ib3 != 2) {
+						memcpy(&zout[27], &z[27 * ib3], 27);
+						memcpy(&zout[82 + 27], &z[27 * ib3 + 82], 27);
+					}
+					if (ib2 != 3) {
+						memcpy(&zout[54], &z[27 * ib2], 27);
+						memcpy(&zout[82 + 54], &z[27 * ib2 + 82], 27);
+					}
+					fout1 << z << ";" << iout << endl;
+				}
+				else {//  pass2a
+					if (ib2 != 2) {
+						memcpy(&zout[27], &z[27 * ib2], 27);
+						memcpy(&zout[82 + 27], &z[27 * ib2 + 82], 27);
+					}
+					if (ib3 != 3) {
+						memcpy(&zout[54], &z[27 * ib3], 27);
+						memcpy(&zout[82 + 54], &z[27 * ib3 + 82], 27);
+					}
+					cout << z << ";" << iout << endl;
+
+				}
+				}
+			}
+		}
+	next:;
+	}
+}
+
+

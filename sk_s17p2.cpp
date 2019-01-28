@@ -27,6 +27,7 @@
 //_________________ brute force handling 1 2 3 bands 
 extern ZHOU    zhou[50],zhou_i;// , zhou_i, zhou_solve;
 extern ZH_GLOBAL zh_g;
+extern ZH_GLOBAL2 zh_g2;
 extern SGO sgo;
 
 extern ZH2B_GLOBAL   zh2b_g;
@@ -52,9 +53,8 @@ G17XY g17xy;
 G17CHUNK g17chunk;
 G17INDEXSTEP indexstep;
 G17B g17b;
-uint64_t p_cptg[40], p_cpt1g[20], p_cpt2g[20];
-uint64_t p_cpt[40], p_cpt1[20], p_cpt2[20];
-int a_17_found_here;
+uint64_t p_cptg[40], p_cpt1g[20], p_cpt2g[40];
+uint64_t p_cpt[40], p_cpt1[20];
 
 FINPUT finput;
 
@@ -84,7 +84,10 @@ void Go_0() {
 		strcpy(&zn[ll], "_file1.txt");
 		fout1.open(zn);
 	}
-	if (sgo.command >= 100) {// input file expected
+	if (sgo.command == 10) {// input file expected
+		if (!sgo.finput_name) {
+			cerr << "missing input file name" << sgo.finput_name << endl; return;
+		}
 		finput.open(sgo.finput_name);
 		if (!finput.is_open()) {
 			cerr << "error open file " << sgo.finput_name << endl;
@@ -94,6 +97,8 @@ void Go_0() {
 	cerr << "running command " << sgo.command << endl;
 	switch (sgo.command) {
 	case 0: Go_c17_00(); break; // search one band1
+	case 10: Go_c17_10()
+		; break; // search known 17s 
 
 	case 80: Go_c17_80(); break; // enumeration test 
 	case 90: Go_c17_90(); break; // regressive test uas one band	

@@ -141,7 +141,7 @@ struct ZHOU{// size 32 bytes
 //________________________________________
 	int CheckValidityQuick(char *puzzle);
 	int PartialInitSearch17(uint32_t * t, int n);// 17 search mode
-	int CallMultipleB3(ZHOU & o, int bf);// 17 search mode
+	int CallMultipleB3(ZHOU & o, uint32_t bf,int diag=0);// 17 search mode
 	int FullUpdate();
 	int ApplySingleOrEmptyCells();
 	void Guess();

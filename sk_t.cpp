@@ -98,6 +98,35 @@ char * CoutGin64tPuzzle(GINT64 * t, int n){
 	return zout;
 }
 
+int AddUA64(uint64_t * t, uint32_t & nt,uint64_t ua) {// ua 2x27  + 5 bit length
+	register uint64_t ua2x = ua & BIT_SET_2X;
+	for (uint32_t iua = 0; iua < nt; iua++) {
+		register uint64_t R = t[iua];
+		if (R < ua) {// is it subset
+			R &= BIT_SET_2X;
+			if ((R&ua2x) == R) return 0;// we have a subset
+		}
+		else if (R == ua) return 0;
+		else {
+			for (uint32_t jua = nt; jua > iua; jua--)t[jua] = t[jua - 1];
+			t[iua] = ua;// new inserted
+			nt++;
+			// is it a subset of a previous entry
+			for (iua++; iua < nt; iua++) {
+				if ((t[iua] & ua2x) == ua2x) {// we have a subset
+					for (uint32_t k = iua + 1; k < nt; k++)t[k - 1] = t[k];
+					nt--;
+					iua--; //continue same position
+				}
+			}
+			return 2;
+		}
+	}
+	t[nt++] = ua;// added
+	return 1;
+}
+
+
 
 int TblMult3[9] = { 0, 3, 6, 9, 12, 15, 18, 21, 24 };  // 3*i
 int TblMult9[9] = { 0, 9, 18, 27, 36, 45, 54, 63, 72 };  // 9*i

@@ -50,29 +50,32 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		//w.nua_start = ntua2;
 		ptua2 = w.tua;
 		nua2 = 0;
+		//if (i81>1) continue;
 		if (0) {
-			w.Debug("i81=26 status");
-			cout << " revised gangster status" << oct << endl;
-			for (int i = 0; i < 3; i++) 
+			w.Debug("i81 xx  status");
+			cout << " revised gangster status i81="<<i81 << oct << endl;
+			for (int i = 0; i < 9; i++) 
 				cout << gangb12[i] << "\t" << w.gangcols[i] << endl;
 			cout << dec << endl;
 			//cout << Char2Xout(zh2b_g.fd_revised[0].bf.u64) << " dig0 rev" << endl;
 			//cout << Char2Xout(zh2b_g.fd_sols[1][0].bf.u64) << "      base" << endl;
 		}
+
 		//================== GUA collector 2 bands 
-		GuaCollect(w.digs );
+		//GuaCollect(w.digs );
 		for (int i = 0; i < 84; i++) {// find UAs 3 digits
 			int fl = floors_3d[i];
-			if ((fl & w.digs) == w.digs)	GuaCollect(fl);
+			//if ((fl & w.digs) == w.digs)	GuaCollect(fl);
 		}
 		for (int i = 0; i < 126; i++) {// find UAs 4 digits
 			int fl = floors_4d[i];
-			if ((fl & w.digs) == w.digs) GuaCollect(fl);
+			//if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
 		for (int i = 0; i < 126; i++) {// find UAs 5digits
 			int fl = 0x1ff ^ floors_4d[i];
 			if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
+		//if (1) continue;
 		if (nua2) {
 			tactive2[nactive2++]=i81;
 			ntua2 += nua2;
@@ -84,15 +87,50 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 			for (uint32_t i =0; i < w.nua; i++)
 				cout << Char2Xout(w.tua[i]) << endl;
 		}
+		if (g17b.debug17)Debug17(w);// check all guas are valid for known 17
 	}
 	cout << "endSecondSockets2Setup ntua2=" << ntua2
 		<< " nactive i81=" << nactive2 << endl;
 }
+
+int GEN_BANDES_12::Debug17(SGUA2 & w) {// check validity of guas
+	STD_B3 & myb3 = bands3[0];
+	if( myb3.guas.isguasocket2.Off_c(w.i_81)) return 0;
+	//this is a valid pair if not hit in band 3by the known 17 
+	//must be hit in bands 1-2 
+	if (myb3.guas.ua_pair[w.i_81] & g17b.band3_17) return 0;//hit in band 3
+	//cout << Char27out(myb3.guas.ua_pair[w.i_81]) << " i81=" << w.i_81 << endl;
+
+	for (uint32_t i = 0; i < w.nua; i++) {// exit false if not hit 
+		register uint64_t R = w.tua[i];
+		if (0)
+			cout << Char2Xout(R) << " cc=" << (R >> 59) << " i=" << i << endl;
+		if (R&g17b.band12_17)continue;
+		cout << "not valid gua2 for i_81=" << w.i_81 << endl;
+		cout << Char2Xout(R) << " cc=" << (R >> 59) <<" i="<<i<< endl;
+		return 1;
+	}
+	return 0; 
+	
+}
+
+
 void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
-	if (0 &&diag) zh2b5_g.diag = 1; else zh2b5_g.diag = 0;
+	if (0) {
+		cout << "GuaCollect fl=" << oct << fl << dec << endl;
+		if (fl == 0546) {
+			cout << "detailed analysis asked" << endl;
+			zh2b5_g.diag = 1;
+			diag = 1;
+		}
+		else zh2b5_g.diag=diag = 0;
+	}
+	//if (0 &&diag) zh2b5_g.diag = 1; else zh2b5_g.diag = 0;
 	uint64_t solved_cells = zh2b5_g.FindUAsInit(fl, 1);
 	if (!solved_cells) return;// one digit solved true
+	if (diag) cout << "return from zh2b5_g.FindUAsInit(fl, 1);" << endl;
 	zh2b5_g.CollectUas5();// collect uas for this set of floors
+	if (diag) cout << "zh2b5_g.CollectUas5();" << endl;
 	if (!zh2b5_g.nuaf5) return;
 	// now collect UAs not hit by solved cells  
 	genuasb12.nuaold = 0;
@@ -105,7 +143,7 @@ void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
 			genuasb12.tuaold[genuasb12.nuaold++] = genuasb12.tua[i];
 	}
 	// check subsets and add to main table
-	for (int i = 0; i < zh2b5_g.nuaf5; i++) {
+	for (uint32_t i = 0; i < zh2b5_g.nuaf5; i++) {
 		genuasb12.ua = zh2b5_g.tuaf5[i].bf.u64;
 		if (diag)cout << Char2Xout(genuasb12.ua) << " to add if new2 nua=" << nua2 << endl;
 		if (genuasb12.CheckOld()) continue;// superset of a previous ua
@@ -225,10 +263,10 @@ void GEN_BANDES_12::SecondSockets3Setup() {
 				int fl = 0x1ff ^ floors_4d[i];
 				if ((fl & digs) == digs) GuaCollect(fl);
 			}
-			if (nua2) {
-				tactive3[nactive3++] = i81;
-				ntua3 += nua2;
-			}
+		}
+		if (nua2) {
+			tactive3[nactive3++] = i81;
+			ntua3 += nua2;
 		}
 
 		//w.nua_end = ntua3;// store the final count
@@ -380,18 +418,21 @@ back:
 	if (--ii >= 0) goto next;
 }
 void Go_c17_91_go();
+void GEN_BANDES_12::ValidInitGang() {
+	for (int i = 0; i < 9; i++) {// init columns status
+		cold[i] = 0x1ff;
+		for (int j = 0; j < 6; j++)	cold[i] ^= 1 << grid0[i + 9 * j];
+		gangb12[i] = 0x1ff ^ cold[i];
+	}
+	memcpy(gangcols, cold, sizeof gangcols);
+}
 int GEN_BANDES_12::ValidBand2() {
 	myband2.InitBand2_3(it16_2, &zsol[27], pband2);
 	//_______________________ std process
 	if (modeb12 < 10) {
 		if (p_cpt2g[10]++)return 1;//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
 		if ((nb12 >> 6) < skip) return 0;// here restart value, kept untouched if no band 3 found
-		for (int i = 0; i < 9; i++) {// init columns status
-			cold[i] = 0x1ff;
-			for (int j = 0; j < 6; j++)	cold[i] ^= 1 << grid0[i + 9 * j];
-			gangb12[i] = 0x1ff ^ cold[i];
-		}
-		memcpy(gangcols, cold, sizeof gangcols);
+		ValidInitGang();// also called from existing 17 in test
 		Find_band3B();
 		if (0) cout << "band12=" << nb12 << "\tnband3=" << nband3 << endl;
 		{// print a restart point every 64 bands 1+2 seen
@@ -586,7 +627,6 @@ void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
 			g17xy.bands_active_pairs.Set_c(i);
 			continue;
 		}
-
 		// this is a possible gua2 socket try to find a gua
 		p_cpt2g[6]++;
 		zh2b_g.test = 0;
@@ -609,13 +649,10 @@ void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
 				// protect against table limit and load for future use
 				if (w.nua >= SIZETGUA)w.nua = SIZETGUA - 1; // guess it will be a smaller
 				genuasb12.AddUA64(w.tua, w.nua);
-
-				if (DebugFreshUA(new_ua))
+				if (w.nua< SIZETGUA && DebugFreshUA(new_ua))
 					cout << Char2Xout(new_ua) << "too small new ua i81=" << i
 					<< " cc=" << _popcnt64(new_ua) << endl;
-
 			}
-
 			// add ua to the relevant "more" FIFO table
 			tmore_sockets2[i].Add(new_ua);
 		}

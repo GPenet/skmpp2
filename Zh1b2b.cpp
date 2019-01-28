@@ -202,7 +202,7 @@ void ZH2B::InitTclues(uint32_t * tclues, int n) {
 uint64_t ZH2B::MoreSocket2() {
 	if (FullUpdate()) {
 		if (zh2b_g.test) {
-			cout << "après full update" << endl;
+			cout << "more socket2 après full update" << endl;
 			ImageCandidats();
 		}
 		if (rows_unsolved.isEmpty()) {// solved false at the very beginning
@@ -765,13 +765,16 @@ uint64_t  ZH2B5_GLOBAL::FindUAsInit(int fl, int source) {
 	// first cleaning return unsolved cells in bits 	
 }
 void ZH2B5_GLOBAL::CollectUas5() {
+	if (diag)cout << "entry CollectUas5()" << endl;
 	nuaf5 = 0;
 	memset(&zh2b5[0], 0, sizeof zh2b5[0]);
 	memcpy(zh2b5[0].FD, myfd, sizeof myfd);
+	memset(zh2b5[0].CompFD, 0, sizeof myfd);
 	zh2b5[0].cells_unsolved = cells_unsolved;
 	uint32_t t[5] = { 077,07777,0777777,077777777,07777777777 };
 	zh2b5[0].rows_unsolved.bf.u32[0] = t[ndigits-1];
 	if(diag)zh2b5[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//if (1) return;
 	zh2b5[0].ComputeNext5();
 }
 void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
@@ -789,10 +792,20 @@ void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
 		if (!(ua&R))return; // ua in band1
 	}
 	*/
-	int  cc = (int)_popcnt64(ua);
+	uint64_t  cc = (int)_popcnt64(ua);
 	if (cc > sizef5) return;
+	if (nuaf5 >= 30) {// reasonnable limit for a given step
+		int limit = tuaf5[29].bf.u64 >> 59;
+		if (cc >= limit)return; // too many uas found here, skip it
+		nuaf5 = 29;
+	}
+	ua |= cc << 59;
+	//int ir = genuasb12.AddUA64(&tuaf5[0].bf.u64, nuaf5);
+	//uint64_t cc = _popcnt64(genuasb12.ua);
+	//genuasb12.ua.bf.u64  |= cc << 59;
 	if (zh2b5_g.diag)cout << Char2Xout(ua) << " ua found nuaf5=" << nuaf5 << "cc=" << cc << endl;
 	tuaf5[nuaf5++] = ua;
+	AddUA64(&tuaf5[0].bf.u64, nuaf5,ua);
 }
 
 //======================== ZH2B5  2-5 digits
@@ -965,7 +978,7 @@ void  ZH2B5::Guess5() {// solve in table digit with lowest count
 		//ImageCandidats();
 	}
 	// put in table all digmin valid solutions 
-	BF64 tuaw[50], tsolw[50];
+	BF64 tuaw[100], tsolw[100];
 	//cout << "call solve 1 digit for digitw=" << digmin+1 << endl;
 	int nuaw=zh2b1d_g.Go(zh2b5_g.fdsw[0][digmin], FD[digmin], tsolw, tuaw,
 		(rows_unsolved.bf.u32[0]) >> (6 * digmin) & 077);
@@ -1375,6 +1388,40 @@ int ZHONE::Update() {
 #endif
 	return 1;
 }
+
+int ZHONE::Update6() {
+	int Shrink = 1;
+	register int S, A, cl;
+	register uint32_t *wcl = FD;
+	while (Shrink) {
+		Shrink = 0;
+		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
+		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
+		if ((A = FD[5]) - CompFD[5]) { UPDN1(5, 0, 1, 2, 3, 4, 6, 7, 8); }
+	}// end while
+	return 1;
+}
+
+int ZHONE::Update7() {
+	int Shrink = 1;
+	register int S, A, cl;
+	register uint32_t *wcl = FD;
+	while (Shrink) {
+		Shrink = 0;
+		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
+		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
+		if ((A = FD[5]) - CompFD[5]) { UPDN1(5, 0, 1, 2, 3, 4, 6, 7, 8); }
+		if ((A = FD[6]) - CompFD[6]) { UPDN1(6, 0, 1, 2, 3, 4, 5, 7, 8); }
+	}// end while
+	return 1;
+}
+
 void ZHONE::Guess() {
 	if (!cells_unsolved) {
 		if (zh1b_g.type) {
@@ -1489,7 +1536,7 @@ int ZHONE::GetAllDigits(int cell) {
 	return ir;
 }
 void ZHONE::ImageCandidats() {
-	int dig_cells[81]; for (int i = 0; i < 27; i++) dig_cells[i] = GetAllDigits(i);
+	int dig_cells[27]; for (int i = 0; i < 27; i++) dig_cells[i] = GetAllDigits(i);
 	int i, j, l, lcol[9], tcol = 0, ncand = 0;
 	cout << "PM map " << endl << endl;
 	for (i = 0; i < 9; i++) {  // column
@@ -1511,8 +1558,10 @@ void ZHONE::ImageCandidats() {
 			int cell = 9 * i + j, digs = dig_cells[cell], 
 				ndigs = _popcnt32(digs);
 			ncand += ndigs;
-			for (int id = 0; id < (int)zh1b_g.ndigits; id++)if (digs & (1 << id))
-				cout << id + 1;
+			for (int id = 0; id < (int)zh1b_g.ndigits; id++)
+				if (digs & (1 << id))
+					if(zh1b_g.ndigits==9)	cout << id + 1;
+					else cout << zh1b_g.digmap [id] + 1;
 			cout << Blancs(lcol[j] + 1 - ndigs, 1);
 		} // end for j
 		cout << endl;
@@ -1534,6 +1583,7 @@ int ZHONE::Start_nFloors(int floors) {
 	uint32_t solved_cells = 0,nd=0;
 	for (int idig = 0,bit=1; idig < 9; idig++,bit<<=1) {
 		if (floors & bit) {
+			zh1b_g.digmap[nd] = idig;
 			zh1b_g.fdsw[0][nd]= zh1b_g.fd_sols[0][idig];
 			zh1b_g.fdsw[2][nd] = (~zh1b_g.fdsw[0][nd]) & BIT_SET_27;
 			FD[nd++] = zh1b_g.fd_sols[1][idig];
@@ -1561,6 +1611,8 @@ void ZHONE::Start_Uas_Mini(int floors, int floors_mini_row) {
 	floors &= ~floors_mini_row;
 	for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
 		if (floors & bit) {
+			zh1b_g.digmap[nd] = idig; // used in gangster changes
+			zh1b_g.digmap2[idig] = nd; // used in gangster changes
 			zh1b_g.fdsw[0][nd] = zh1b_g.fd_sols[0][idig];
 			zh1b_g.fdsw[2][nd] = (~zh1b_g.fdsw[0][nd]) & BIT_SET_27;
 			FD[nd++] = zh1b_g.fd_sols[1][idig]& cells_unsolved;
@@ -1569,7 +1621,8 @@ void ZHONE::Start_Uas_Mini(int floors, int floors_mini_row) {
 	floors =floors_mini_row;// then digits  exchanged
 	for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
 		if (floors & bit) {
-			zh1b_g.digmap[idig] = nd; // used in gangster changes
+			zh1b_g.digmap[nd] = idig; // used in gangster changes
+			zh1b_g.digmap2[idig] = nd; // used in gangster changes
 			zh1b_g.fdsw[0][nd] = zh1b_g.fd_sols[0][idig];
 			zh1b_g.fdsw[2][nd] = (~zh1b_g.fdsw[0][nd]) & BIT_SET_27;
 			FD[nd++] = zh1b_g.fd_sols[1][idig] & cells_unsolved;
@@ -1585,11 +1638,10 @@ void ZHONE::ApplyGangsterChanges(int * g0, int * g1) {
 		int changes = g0[i] ^ g1[i]; // one added one cleared
 		// safety temp control, must be 2 digits exchanged
 		if (changes & (~zh1b_g.floors_mini_row))return;
-		//if (zh1b_g.diag > 1)cout << "apply change gang go i=" << i 
-		//	<<" change 0"<<oct<<changes<<dec<< endl;
+		//if (zh1b_g.diag > 1)
 		for (int d = 0,bit=1; d < 9; d++,bit<<=1) {// check digits
 			if (!(changes & bit)) continue;
-			int digit = zh1b_g.digmap[d];// digit rank in the brute force
+			int digit = zh1b_g.digmap2[d];// digit rank in the brute force
 			if (g0[i] & bit)FD[digit] &= ~col; 
 			else FD[digit] |= col & cells_unsolved;
 		}
@@ -1707,6 +1759,10 @@ void ZHONE::Guess4() {	//  solve digit 4/3
 	}
 }
 void ZHONE::Guess5() {	//  solve digit 5/4
+	if (zh1b_g.diag) {
+		cout << "guess 5" << endl;
+		ImageCandidats();
+	}
 	int v = FD[4], vr = v >> 27;
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row
@@ -1733,6 +1789,10 @@ void ZHONE::Guess5() {	//  solve digit 5/4
 	}
 }
 void ZHONE::Guess6() {	//  solve digit 6/5
+	if (zh1b_g.diag) {
+		cout << "guess 6" << endl;
+		ImageCandidats();
+	}
 	int v = FD[5], vr = v >> 27;
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row

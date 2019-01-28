@@ -151,7 +151,7 @@ extern char * Char2Xout(uint64_t v);
 extern char * CoutGintPuzzle(GINT * t, int n);
 //extern char * CoutGint64Puzzle(GINT * t, int n);
 // general correspondance row column box band pattern 
-
+extern int AddUA64(uint64_t * t, uint32_t & nt, uint64_t ua);
 extern int TblMult3[9];  // 3*i
 extern int TblMult9[9];  // 9*i
 extern int C_minirow[81];

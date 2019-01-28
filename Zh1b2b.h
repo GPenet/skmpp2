@@ -148,8 +148,8 @@ struct ZH2B5_GLOBAL { // global variables for the game table
 	BF64 fdsw[3][5];//morphed digits puzzle/ solution rev
 	BF64  myfd[5], cells_unsolved;// final Init5 status
 	BF64 tuaf5[300];// collect uas for the cycle
-	int nuaf5, // nuas found in the cycle
-		sizef5,// size limit for new uas
+	uint32_t nuaf5; // nuas found in the cycle
+	int sizef5,// size limit for new uas
 		single_applied, // loop control in full update
 	    modevalid;// 0 base 1 gua mode
 	uint32_t  ndigits,diag;
@@ -227,7 +227,7 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	// band UA collection active band pointers and UA table to build
 	uint32_t *tua, nua;//   maximum 81  
 	int * band0,*gangster;
-	int floors_mini_row, digmap[9];// to adjust pm
+	int floors_mini_row, digmap[9],digmap2[9];// to adjust pm
 	uint32_t fd_sols[2][9];//start puzzle/ solution
 	uint32_t fdsw[3][9];//morphed digits puzzle/ solution rev
 	uint32_t ndigits;
@@ -263,6 +263,8 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	 int InitSudokux(GINT * t, int n);
 	 void AddMissingUAs(int * tcells,int ncells);
 	 int Update();
+	 int Update6();
+	 int Update7();
 	 int FullUpdate();
 	 void Guess();
 	 inline void ComputeNext() { if (FullUpdate())	Guess(); }

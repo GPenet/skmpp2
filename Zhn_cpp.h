@@ -344,13 +344,11 @@ void ZH_GLOBAL::ValidPuzzle(ZHOU * z){
 			for (int i = 0; i < 9; i++)zh_g2.digit_sol[i] = z->FD[i][0];
 		}
 	}
-	else if (modevalid==1) {// 17 search stop if not solution grid
+	else if (modevalid==1) {// 17 search stop at first solution grid
 		z->SetKnown(zh_g2.zsol);
-		for (int i = 0; i < 81; i++)if (zh_g2.grid0[i] != (int)zh_g2.zsol[i]) {
-			cout << zh_g2.zsol << " sol non valide" << endl;
-			nsol++;
-			break;
-		}
+		nsol++;
+		go_back = 1;
+		return;
 	}
 	if (nsol > lim)go_back = 1;
 }
@@ -435,6 +433,7 @@ void ZHOU::Guess() {
 		zh_g.ValidPuzzle(this);
 		return;
 	}
+	zh_g2.cpt[1]++;
 	if (zh_g.pairs.isNotEmpty()) {	GuessInCell();	return;	}
 	if (GuessHiddenBivalue()) return;
 	// no pair, no bi valuesolve a full digit 
@@ -591,36 +590,6 @@ int ZHOU::PartialInitSearch17(uint32_t * t, int n) {
 	w.bf.u32[3] = ~0;// keep rowunsolved settled
 	for (int i = 0; i < 9; i++)  FD[i][0] &= w | zh_g2.Digit_cell_Assigned[i];
 	return 0;
-}
-int ZHOU::CallMultipleB3(ZHOU & o, int bf) {
-	if (1) {
-		for (int i = 0; i < 81; i++) cout << zh_g2.grid0[i] + 1;
-		cout << " call MultipleB3 entry" << endl;
-	}
-	*this = o;
-	zh_g.go_back = 0;	zh_g.nsol = 0; zh_g.lim = 1;// modevalid is set to  1
-	BF128 dca[9];
-	int digitsbf = zh_g2.digitsbf;
-	memcpy(dca, zh_g2.Digit_cell_Assigned, sizeof dca);
-	{	uint32_t cc;
-	register int x = bf;
-	while (bitscanforward(cc, x)) {
-		x ^= 1 << cc; //clear bit
-		int cell = cc + 54, digit = zh_g2.grid0[cell];
-		digitsbf |= 1 << digit;
-		int xcell = cc + 64; // the cell value in 3x32 of a 128 bits map
-		if (FD[digit][0].Off(xcell))  return 0;// check not valid entry
-		Assign(digit, cell, xcell);
-		dca[digit].Set(xcell);
-	}
-	}
-	if (_popcnt32(digitsbf < 8)) return 2;// can not be one solution
-	BF128 w = cells_unsolved;
-	w.bf.u32[3] = ~0;// keep rowunsolved settled
-	for (int i = 0; i < 9; i++)  FD[i][0] &= w | dca[i];
-	if (FullUpdate() == 2) return 1;// solved can not be multiple
-	Guess();
-	return zh_g.nsol;
 }
 inline void ZHOU::Copy(ZHOU & o){
 	*this = o;

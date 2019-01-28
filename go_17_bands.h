@@ -15,7 +15,8 @@ struct STD_B416 {
 	void MorphUas();
 	void InitC10(int i);
 	void InitG12(int i) ;
-	void InitBand2_3(int i16,char * ze, BANDMINLEX::PERM & p) ;
+	void InitBand2_3(int i16,char * ze, BANDMINLEX::PERM & p
+		,int iband=1) ;
 	void PrintStatus();
 };
 struct STD_B1_2 :STD_B416 {
@@ -26,8 +27,8 @@ struct STD_B1_2 :STD_B416 {
 	// row solution pattern in digit
 	int mini_digs[9],mini_pairs[27],
 		revised_g[9];// after false forced in 1/2 minirows
-	int  valid_pairs; //9 or 27 bits 
-	void FillMiniDigsMiniPairs();
+	int  tv_pairs[27],nvpairs; //9 or 27 bits 
+	void FillMiniDigsMiniPairs(STD_B1_2 & bb);
 	inline void InitRevisedg() {
 		memcpy(revised_g, gangster, sizeof gangster);
 	}
@@ -65,8 +66,8 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 		gangbf[9],// columns for band 3 in bit field
 		revised_gangbf[9],// same revised UA2s UA3s ***
 		mini_digs[9], mini_pairs[27], // UA2s UA3  ***
-		valid_pairs, //  27 bits valid sockets UA2s ***
-		nfloors, limstep,map[9], cptdebug;
+		//valid_pairs, //  27 bits valid sockets UA2s ***
+		nfloors, limstep,map[9], cptdebug,modemore;
 	BF128 valid_sockets;
 
 	//=============== uas collector 
@@ -81,7 +82,7 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	int ib,digp;
 	uint64_t w0, ua;
 	//_____________________ functions collect UAs bands 1+2
-	void Initgen();
+	int Initgen();
 	void BuildFloorsAndCollectOlds(int fl);
 	int AddUA64(uint64_t * t, uint32_t & nt);
 	inline void AddUA(uint64_t v) {
@@ -101,7 +102,7 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	//_____________________ functions collect UA2s UAs3 socket 
 
 	void ProcessSocket2(int i81);
-
+	int DebugUas();
 };
 
 

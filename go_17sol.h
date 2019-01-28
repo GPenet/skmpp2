@@ -114,30 +114,14 @@ struct G17TB3GO{
 }g17tb3go[256];
 struct G17B3HANDLER{
 	G17TB3GO wg3;
-	int known_b3,rknown_b3, active_b3, active_sub, ndead, wactive0, nmiss, ncritical,
+	int known_b3,rknown_b3, active_b3, 
+		active_sub, ndead, wactive0, nmiss, ncritical,
 		irloop, *uasb3, nuasb3, wua;
 	int diagh;
 	// ================== entry in the proces
 	void Not_Critical_wactive();
-	int IsMultiple(int bf);
-	inline int ShrinkUas1(int * to, int no){
-		irloop = 0;
-		uasb3 = &to[no];
-		nuasb3 = 0;
-		for (int iua = 0; iua < no; iua++){
-			register int Ru = to[iua];
-			if (Ru & known_b3) continue;// already hit, forget it
-			Ru &= active_b3;
-			if (!Ru) return 1;// dead branch
-			if (_popcnt32(Ru) == 1){// assign it and reduce the active cells
-				CriticalAssignCell(Ru);
-				irloop = 1;// should loop for new singles
-			}
-			else uasb3[nuasb3++] = Ru;
-		}
-		if (!nuasb3) irloop = 0;// no need to loop again
-		return 0;
-	}
+	int IsMultiple(int bf,int diag=0);
+	int ShrinkUas1(int * to, int no);
 	void Go();
 	//=============== process critical
 	void CriticalAssignCell(int Ru);
@@ -213,7 +197,8 @@ struct G17XY{
 	void FoutValid17(int bf3, int ib3);
 };
 struct G17CHUNK{
-	int nxc, nyc, n64vua, n64vgua, ix, iy;
+	int nxc, nyc, n64vua, n64vgua, ix, iy,
+		ix17,iy17;
 	uint64_t *vyc;// stored after used vxc to optimize cache effect
 	uint64_t vxc[10000];// dynamic store vectors for vyc
 	// room for more vectors guas
@@ -224,6 +209,8 @@ struct G17CHUNK{
 	XY_EXPAND tyec[G17CHKY], txec[G17CHKX];// current tables
 
 	void GoChunk();
+	int DebugIsKnown();
+
 };
 
 struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
@@ -277,22 +264,25 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	void Do_Common_3_BuildXvectors();// in fact, in the chunk for 256 X maximum
 	void Do_Common_3();// launch chunks 256 x256 in G17CHUNK
 	void PrintUasShrinked();
+	void IndexStepDebugKnown17(int i1,int i2);
+	int DebugIsKnown();
+
 };
 
 
 struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
-	int xyexpand_size,debug17,p17;	
-
+	int xyexpand_size,debug17,
+		band1_17,band2_17,band3_17,
+		npuz, a_17_found_here;
+	uint64_t  band12_17;
 	//=====================process
 	void GoM10();// end preparation for a given band1+band2+ table band3 pass 656 566
 	void Go();
 	//================ debugging code
 	void PrintEndPuz();
-	int Godebug17_1(int i1);
-	int Godebug17_2(int i2);
-	void Godebug17_3();
-	void Godebug17_4(int i1,int i2);
-
+	void GodebugInit(int mode);
+	int GodebugFindKnown17();
+	int GodebugCheckUas(const char * lib);
 };
 
 //#include "g17_debuggingcode.cpp"
