@@ -1183,9 +1183,11 @@ void G17B3HANDLER::Go_Critical(){// critical situation all clues in pairs tripl:
 	active_b3 = wg3.pairs.u32[1];
 	Critical2pairs();// assign 2 pairs in minirow to common cell
 	rknown_b3 = known_b3| active_b3;
-	//cout << Char27out(known_b3) << " known b2" << endl;
-	//cout << Char27out(active_b3) << " active_b3" << endl;
-	//cout<<Char27out(rknown_b3) << "entry critical appel ismultiple p_cpt2g[19]="<< p_cpt2g[19] << endl;
+//	if (g17b.debug17) {
+//		cout << Char27out(known_b3) << " known b3" << endl;
+//		cout << Char27out(active_b3) << " active_b3" << endl;
+//		cout<<Char27out(rknown_b3) << "entry critical appel ismultiple p_cpt2g[19]="<< p_cpt2g[19] << endl;
+//	}
 	//if (p_cpt2g[19] != 8) return;
 	if(IsMultiple(rknown_b3))	return;
 	if (g17b.debug17) {
@@ -1567,30 +1569,36 @@ void G17B3HANDLER::Go_Not_Critical_miss1(){
 	}
 	//else return;
 one_out_forced:
-	uint32_t bf = (wg3.pairs.u32[1] | wact_miss1 | known_b3);
-	if (g17b.debug17) {
-		cout << " miss 1 entry one_out_forced" << endl;
-		cout << "bf=0" << oct << bf << dec << endl;
-		cout << Char27out(bf) << " bf " << endl;
-	}
-	if (wact_miss1&&IsMultiple(wg3.pairs.u32[1] | wact_miss1 | known_b3))	return;
 	{
-		//if (g17b.debug17 > 1)cout << " one_out_forced:" << endl;
-		int st = 07007007,rmiss1= wact_miss1;// try to reduce the count using stacks
-		for (int ist = 0; ist < 3; ist++) {
-			int wastack = wact_miss1 & st;
-			if (wastack && (wastack!= rmiss1)) {
-				int bfstack = wg3.pairs.u32[1] | wastack | known_b3;
-				if (IsMultiple(bfstack)) {
-					wact_miss1 ^= wastack;
-					//wact_miss1 &= zhou[0].glb.go_back;// use received ua to reduce the count
+		uint32_t bf = (wg3.pairs.u32[1] | wact_miss1 | known_b3);
+		if (g17b.debug17) {
+			cout << " miss 1 entry one_out_forced" << endl;
+			cout << Char27out(bf) << " bf " << endl;
+		}
+		if (wact_miss1&&IsMultiple(bf))	return;
+		if (0) {// try to reduce the count using stacks to be revised, not ok here
+			//if (g17b.debug17 > 1)cout << " one_out_forced:" << endl;
+			int st = 07007007, rmiss1 = wact_miss1;
+			for (int ist = 0; ist < 3; ist++) {
+				int wastack = wact_miss1 & st;
+				if (wastack && (wastack != rmiss1)) {
+					int bfstack = wg3.pairs.u32[1] | wastack | known_b3;
+					if (IsMultiple(bfstack)) {
+						//wact_miss1 ^= wastack;
+						//wact_miss1 &= zhou[0].glb.go_back;// use received ua to reduce the count
+					}
 				}
 			}
+
 		}
 
 	}
 wactive_to_test:
-	if (g17b.debug17)cout << Char27out(wact_miss1) << " wactive_to_test:" << endl;
+	if (g17b.debug17) {
+		cout << Char27out(wact_miss1) << " wactive_to_test:" << endl;
+		wact_miss1 &= g17b.band3_17;
+		cout << Char27out(wact_miss1) << " wactive_to_test valid for 17" << endl;
+	}
 	if (!wact_miss1) return;
 	p_cpt2g[17]++;
 	uint32_t res;
