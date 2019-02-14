@@ -237,6 +237,7 @@ int ZH_GLOBAL::Go_InitSolve(char * ze) {
 }
 int ZH_GLOBAL::Go_InitSolve(GINT16 * td, int nc) {
 	zh_g2.zsol = zh_g2.stdfirstsol;
+	zh_g2.cpt[1] = 0;
 	Init(1);
 	strcpy(zh_g2.puz, empty_puzzle);
 	zh_g2.ngiven = nc;

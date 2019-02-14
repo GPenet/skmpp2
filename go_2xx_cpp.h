@@ -130,23 +130,36 @@ struct GENSTEP{
 	void GenSym_Loop2(int sym36=1);
 }gscom;
 
-
+uint64_t localcpt = 0;
 int GENSTEP::PuzzleToTest(){
-	//int diag = 0;
-	//const char * ptest =  "..1..2....3..4..1.4..6....31....5.4...7.2.8...9.4....53....8..1.6..5..7....2..9.." ;
+	localcpt++;
+	//if (localcpt < 7000) return 0;
+	//zh_g.diag = 1;
+	//cout << "puzzle to test" << endl;
+	int diag = 0;
+	//const char * ptest =  "..43...8.....1.9..5....6..73..1....4.1..2.5....7....6..8..4....9....7.1...65....2" ;
 	//PrintPartial(nclues-1);
 	int digits = 0,nguess=0;
 	for (int i = 0; i < nclues; i++) digits |= 1<<tclues[i].u8[1];
 	if (_popcnt32(digits) < 8) return 0;// minimum 8 digits given to have a sudoku
-	if (zh_g.Go_InitSolve(tclues, nclues))goto no;
-	//if (!strcmp(ptest, zh_g2.puz)) diag=1;
-	//if(diag )	cout<< zh_g2.puz << "yes puzzle seen" << endl;
+	if(tclues[0].u8[1]==3)	cout << zh_g2.puz << endl;
+
+
+	int irx = zh_g.Go_InitSolve(tclues, nclues);
+	//fout4 << localcpt << endl;
+	//if (1) return 0;
+
+	//if (!strcmp(ptest, zh_g2.puz)) diag = 1;
+	//if (diag)	cout << zh_g2.puz << "yes puzzle seen" << endl;
 	//else goto no;
+
+	if (irx)goto no;
+	if (diag)	cout << zh_g2.puz << "puzzle ok initsolve seen" << endl;
 	nguess = (int)zh_g2.cpt[1];
 	strcpy(puz, zh_g2.puz);
 	zh_g2.zsol = 0; // be sure to keep the solution 
 	if (!zhou[0].IsMinimale(tclues, nclues)) goto no;
-	//if (diag)cout << puz << "yes 2" << endl;
+	if (diag)cout << puz << "yes 2" << endl;
 	if (modegame) {
 		//if (diag)cout   << " call pm_go.SolveGetLow44(1,diag);  " << endl;
 		int ir = pm_go.SolveGetLow44(1);// pack the low ratings

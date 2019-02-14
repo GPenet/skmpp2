@@ -84,13 +84,14 @@ void Go_misc_4xx(){
 	case 440: Go_c440(); break;// parse game submissions  
 	case 445: Go_c445(); break;// split the entry file on int param 
 	case 446: Go_c446(); break;// split on pot hardest flexible criteria 
-	case 470: Go_c470(); break;// extarct not equal in regressive test
+	case 470: Go_c470(); break;// extract not equal in regressive test
 	case 480: Go_c480(); break;// add compressed clues to entry (game data base)
 	case 481: Go_c480(); break;// check/update game data base
 	case 484: Go_c484(); break;// restore game data base
 	case 485: Go_c485(); break;// find close to entry in base
 	case 490: Go_c490(); break;// extract sym on box
 	case 491: Go_c491(); break;// morph to pattern -s0-
+	case 495: Go_c495(); break;// check/update game data base
 
 	}
 

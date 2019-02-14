@@ -62,20 +62,19 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		}
 
 		//================== GUA collector 2 bands 
-		//GuaCollect(w.digs );
+		GuaCollect(w.digs );
 		for (int i = 0; i < 84; i++) {// find UAs 3 digits
 			int fl = floors_3d[i];
-			//if ((fl & w.digs) == w.digs)	GuaCollect(fl);
+			if ((fl & w.digs) == w.digs)	GuaCollect(fl);
 		}
 		for (int i = 0; i < 126; i++) {// find UAs 4 digits
 			int fl = floors_4d[i];
-			//if ((fl & w.digs) == w.digs) GuaCollect(fl);
+			if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
 		for (int i = 0; i < 126; i++) {// find UAs 5digits
 			int fl = 0x1ff ^ floors_4d[i];
 			if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
-		//if (1) continue;
 		if (nua2) {
 			tactive2[nactive2++]=i81;
 			ntua2 += nua2;
@@ -144,14 +143,17 @@ void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
 	}
 	// check subsets and add to main table
 	for (uint32_t i = 0; i < zh2b5_g.nuaf5; i++) {
-		genuasb12.ua = zh2b5_g.tuaf5[i].bf.u64;
+		uint64_t ua = zh2b5_g.tuaf5[i].bf.u64;
+		genuasb12.ua = ua;
 		if (diag)cout << Char2Xout(genuasb12.ua) << " to add if new2 nua=" << nua2 << endl;
 		if (genuasb12.CheckOld()) continue;// superset of a previous ua
 		uint64_t cc = _popcnt64(genuasb12.ua);
-		genuasb12.ua |= cc << 59;
+		ua |= cc << 59;
+		//if (genuasb12.CheckMain(ua)) continue;// superset of a previous ua
+		// see why, seems to be of no effect
 		// protect against table limit
 		if (nua2 >= SIZETGUA)nua2 = SIZETGUA - 1; // guess it will be a smaller
-		int ir = genuasb12.AddUA64(ptua2, nua2);
+		int ir = AddUA64(ptua2, nua2,ua);
 		if (ir) {
 			if (diag)cout << Char2Xout(genuasb12.ua) <<" ir="<<ir << " added nua2="<<nua2 << endl;
 		}
@@ -301,6 +303,7 @@ void GEN_BANDES_12::Start(int mode) {
 	nb12 = 0;
 }
 void GEN_BANDES_12::NewBand1(int iw) {
+	go_back = 0;
 	i1t16 = iw;
 	it16 = tn6_to_416[iw];
 	myband1.InitG12(it16);
@@ -318,6 +321,7 @@ void GEN_BANDES_12::NewBand1(int iw) {
 	for (int ip = 0; ip < 20; ip++) {//0;ip<20 setup initial values for rows columns
 		GetStartB2(ip);
 		Find_band2B();
+		if (go_back)return;
 	}
 }
 void GEN_BANDES_12::Find_band2B() {
@@ -409,7 +413,7 @@ next:// erase previous fill and look for next
 			}
 		}
 		nb12++;
-		if (ValidBand2())return;
+		if (ValidBand2()) {		go_back = 1; return;	}
 		goto next;
 
 	}
@@ -430,7 +434,8 @@ int GEN_BANDES_12::ValidBand2() {
 	myband2.InitBand2_3(it16_2, &zsol[27], pband2);
 	//_______________________ std process
 	if (modeb12 < 10) {
-		if (p_cpt2g[10]++)return 1;//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
+		if(sgo.vx[5])
+		if (p_cpt2g[0]> sgo.vx[5]-1)return 1;//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
 		if ((nb12 >> 6) < skip) return 0;// here restart value, kept untouched if no band 3 found
 		ValidInitGang();// also called from existing 17 in test
 		Find_band3B();
@@ -642,13 +647,13 @@ void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
 			p_cpt2g[7]++;
 			g17xy.bands_active_pairs.Set_c(i);
 			// insert in the ua table 
-			genuasb12.ua = new_ua;
+			uint64_t ua = new_ua;
 			uint64_t cc = _popcnt64(genuasb12.ua);
-			genuasb12.ua |= cc << 59;
+			ua |= cc << 59;
 			if (cc <= UALIMSIZE) {
 				// protect against table limit and load for future use
 				if (w.nua >= SIZETGUA)w.nua = SIZETGUA - 1; // guess it will be a smaller
-				genuasb12.AddUA64(w.tua, w.nua);
+				AddUA64(w.tua, w.nua,ua);
 				if (w.nua< SIZETGUA && DebugFreshUA(new_ua))
 					cout << Char2Xout(new_ua) << "too small new ua i81=" << i
 					<< " cc=" << _popcnt64(new_ua) << endl;

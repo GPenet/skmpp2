@@ -11,7 +11,7 @@ struct XY_EXPAND {// storing valid puzzles in a band and main data  size 32 byte
 			cells.u8[i] = c;
 			stacks.u16[C_stack[c]]++;
 		}
-
+		stacks.u16[3] = 5;
 	}
 	inline void Create6(int * tcells) {
 		stacks.u64 = cells.u64 = cellsbf = 0;
@@ -21,6 +21,7 @@ struct XY_EXPAND {// storing valid puzzles in a band and main data  size 32 byte
 			cells.u8[i] = c;
 			stacks.u16[C_stack[c]]++;
 		}
+		stacks.u16[3] = 6;
 	}
 
 } ;
@@ -120,7 +121,7 @@ struct G17B3HANDLER{
 	int diagh;
 	// ================== entry in the proces
 	void Not_Critical_wactive();
-	int IsMultiple(int bf,int diag=0);
+	int IsMultiple(int bf);
 	int ShrinkUas1(int * to, int no);
 	void Go();
 	//=============== process critical
@@ -151,33 +152,46 @@ struct G17B3HANDLER{
 	void Print_Ok3_Not_Critical(int ractive_outfield);
 	void PrintB3UasOut(int wac);
 	void DNC(int wua, int rawua, char * lib);
-	// documentation sequence for the preprocessor code
-	void FindWua();
-	void ApplyWua();
-	int SubLoop(int * to, int no);
 
 };
 
 //========== indexstep max number of blocs 
 #define G17BLOCSUA 4
-#define G17BLOCGSUA 30
+#define G17BLOCGSUA 10
 //640 uas 320 guas ,,, step size
 
 #define G17CHKX 256
 #define G17CHKY 256
 #define MAXNIND6 12080
+#define NVGUAS256 15
+struct V256_UAS { 
+	BF128 v[2]; 
+	inline void operator&= (const V256_UAS &r) {
+		v[0] &= r.v[0]; v[1] &= r.v[1];
+	}
+	void Debug(const char * lib,int mirror=0);
+	void Fout(const char * lib);
+	void Cout();
+};
+struct V256_GUAS { 
+	BF128 v[NVGUAS256]; 
+	inline void operator&= (const V256_GUAS &r) {
+		for (int i = 0; i < NVGUAS256; i++)v[i] &= r.v[i];
+	}
+};
 
 struct G17XY{
+	V256_GUAS xvg, yvg,xyvg;
 	BF128 bands_active_pairs, bands_active_triplets;
 	BF128 more_checked_triplet;
 	BF128 more_active_pairs, more_active_triplets;
-	uint64_t vxg[G17BLOCGSUA], vyg[G17BLOCGSUA], vw[G17BLOCGSUA + 1];// one dummy in vw
-	uint64_t vm1xg[3], vm1yg[3], vm2xg[3], vm2yg[3];
+	//uint64_t vxg[G17BLOCGSUA], vyg[G17BLOCGSUA], vw[G17BLOCGSUA + 1];// one dummy in vw
+	//uint64_t vm1xg[3], vm1yg[3], vm2xg[3], vm2yg[3];
 	GINT64 stacksxy;
 	XY_EXPAND xxe, yye;
 	uint64_t cellsbf;
 	uint32_t tclues[12],xygang[9];
-
+	int ix,iy,go_back; // debugging 
 	int ntb3, b3lim,// number of active bands after Guas and stack filters
 		ibfirst, // first band valid index in FirstCheckActiveBands
 		nbx, nby,nclues,more3;// band x and band y count
@@ -197,81 +211,60 @@ struct G17XY{
 	void FoutValid17(int bf3, int ib3);
 };
 struct G17CHUNK{
-	int nxc, nyc, n64vua, n64vgua, ix, iy,
+	V256_UAS xv[G17CHKX], yv[G17CHKY];
+	V256_GUAS xvg[G17CHKX], * yvg;
+	// ygv pointer to the sub table in indexstep
+	int i1, i2,i56; // debugging
+	int nxc, nyc,  ix, iy,
 		ix17,iy17;
-	uint64_t *vyc;// stored after used vxc to optimize cache effect
-	uint64_t vxc[10000];// dynamic store vectors for vyc
-	// room for more vectors guas
-	uint64_t vm1xgc[G17CHKX * 3], vm1ygc[G17CHKY * 3]; //X  Y chunk vectors more 1
-	uint64_t  vxgc[G17CHKX * G17BLOCGSUA]; // X chunk vectors UAs and GUAs
-	uint64_t  vygc[G17CHKY * G17BLOCGSUA]; // Y chunk vectors UAs and GUAs
-
 	XY_EXPAND tyec[G17CHKY], txec[G17CHKX];// current tables
-
 	void GoChunk();
 	int DebugIsKnown();
 
 };
 
 struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
-
-	uint64_t step_buffer[20000];
-	// dynamic allocation in step_buffer
-	uint64_t * vcellsuas,// 54 * blocs size for uas cells
-		*vcellsguas,// 54 * blocs size for guas cells
-		*vid81;// maxi 160 active id * bloc size
-	int cur_step_buffer_index,
-		vcellsuas_size,// n64vua * 54
-		vcellsguas_size,// n64vgua * 54
-		vid81_size;//n64vgua *(nactive2+nactive3)
+	V256_UAS v256uas[54], v256a, yv256uas[MAXNIND6];
+	V256_GUAS v256guas[54], v256ga, yv256guas[MAXNIND6],
+		vid81s2[81], vid81s3[81];
 	XY_EXPAND xyew1[MAXNIND6], xyew2[MAXNIND6]; //12072 as seen maximum
-	uint64_t tvuas[MAXNIND6 * G17BLOCSUA], tvguas[MAXNIND6 * G17BLOCGSUA],
-		vauas[G17BLOCSUA], vaguas[G17BLOCGSUA], 
-		tua[TUA64_12SIZE], tgua[5000];
-	// moreguas partiel vectors
-	uint64_t tmgua[2][192], vmcellsguas[54][3], vmid81[162][3],vmuas[3];
-	uint64_t tvm1guas[MAXNIND6 * 3],	tvm2guas[MAXNIND6 * 3];
-
-	int tactive2[81], nactive2, tactive3[81], nactive3;
-
+	uint64_t tua[TUA64_12SIZE], tgua[5000];
+	int tactive2[81], nactive2, tactive3[81], nactive3,
+		tactive2_start[81], tactive2_end[81],
+		tactive3_start[81], tactive3_end[81];
 	uint64_t  b1b2_2Xbf, b1b2_54bf, nb1b2_2Xbf, nb1b2_54bf, searched17_54;
 	int searched17_band3, searched_nclues1, searched_nclues2;
 	BF128 pairsok, tripletsok;// found one empty gua 
-	int ntua, ntgua, ntgua_raw, n64vua, n64vgua,added_more;
+	int ntua,ntua_raw, ntgua, ntgua_raw,  n128vgua;
 	int * t1, *t2; // index used in band1 and band2
 	uint32_t xfirstdead, x2dead, yfirstdead, y2dead, oldx1, oldy1, oldx2;
 	uint64_t dead, dead54;
 	int n51, n52, n61, n62, nw1, nw2, ncluesw2;
+	int diag_on;// debugginn known 17
 	//======================================= process
-	inline uint64_t * AllocLockStepBuffer(int x){
-		uint64_t * vr = &step_buffer[cur_step_buffer_index];
-		cur_step_buffer_index += x; return vr; }
 	// initial for a new step
 	inline void StartDead(){ xfirstdead = 0; oldx1 = 0; }
-	void GoAddNewUas_sub_step();
-	void GoAddNewGUas_sub_step();
 	void Init(int i1, int i2);
 	int ShrinkUas();// shrink table of UAs for bands1+2
 	void ShrinkGuas();// shrink table for gangster uas2 ua3s
 	int ShrinkGuasLoad(uint64_t *tu, int itu1);
-	void SetV(uint64_t * v, int i1, int i2); // ste bit 1 in v from i1 to i2
-					  // process summary
-	void Do66(); // do 6 clues b1 6 clues b2  
+	void SetV(V256_GUAS & vid, int i1, int i2); // ste bit 1 in v from i1 to i2
+
+	// process summary
 	void Do65(); // do 6 clues b1 5 clues b2  
 	void Do56(); // do 5 clues b1 6 clues b2
 	void Do_Common();// after xye w1('Y')  and w2('X') have been loaded
 	void Do_Common_2();// build  Y tables of vectors
 	void Do_Common_3_BuildXvectors();// in fact, in the chunk for 256 X maximum
 	void Do_Common_3();// launch chunks 256 x256 in G17CHUNK
-	void PrintUasShrinked();
+	void PrintUasShrinked(int opt);
 	void IndexStepDebugKnown17(int i1,int i2);
 	int DebugIsKnown();
-
+	void DebugIndex(int i1,int i2);
 };
 
-
 struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
-	int xyexpand_size,debug17,
+	int debug17, //xyexpand_size,
 		band1_17,band2_17,band3_17,
 		npuz, a_17_found_here;
 	uint64_t  band12_17;

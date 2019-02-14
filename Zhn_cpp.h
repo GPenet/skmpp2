@@ -36,13 +36,13 @@ struct ZH_1D {
 	void Guess();
 	void GuessGo(int cell);
 	int Update();
-	int Assign_Update(BF128 in, BF128 & out, int cell);
 };
 
 ZH_1D_GLOBAL zh1d_g;
 ZH_1D zh1d[10];
 // _______here to try to optimize the cache the ZH_1D code
 int ZH_1D_GLOBAL::Go(BF128 & fde, BF128 *tsol, int limit) {
+	if (0)cout << "go 1d limit=" << limit << endl;
 	lim = limit;
 	tsolw = tsol;
 	nsolw = 0;
@@ -72,9 +72,7 @@ void ZH_1D::Guess() {// not yet solved
 		}
 	}
 
-	if (0) {
-		cout << "guess minbandindex=" << minbandindex << endl;
-	}
+	if (0) 		cout << "guess minbandindex=" << minbandindex << endl;
 	// now select the unsolved  row with the lowest count
 	uint32_t band = FD.bf.u32[minbandindex],
 		bru = (ru >> (3 * minbandindex)) & 7,
@@ -91,10 +89,7 @@ void ZH_1D::Guess() {// not yet solved
 			}
 		}
 	}
-	if (0) {
-		cout << "guess rowindex=" << myirow << endl;
-		//return;
-	}
+	if (0) 		cout << "guess rowindex=" << myirow << endl;
 	// try each candidate in the selected row
 	FD.bf.u32[3] ^= 1 << (3 * minbandindex + myirow);// set row solved
 	uint32_t cell;
@@ -108,21 +103,11 @@ void ZH_1D::Guess() {// not yet solved
 void ZH_1D::GuessGo(int cell) {
 	*this = *(this - 1);
 	FD &= AssignMask_Digit[cell];// unsolved row already updated
-	int ru = FD.bf.u32[3];
+	//int ru = FD.bf.u32[3];
 	if (Update()) return; // locked
-	if (!(FD.bf.u32[3] = ru)) zh1d_g.Add(FD);
-	else {
-		//char ws[82];
-		//cout << FD.String3X(ws) << "after update before new guess" << endl;
-		Guess();
-	}
-}
-int ZH_1D::Assign_Update(BF128 in, BF128 & out, int cell) {
-	FD = in;
-	FD &= AssignMask_Digit[cell]; 
-	int ir = Update();
-	if (!ir) out = FD;
-	return ir;
+	//if (!(FD.bf.u32[3] = ru)) zh1d_g.Add(FD);
+	if (!FD.bf.u32[3] ) zh1d_g.Add(FD);
+	else Guess();
 }
 int ZH_1D::Update() {
 	//char ws[82];
@@ -315,10 +300,6 @@ ZHOU zhou[50]; // must host main brute force plus minimality analysis and recurs
 		zhou_i.FD[i][1] = init_3x;
 	}
 	zhou_i.cells_unsolved = init_3x;
-	zhou_i.ndigits = 9;
-	zhou_i.index = 0;
-	zhou_i.box_hidden_pair = 0;
-	zhou_i.unsolved_digits = 0777;
 }
 
 int ZH_GLOBAL::Go_InitSudoku(char * ze){
@@ -429,7 +410,7 @@ void ZHOU::GuessGo(int dig, BF128& s) {
 void ZHOU::Guess() { 
 	if (zh_g.go_back) return;
 	if (cells_unsolved.isEmpty()) {
-		if (zh_g.diag)cout << endl << "valid guess v3\n" << endl;
+		//if (zh_g.diag)cout << endl << "valid guess v3\n" << endl;
 		zh_g.ValidPuzzle(this);
 		return;
 	}
@@ -437,6 +418,7 @@ void ZHOU::Guess() {
 	if (zh_g.pairs.isNotEmpty()) {	GuessInCell();	return;	}
 	if (GuessHiddenBivalue()) return;
 	// no pair, no bi valuesolve a full digit 
+	//cout << "guess full digit" << endl;
 	GuessFullDigit();
 }
 void ZHOU::GuessInCell() {
@@ -471,7 +453,7 @@ void ZHOU::GuessInCell() {
 	for (int idig = 0; idig < 9; idig++)
 		if (FD[idig][0].On(xcell))tdig[ndig++] = idig;
 	ZHOU * mynext = this + 1; // start next guess
-	mynext->Copy(*this);
+	*mynext=*this;
 	mynext->SetaCom(tdig[0], cell, xcell);
 	mynext->ComputeNext();
 	if (zh_g.go_back) return;
@@ -540,7 +522,7 @@ exitok:
 	uint32_t res;
 	bitscanforward(res, hidden);
 	ZHOU * mynext = this + 1; // start next guess
-	mynext->Copy(*this);
+	*mynext=*this;
 	mynext->SetaCom(idig, res + dcell, res + dxcell);
 	mynext->ComputeNext();
 	if (zh_g.go_back) return 1;
@@ -559,11 +541,20 @@ void  ZHOU::GuessFullDigit() {
 			mincount = cc; digmin = idig;
 		}
 	}
-	if (zh_g.diag)cout << " solve full digit=" << digmin + 1 << endl;
+	if (zh_g.diag) {
+		cout << " solve full digit=" << digmin + 1 << endl;
+		ImageCandidats();
+		Debug(1);
+	}
 	// collect perms valid for this digit
-	BF128  tres[100];// to store possible perms 
+	BF128  tres[300];// to store possible perms 
 	int nperms = zh1d_g.Go(FD[digmin][0], tres);
 	if (zh_g.diag)cout << " nperms=" << nperms << endl;
+	if (zh_g.diag &&nperms > 100) {
+		cout <<"more than 100 perms " << nperms << "  digit=" << digmin + 1 << endl;
+		ImageCandidats();
+		Debug(1);
+	}
 	for (int i = 0; i < nperms; i++) {
 		ZHOU * mynext = this + 1; // start next guess
 		(this + 1)->GuessGo(digmin, tres[i]);
@@ -591,10 +582,7 @@ int ZHOU::PartialInitSearch17(uint32_t * t, int n) {
 	for (int i = 0; i < 9; i++)  FD[i][0] &= w | zh_g2.Digit_cell_Assigned[i];
 	return 0;
 }
-inline void ZHOU::Copy(ZHOU & o){
-	*this = o;
-	index++;
-}
+
 void ZHOU::Setcell(int cell){ 
 	SetaCom(zh_g2.zerobased_sol[cell], cell, C_To128[cell]);
 }
@@ -628,7 +616,7 @@ B = FD[W][0].bf.u32[Z];\
 FD[W][0].bf.u32[Y] &= TblMaskSingle[S] & TblMaskDouble[S | ((B | (B >> 9) | (B >> 18)) & 0x1FF)];\
 S = TblRowUniq[TblShrinkSingle[Shrink] & TblColumnSingle[S]];
 
-#define UPD_ONE_DIGIT(W,V) if (cur_assigned > W+1)goto exit_digits;\
+#define UPD_ONE_DIGIT(W) if (cur_assigned > W+1)goto exit_digits;\
 	if (FD[W][0].bf.u64[0] != FD[W][1].bf.u64[0]\
 || FD[W][0].bf.u32[2] != FD[W][1].bf.u32[2]){\
 r_free = FD[W][0].bf.u32[3];\
@@ -646,10 +634,16 @@ int ZHOU::Update(){
 loop_upd:
 	//zh_g.cpt[3]++;
 	cur_assigned = last_assigned; last_assigned = 0;
-	UPD_ONE_DIGIT(8, 0377) UPD_ONE_DIGIT(7, 0577) UPD_ONE_DIGIT(6, 0677)
-	UPD_ONE_DIGIT(5, 0737) UPD_ONE_DIGIT(4, 0757) UPD_ONE_DIGIT(3, 0767)
-	UPD_ONE_DIGIT(2, 0773) UPD_ONE_DIGIT(1, 0775) UPD_ONE_DIGIT(0, 0776)
-	exit_digits:
+	if (FD[8][0].bf.u32[3]) { UPD_ONE_DIGIT(8) }
+	if (FD[7][0].bf.u32[3]) { UPD_ONE_DIGIT(7) }
+	if (FD[6][0].bf.u32[3]) { UPD_ONE_DIGIT(6) }
+	if (FD[5][0].bf.u32[3]) { UPD_ONE_DIGIT(5) }
+	if (FD[4][0].bf.u32[3]) { UPD_ONE_DIGIT(4) }
+	if (FD[3][0].bf.u32[3]) { UPD_ONE_DIGIT(3) }
+	if (FD[2][0].bf.u32[3]) { UPD_ONE_DIGIT(2) }
+	if (FD[1][0].bf.u32[3]) { UPD_ONE_DIGIT(1) }
+	if (FD[0][0].bf.u32[3]) { UPD_ONE_DIGIT(0) }
+exit_digits:
 	//if (zh_g.diag>1){ cout << "avant test loop last_assigned=" << last_assigned << endl;
 	//Debug(1); ImageCandidats();
 	//}

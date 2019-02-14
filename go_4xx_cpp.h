@@ -1036,15 +1036,16 @@ struct PUZC_SYM {
 	char puz[82],puz2[82], puz3[82]; // normalized puzzle
 	uint32_t boxes[9], wboxes[9],// box pattern //start, after perm
 		ctb[9], wctb[9], // count per box  
+		ctbs[6],//band stack count
 		nclues,cb_parity,sym_boxes;
-	void BuileRemappingIndex();
+	void BuildRemappingIndex();
 	void Init(char * ze);
 	int GetSym();
-	int MorphPatB5(PUZC_SYM & pat);
+	int MorphPatB5(PUZC_SYM & pat,int diag=0);
 	int MorphPatB1S1B2S2(PUZC_SYM & pat,int * pb0,int * ps0);
 
 };
-void PUZC_SYM::BuileRemappingIndex() {
+void PUZC_SYM::BuildRemappingIndex() {
 	// build diag remapping index
 	for (int iperm = 0; iperm < 6; iperm++) {// six perms box1 from stack1
 		// reorder boxes and build pattern
@@ -1130,7 +1131,7 @@ int PUZC_SYM::GetSym() {
 void Go_c490() {
 	cerr << "Go_490 entry " << sgo.finput_name << " extract potential symmetry" << endl;
 	PUZC_SYM psym;
-	psym.BuileRemappingIndex();
+	psym.BuildRemappingIndex();
 	char * ze = finput.ze;
 	finput.open(sgo.finput_name);
 	if (!finput.is_open()) {
@@ -1218,7 +1219,7 @@ int PUZC_SYM::MorphPatB1S1B2S2(PUZC_SYM & pat, int * pb0, int * ps0) {
 }
 
 
-int PUZC_SYM::MorphPatB5(PUZC_SYM & pat) {
+int PUZC_SYM::MorphPatB5(PUZC_SYM & pat,int diag) {
 	for (int iperm = 0; iperm < 9; iperm++) {// start with central symmetry
 	// reorder boxes and build pattern
 		for (int i = 0; i < 9; i++) {
@@ -1236,12 +1237,12 @@ int PUZC_SYM::MorphPatB5(PUZC_SYM & pat) {
 				puz2[bp[ip]] = puz[bp0[ip]];
 			}
 		}
-		if (0) {
+		if (diag) {
 			SYM_SPOT  &s = tsym_spot[1];
 			tsym_spot[1] = tsym_spot[0];
 			memcpy(s.boxes, wboxes, sizeof wboxes);
 			s.Debug("z2 control");
-			cout << puz2 << endl;
+			cout << puz2 <<"puz2"<< endl;
 		}
 		//===========================================================
 		// 8 perms four boxes in top left + diag symmetru
@@ -1271,12 +1272,12 @@ int PUZC_SYM::MorphPatB5(PUZC_SYM & pat) {
 					puz3[bp[ip]] = puz2[bp0[ip]];
 				}
 			}
-			if (0) {
+			if (diag) {
 				SYM_SPOT  &s = tsym_spot[1];
 				tsym_spot[1] = tsym_spot[0];
 				memcpy(s.boxes, wb2, sizeof wb2);
 				s.Debug("z3 control");
-				cout << puz3 << endl;
+				cout << puz3<<"puz3" << endl;
 			}
 			//global count match, try more 
 			for (int ipb0 = 0; ipb0<6;ipb0++)
@@ -1314,17 +1315,17 @@ void Go_c491() {// morph entry to a given pattern
 		return;
 	}
 	PUZC_SYM psym,psym_pat; 
-	psym.BuileRemappingIndex();
+	psym.BuildRemappingIndex();
 	psym_pat.Init(sgo.s_strings[0]);
 	for (int i = 0; i < 9; i++) cout << psym_pat.ctb[i];
 	cout << "  compte par boite" << endl;
 
 	char  ze[82]; ze[81] = 0;
 	while (finput.GetPuzzle(ze)) {
-		cout << ze << endl;
 		psym.Init(ze);// create boxes 
 		if (psym.nclues != psym_pat.nclues)continue; // invalid entry
 		// start with b5 (as in c490 central) count = b5 pat
+		//fout2 << ze << endl;
 		if (psym.MorphPatB5(psym_pat)) {
 			//cout << "retour ok" << endl;
 			int t[81];
@@ -1338,5 +1339,47 @@ void Go_c491() {// morph entry to a given pattern
 			fout1 << wout  << endl;
 		}
 	}
+
+}
+
+//================== file compare
+
+
+void Go_c495() {//compare log files
+	FINPUT fin2;
+	cout << "Go_495 entry " << sgo.finput_name << " base check" << endl;
+	if (!sgo.s_strings[0]) {
+		cerr << "missing file in 2" << endl;
+		return;
+	}
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file 1 " << sgo.finput_name << endl;
+		return;
+	}
+	fin2.open(sgo.s_strings[0]);
+	if (!fin2.is_open()) {
+		cerr << "error open file2 " << sgo.s_strings[0] << endl;
+		return;
+	}
+
+	int option = sgo.vx[0];
+	uint64_t cpt = 0;
+	while (1) {
+	read1:
+		cpt++;
+		if (!finput.GetLigne()) break;
+		if (0) goto read1;
+	read2:
+		if (!fin2.GetLigne()) break;
+		if (0) goto read2;
+		int ir = strcmp(finput.ze, fin2.ze);
+		if (!ir)goto read1;
+		cout << "files don't match cpt=" << cpt << endl;
+		cout << finput.ze << endl;
+		cout << fin2.ze << endl;
+		return;
+	}
+
 
 }

@@ -306,8 +306,9 @@ uint64_t ZH2B::MoreSocketAssign(uint32_t digit, uint32_t xcell) {
 	return 0;
 }
 
-uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
-	//cout << "entry validxy" << endl;
+uint64_t ZH2B::ValidXY(uint32_t * tclues, int n,int test) {
+	zh2b_g.test = test;
+	if(test)cout << "entry validxy" << endl;
 	zh2b_g.ua_ret = 0;
 	Init_std_bands();
 	InitTclues(tclues, n);
@@ -315,6 +316,7 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
 		if (rows_unsolved.isEmpty()) return 0;// solved 
 		// try worse case true
 		//ImageCandidats();
+		if (test)	ImageCandidats();
 		int maxcount = 0, digmax = 10;
 		for (uint32_t idig = 0; idig < 9; idig++) {
 			int cc = FD[idig].Count();
@@ -328,6 +330,7 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n) {
 		(this + 1)->GuessGo(digmax, mysol, 0);
 		if (zh2b_g.ua_ret) return zh2b_g.ua_ret;// return if  ua found
 		// if does not work, suspect valid try best case first
+		if (test) cout <<"digit true failed, try best"<<endl;
 		GuessValidB12_best(0);//look for a ua starting with lowest number fo candidates
 	}
 	return zh2b_g.ua_ret;
@@ -607,7 +610,10 @@ void ZH2B::GuessGo(int dig, BF64 & wsol,int index) {// done in a new ocurrence
 	// apply wsol and make next step
 	FD[dig] = wsol;// update will do the job
 	if (FullUpdate()) {
-		//ImageCandidats();
+		if (zh2b_g.test) {
+			cout << "try one digit true" << endl;
+			ImageCandidats();
+		}
 		GuessValidB12(index + 1);
 	}
 }
@@ -1266,7 +1272,8 @@ void ZHONE_GLOBAL::ValidPuzzle(uint32_t * sol) {//depending on type
 	switch (type) {
 	case 1: {// mode add uas
 		uint32_t or_sol = 0;
-		for (int i = 0; i < 9; i++) {// 9 digits
+		//for (int i = 0; i < 9; i++) {// 9 digits
+		for (int i = 0; i <9; i++) {// 9 digits
 			or_sol |= sol[i] & ~(fd_sols[0][i]);// invalid cells
 		}
 		if (or_sol) {
@@ -1293,6 +1300,14 @@ void ZHONE::InitOne_std_band() {//init after zh1b_g getband
 	for (int i = 0; i < 9; i++)	FD[i] |= 7 << 27;//set unknown rows
 	zh1b_g.ndigits = 9;
 }
+void ZHONE::CheckSolPerDigit() {//init after zh1b_g getband
+	cells_unsolved = BIT_SET_27;
+	memcpy(FD, zh1b_g.fd_sols[0], sizeof FD);
+	zh1b_g.ndigits = 9;
+	ImageCandidats();
+}
+
+
 int ZHONE::InitSudokux(GINT * t, int n) {// cells must be 0-26
 	int Digit_cell_Assigned[9];
 	memset(Digit_cell_Assigned, 0, sizeof Digit_cell_Assigned);

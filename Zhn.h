@@ -52,33 +52,31 @@ for the basic brute force;
 data used in other brute force uses are in ZH_GLOBAL2
 */
 struct ZH_GLOBAL2 {
-	uint64_t cpt[10], cptg[10], npuz;
 	BF128 Digit_cell_Assigned[9];// init sequence
+	BF128 digit_sol[9]; // final solution per digit original sort sequence
+	BF128  cells_unsolved_e, cells_unsolved_diag,// pm status direct and diagonal
+		cells_assigned;// to avoid redundancy in new assignments 
+	BF128 locked_nacked_brc_seen[3],// seen nacked in row; column; box (priority box)
+		locked_nacked_brc_done[3];// same cleaning done  nacked in row; column; box (priority box)
+	BF128 digits_cells_pair_bf[9];
+	BF128 triplets, quads;
+	PM3X pm, pmdiag, pmelims;
+	uint64_t cpt[10], cptg[10], npuz;
 	GINT16 tgiven[81];
 	int ngiven, digitsbf;// digitsbf to check minimum 8 digits
 	int * grid0; // using a process with known solution grid
 	char * zsol,
 		stdfirstsol[82],
 		zerobased_sol[81];
-
-
-	void Debug();
-	BF128 digit_sol[9]; // final solution per digit original sort sequence
 	char  *puzfinal, *pat;
 	char puz[82]; // the solved puzzle (after morph)
 	// switching to solver mode
-	PM3X pm, pmdiag, pmelims;
-	BF128  cells_unsolved_e, cells_unsolved_diag,// pm status direct and diagonal
-		cells_assigned;// to avoid redundancy in new assignments 
 	// in locked.. column "[2]" is in diagonal mode 
-	BF128 locked_nacked_brc_seen[3],// seen nacked in row; column; box (priority box)
-		locked_nacked_brc_done[3];// same cleaning done  nacked in row; column; box (priority box)
 	int  dig_rows[9][9], dig_cols[9][9];//rows cols in 9 bits mode
 	int  dig_boxes[9][9];// box in 9 bits mode
 	int dig_cells[81], cells_count[81];//cells digits  in 9 bits mode
 	int unsolved_r_count[9], unsolved_c_count[9]; // pm status unsolved rows columns per digit
 	int row_col_x2[9][2], dig_unsolved_col[9], oldcount;
-	BF128 digits_cells_pair_bf[9];
 	ZHOU * zhou_current;
 
 	// specific to the attempt to optimize the X+Y+27 process
@@ -98,13 +96,9 @@ struct ZH_GLOBAL2 {
 	void Build_digits_cells_pair_bf();
 	// located in solver step
 	void DebugNacked();
-//#ifdef SEARCH17SOL
-	// specific to the search 17 process
-	//int s2_ind, naddtable;// see go_17sol
-	//BF128 * addtable;
-	//int band3digits[9], band3nextua;// specific to 17 search
-	//uint64_t * digsols, b12nextua; // pointer to solution grid per digit
-//#endif
+
+	void Debug();
+
 
 };
 struct ZH_GLOBAL { // global variables for the core brute force
@@ -137,11 +131,10 @@ struct ZH_GLOBAL { // global variables for the core brute force
 struct ZHOU{// size 32 bytes 
 	BF128 FD[9][2];
 	BF128 cells_unsolved;
-	int ndigits,index,unsolved_digits,box_hidden_pair;
 //________________________________________
 	int CheckValidityQuick(char *puzzle);
 	int PartialInitSearch17(uint32_t * t, int n);// 17 search mode
-	int CallMultipleB3(ZHOU & o, uint32_t bf,int diag=0);// 17 search mode
+	void InitBand3PerDigit(int * grid0b3);
 	int FullUpdate();
 	int ApplySingleOrEmptyCells();
 	void Guess();
@@ -149,7 +142,7 @@ struct ZHOU{// size 32 bytes
 	void GuessInCell();
 	void GuessFullDigit();
 	int GuessHiddenBivalue();
-	inline void Copy(ZHOU & o);
+	//inline void Copy(ZHOU & o);
 	void Assign(int digit, int cell, int xcell);
 	int Update();
 	int InitSudoku(GINT16 * t, int n);
@@ -211,6 +204,13 @@ struct ZHOU{// size 32 bytes
 	void ImageCandidats_b3();
 	int FullUpdateAtStart();
 	int CheckStatus();// located in solver_step 
+
+	//==== special final check 7 search
+	int CallMultipleB3(ZHOU & o, uint32_t bf, int diag = 0);// 17 search mode
+	int Apply17SingleOrEmptyCells();
+	int Full17Update();
+	void Guess17(int index,int diag);
+	void Compute17Next(int index, int diag) ;
 
 //#ifdef ISSOLVERSTEP
 	// located in go_0xx.cpp

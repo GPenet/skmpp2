@@ -31,6 +31,7 @@ void Go_c17_00( ) {// p2 process
 	cout << sgo.vx[2] << " -v2- skip first nnn restart after batch failure" << endl;
 	cout << sgo.vx[3] << " -v3- last entry number for this batch must be > vx[2]" << endl;
 	int it16_start = sgo.vx[0];
+	g17b.debug17 = 0;
 	genb12.skip = sgo.vx[2];
 	genb12.last = sgo.vx[3];
 	if (sgo.vx[2] < 0) {
@@ -142,6 +143,7 @@ void Go_c17_10( ) {
 		}
 		g17b.band12_17 = ((uint64_t)g17b.band2_17 << 32) | g17b.band1_17;
 		cout << Char2Xout(g17b.band12_17) << " b12 pattern for the 17" << endl;
+		cout << Char2Xout(g17b.band12_17) << Char27out(g17b.band3_17) << " full pattern" << endl;
 		genb12.ValidInitGang();
 		g17b.GoM10();
 		cout << "print final stats" << endl;

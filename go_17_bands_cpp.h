@@ -455,13 +455,13 @@ int GENUAS_B12::Initgen() {// buil start myband1 myband2
 	for (int i = 0; i < 126; i++) BuildFloorsAndCollectOlds(0x1ff ^ floors_4d[i]);
 	//if(g17b.debug17&&g17b.GodebugCheckUas("standars uas")) return 1;
 	//==================== collect more uas 6/7 digit 
-	cout << "initial status for UAS bands 1+2 nua="<<nua << endl;
+	//cout << "initial status for UAS bands 1+2 nua="<<nua << endl;
 	CollectMore();
-	cout << "after collect more nua=" << nua << endl;
+	//cout << "after collect more nua=" << nua << endl;
 	CollectTriplets();
-	cout << "after collect triplets nua=" << nua << endl;
+	//cout << "after collect triplets nua=" << nua << endl;
 	CollectMore2minirows();
-	cout << "after collect 2 mini rows nua=" << nua << endl;
+	//cout << "after collect 2 mini rows nua=" << nua << endl;
 	//if (g17b.debug17&&g17b.GodebugCheckUas(" all us")) return 1;
 	///DebugUas();
 	return 0; // ok
@@ -514,7 +514,7 @@ void GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
 		if (CheckOld()) continue;// superset of a previous ua
 		if (diag)cout << "goadd nua="<<nua << endl;
 		ua |= cc << 59;
-		AddUA64(tua, nua);
+		AddUA64(tua, nua,ua);
 		if (diag)cout << "retour add nua=" << nua << endl;
 	}
 	if (diag)cout << " nua =" << nua << endl;
@@ -541,93 +541,19 @@ int GENUAS_B12::CheckOld(  ) {// ua 2x27  + 5 bit length
 	}
 	return 0;
 }
-int GENUAS_B12::AddUA64(uint64_t * t, uint32_t & nt) {// ua 2x27  + 5 bit length
-	register uint64_t ua2x = ua & BIT_SET_2X;
-	for (uint32_t iua = 0; iua < nt; iua++) {
-		register uint64_t R = t[iua];
-		if (R < ua) {// is it subset
+int GENUAS_B12::CheckMain(uint64_t wua) {//subset in the main table
+	register uint64_t ua2x = wua & BIT_SET_2X;
+	for (uint32_t iua = 0; iua < nua; iua++) {
+		register uint64_t R = tua[iua];
+		if (R > wua) return 0; // no subset
+		if (R < wua) {// is it subset
 			R &= BIT_SET_2X;
-			if ((R&ua2x) == R) return 0;// we have a subset
+			if ((R&ua2x) == R) return 1;// subset discard
 		}
-		else if (R == ua) return 0;
-		else {
-			for (uint32_t jua = nt; jua > iua; jua--)t[jua] = t[jua - 1];
-			t[iua] = ua;// new inserted
-			nt++;
-			// is it a subset of a previous entry
-			for (iua++; iua < nt; iua++) {
-				if ((t[iua] & ua2x) == ua2x) {// we have a subset
-					for (uint32_t k = iua + 1; k < nt; k++)t[k - 1] = t[k];
-					nt--;
-					iua--; //continue same position
-				}
-			}
-			return 2;
-		}
+		else if (R == ua) return 1;// same discard
 	}
-	t[nt++] = ua;// added
-	return 1;
+	return 0;
 }
-/*
-void GENUAS_B12::CollectMore() {// special 6 7 digits minirow
-	zh1b_g.tua = tuamore;
-	myband1.FillMiniDigsMiniPairs();
-	myband2.FillMiniDigsMiniPairs();
-	STD_B1_2 * mybx[2] = { &myband1 ,&myband2 };
-	for (ib = 0; ib < 2; ib++) {
-		//if (ib) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		//check possible pairs and triplets  can be 2 or three possible digits
-		ba = mybx[ib];
-		bb = mybx[1 - ib];
-		for (int imini = 0, cell = 0; imini < 9; imini++, cell += 3) {
-			//if (imini != 7) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-			int dcol = cell % 9, *cols =& bb->gangster[dcol];
-			int * minip = &ba->mini_pairs[cell];
-			int pcol[3][2] = { {1,2},{0,2},{0,1} };// cols for each relative pair
-			for (int ip = 0; ip < 3; ip++) {// 3 pairs in mini row
-				//if (ip != 2) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-				int col1= pcol[ip][0],col2= pcol[ip][1],
-					g1= cols[col1],g2= cols[col2];
-				digp = minip[ip];
-				if ((!(g1&digp))|| (!(g2&digp)))continue;
-
-				// must not be a 4 cells UA (all subsets)check pairs in band bb
-				int * bpairs = &bb->mini_pairs[dcol + ip]; //first pair
-				if ((bpairs[0] == digp) || (bpairs[9] == digp) || (bpairs[18] == digp)) continue;
-
-				// this is a pair in minirow to test for UAs in band bb
-				ba->valid_pairs |= 1 << (cell+ip); //mark it for later
-
-				// ______________________need the 2 cells to assign in band bb
-				int cell1 = cell + pcol[ip][0], cell2 = cell + pcol[ip][1];
-				int dig1 = ba->band0[cell1], dig2 = ba->band0[cell2];
-				uint32_t  R0 = ((1 << cell1) | (1 << cell2));
-				w0 = R0;
-				if (ib) w0 <<= 32; // 2 cells each ua
-				BuilOldUAs(R0);
-
-				// init the brute force
-				zh1b_g.GetBand(bb->band0, tuamore);
-				zhone[0].InitOne_std_band();
-				//zh1b_g.diag = 2;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-				// change the column for dig1 and dig2 in the revised ganster bb
-				bb->InitRevisedg();
-				bb->revised_g[dcol+col1] ^= digp;
-				bb->revised_g[dcol+col2] ^= digp;
-				if (0) {//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-					cout << "gangster status octal" << oct << endl;
-					for (int i = 0; i < 9; i++)
-						cout << bb->gangster[i] << "\t" << bb->revised_g[i] << endl;
-
-					cout << dec << endl;
-				}
-				CollectMoreTry6_7();// then go 6/7
-			}
-		}
-	}
-}
-*/
 void GENUAS_B12::CollectMore() {// special 6 7 digits minirow
 	//zh1b_g.tua = tuamore;
 	modemore = 2;
@@ -639,7 +565,7 @@ void GENUAS_B12::CollectMore() {// special 6 7 digits minirow
 		bb = mybx[1 - ib];
 		zh1b_g.GetBand(bb->band0, tuamore);
 		int npairs = ba->nvpairs;
-		cout << " CollectMore()vpairs status nvpairs=" << npairs << endl;
+		//cout << " CollectMore()vpairs status nvpairs=" << npairs << endl;
 		uint32_t bcells1;
 		for (int i = 0; i < npairs; i++) {
 			int cell1 = ba->tv_pairs[i];
@@ -653,7 +579,6 @@ void GENUAS_B12::CollectMore() {// special 6 7 digits minirow
 		}
 	}
 }
-
 void GENUAS_B12::CollectMoreTry6_7() {
 	nfloors = 6;// for debugging
 	//____________ try 6 digits unsolved in band a
@@ -661,7 +586,8 @@ void GENUAS_B12::CollectMoreTry6_7() {
 		int fl3 = floors_3d[i6];// , fl6 = 0x1ff ^ fl3;
 		if (fl3&digp) continue;// digits must be in the multi floors
 		floors = 0x1ff ^ fl3;
-		zhone[0].InitOne_std_band();
+		if (zh1b_g.diag) cout << "start floors 0" << oct << floors << dec << endl;
+		//zhone[0].InitOne_std_band();
 		zhone[0].Start_Uas_Mini(floors, digp);
 		if (0 &&modemore == 4) {
 			cout << "gangsters at call apply gangster changes" << oct << endl;
@@ -684,7 +610,7 @@ void GENUAS_B12::CollectMoreTry6_7() {
 		int fl2 = floors_2d[i7];// , fl7 = 0x1ff ^ fl2;
 		if (fl2&digp) continue;// digits must be in the multi floors
 		floors = 0x1ff ^ fl2;
-		zhone[0].InitOne_std_band();
+		//zhone[0].InitOne_std_band();
 		zhone[0].Start_Uas_Mini(floors, digp);
 		if (0 && modemore == 4) {
 			cout << "gangsters at call apply gangster changes" << oct << endl;
@@ -709,9 +635,9 @@ void GENUAS_B12::EndCollectMoreStep() {
 		ua = zh1b_g.tua[i] &= BIT_SET_27;
 		if (!ib) ua <<= 32;
 		ua |= w0;
-		if (g17b.debug17) {
+		if (1 ||g17b.debug17) {
 			if (!(ua&g17b.band12_17)) {
-				cout << "EndCollectMoreStep error wrong gua seen i="<<i 
+				cout << "EndCollectMoreStep error wrong ua more  seen i="<<i 
 					<<" zh1b_g.nua= "<< zh1b_g.nua << endl;
 				cout << Char2Xout(ua) << " wrong ua" << endl;
 				cout << "floors 0" << oct << floors << " digs 0" << digp <<dec<< endl;
@@ -722,8 +648,8 @@ void GENUAS_B12::EndCollectMoreStep() {
 				zh1b_g.nua = 0;
 				zhone[0].InitGuess();
 				zh1b_g.diag = 1;
-				//if(nfloors==6)zhone[0].Guess6();
-				//else zhone[0].Guess7();
+				if(nfloors==6)zhone[0].Guess6();
+				else zhone[0].Guess7();
 				zh1b_g.diag = 0;
 				continue;
 			}
@@ -738,7 +664,7 @@ void GENUAS_B12::EndCollectMoreStep() {
 		if (diag)cout << "try add" << endl;
 		//if (AddUA64(tua, nua))
 		//		cout << Char2Xout(ua) << "\t " << (ua >> 59) << " final more ua added cycle" << endl;
-		AddUA64(tua, nua);
+		AddUA64(tua, nua,ua);
 	}
 }
 void GENUAS_B12::CollectTriplets() {// special 6 7 digits full minirow
@@ -749,7 +675,7 @@ void GENUAS_B12::CollectTriplets() {// special 6 7 digits full minirow
 		ba = mybx[ib];
 		bb = mybx[1 - ib];
 		// init the brute force 
-		zh1b_g.GetBand(bb->band0, zh1b_g.tua);
+		zh1b_g.GetBand(bb->band0, tuamore);
 		for (int imini = 0, cell = 0; imini < 9; imini++, cell += 3) {
 			for (int ip = 0; ip < 2; ip++) {// 2 false triplets in mini row
 				bb->InitRevisedg();
@@ -769,9 +695,14 @@ void GENUAS_B12::CollectMore2minirows() {
 	modemore = 4;
 	STD_B1_2 * mybx[2] = { &myband1 ,&myband2 };
 	for (ib = 0; ib < 2; ib++) {
+		if(ib)	zh1b_g.diag = 1;
 		ba = mybx[ib];
 		bb = mybx[1 - ib];
 		zh1b_g.GetBand(bb->band0, tuamore);
+		if (zh1b_g.diag) {
+			cout << "new 2 minis ib=" << ib << endl;
+			zhone[0].CheckSolPerDigit(); 
+		}
 		int npairs = ba->nvpairs;
 		//cout << " CollectMore2minirows vpairs status nvpairs=" << npairs <<" ib="<<ib<< endl;
 		uint32_t bcells1,bcells2;

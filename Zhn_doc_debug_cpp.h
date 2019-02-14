@@ -29,9 +29,8 @@ void ZH_GLOBAL2::Debug(){
 
 void ZHOU::Debug(int all){
 	//	if(0) return;
-	cout << "DEBUG index=" << (int)index << " nbsol=" << zh_g.nsol << " unsolved=" << cells_unsolved.Count()
-		<< " ndigits=" << ndigits << " unsolved digits 0" 
-        <<oct<< unsolved_digits <<dec<< endl;
+	cout << "DEBUG  nbsol=" << zh_g.nsol << " unsolved=" << cells_unsolved.Count()
+		 << endl;
 	char zi[82];  SetKnown(zi);
 	cout <<zi<<" known rows digits"<<endl;
 	if(!all) return;
@@ -135,7 +134,7 @@ void ZHOU::ImageCandidats_b3() {// only active digits ??
 
 
 void ZHOU::DebugDigit(int digit){
-	cout << "DEBUG index=" << index << " digit=" << digit+1  << endl;
+	cout << "DEBUG  digit=" << digit+1  << endl;
 	for (int ib = 0; ib<3; ib++) {
 		for (int ir = 0; ir<3; ir++){
 			unsigned vf = FD[digit][0].bf.u32[ib],

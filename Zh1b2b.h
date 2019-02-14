@@ -115,7 +115,7 @@ struct ZH2B {// size 32 bytes
 	}
 	inline int Unsolved_Count() { return rows_unsolved.Count(); }
 	void InitTclues(uint32_t * tclues, int n);
-	uint64_t ValidXY(uint32_t * tclues, int n);
+	uint64_t ValidXY(uint32_t * tclues, int n,int test=0);
 	uint64_t MoreSocket2();
 	uint64_t MoreSocket2First(int digit);
 	uint64_t MoreSocket2Second(int digit);
@@ -260,6 +260,7 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	 inline int Unsolved_Count() { return _popcnt32(cells_unsolved); }
 	 int ApplySingleOrEmptyCells();
 	 void InitOne_std_band(); // after getband in zh1b_g
+	 void CheckSolPerDigit();     
 	 int InitSudokux(GINT * t, int n);
 	 void AddMissingUAs(int * tcells,int ncells);
 	 int Update();

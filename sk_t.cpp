@@ -33,6 +33,13 @@ char * Char27out(int w){
 	for(int j=26;j>=0;j--) if(w & (1<<j))	ws[j]='1';
 	return ws;
 }
+char * Char32out(int w) {
+	static char ws[33];
+	strncpy(ws, empty_puzzle, 32);
+	ws[32] = 0;
+	for (int j = 31; j >= 0; j--) if (w & (1 << j))	ws[j] = '1';
+	return ws;
+}
 char * Char9out(int w){
 	static char ws[10];
 	strncpy(ws, empty_puzzle, 9);

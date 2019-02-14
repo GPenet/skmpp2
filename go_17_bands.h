@@ -84,16 +84,17 @@ struct GENUAS_B12 {// for uas collection in bands 1+2 using brute force
 	//_____________________ functions collect UAs bands 1+2
 	int Initgen();
 	void BuildFloorsAndCollectOlds(int fl);
-	int AddUA64(uint64_t * t, uint32_t & nt);
+	//int AddUA64(uint64_t * t, uint32_t & nt);
 	inline void AddUA(uint64_t v) {
-		ua = v; AddUA64(tua, nua);
+		ua = v; AddUA64(tua, nua,ua);
 	}
 	inline void AddUACheck(uint64_t v) {
 		if (nua >= TUA64_12SIZE) nua = TUA64_12SIZE - 1;
-		ua = v; AddUA64(tua, nua);
+		ua = v; AddUA64(tua, nua,ua);
 	}
 	void BuilOldUAs( uint32_t r0);
 	int CheckOld();
+	int CheckMain(uint64_t wua);
 	void CollectMore();
 	void CollectMoreTry6_7();
 	void EndCollectMoreStep();

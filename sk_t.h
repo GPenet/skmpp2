@@ -145,6 +145,7 @@ extern void Coutg9(char * zl, int endl = 1);
 extern void CoutGrid(char * zc);
 extern char * Char9out(int w);
 extern char * Char27out(int w);
+extern char * Char32out(int w);
 extern char * Char54out(uint64_t v);
 extern char * Char64out(uint64_t v);
 extern char * Char2Xout(uint64_t v);
