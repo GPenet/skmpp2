@@ -21,26 +21,6 @@ void Go_c0(){
 		if (npuz < sgo.vx[0]) continue;
 		if (sgo.vx[8])cout << ze << "to process npuz=" << npuz << endl;
 		long tdeb = GetTimeMillis();
-#ifdef ZHOU_OLD
-		zhou[0].glb.diag = sgo.vx[9];
-		for (uint32_t i = 0; i< sgo.vx[2]; i++){
-			int ir = (zhou[0].CheckValidityQuick(ze));
-			nn[ir]++;
-			//			if (!ir && !i) cout << finput.ze << " invalide" << endl;
-		}
-		if (sgo.vx[8]){
-			cout << "loop sommaire nsol=" << zhou[0].glb.nsol << endl;
-			for (int i = 0; i < 10; i++) if (zhou[0].glb.cpt[i])
-				cout << zh_g_cpt[i] << "\t" << zhou[0].glb.cpt[i] << endl;
-			long tfin = GetTimeMillis();
-			cout << "puz loop t=" << tfin - tdeb << endl;
-
-		}
-
-		for (int i = 0; i < 10; i++) cptg[i] += zhou[0].glb.cpt[i];
-		if (npuz >= sgo.vx[1]) break;
-
-#else
 		zh_g.diag = sgo.vx[9];
 		for (uint32_t loop = 0; loop < sgo.vx[2]; loop++){
 			zh_g.Init(1);
@@ -79,7 +59,6 @@ void Go_c0(){
 		for (int i = 0; i < 10; i++) cptg[i] += zh_g2.cpt[i];
 		if (npuz >= sgo.vx[1]) break;
 
-#endif
 		if (1) return;
 	}
 	if (1) {
@@ -117,16 +96,64 @@ void Go_c11() { // count valid puzzles in entry
 		cerr << "error open file " << sgo.finput_name << endl;
 		return;
 	}
+	int loop = sgo.vx[1],mode=0;
+	if (loop) {
+		mode = 1;
+		cout << "go for n loop=<<loop" << endl;
+	}
 	uint64_t cc[3] = { 0,0,0 };
 	char ze[200]; ze[81] = 0;
-	while (finput.GetPuzzle(ze)) {
-		int ir = zhou[0].CheckValidityQuick(ze);
-		if (ir < 0 || ir>2) ir = 0;
-		cc[ir]++;
+	switch (mode) {
+	case 0:
+			while (finput.GetPuzzle(ze)) {
+				int ir = zhou[0].CheckValidityQuick(ze);
+				if (ir < 0 || ir>2) ir = 0;
+				cc[ir]++;
+			}
+			break;
+		case 1: {
+			while (finput.GetPuzzle(ze)) {
+				for (int i = 0; i < loop; i++) {
+					int ir = zhou[0].CheckValidityQuick(ze);
+					if (ir < 0 || ir>2) ir = 0;
+					cc[ir]++;
+				}
+			}
+		}
+				break;
 	}
+
 	cout << "count " << cc[0] << ";" << cc[1] << ";" << cc[2] << endl;
 
 }
+
+
+void Go_c20() { // Serg file
+	int filter = sgo.bfx[0];
+	if (!sgo.finput_name) return;
+	cout << "brute force Go_20 entry " << sgo.finput_name << " input" << endl;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	char ze[200]; ze[81] = 0;
+	while (finput.GetPuzzle(ze)) {
+		zh_g.Init(1);// maxsols=1
+		if (zh_g.Go_InitSudoku(ze))continue;
+		cout << ze << endl;
+		//zhou[0].ImageCandidats();
+		int ir = zhou[0].FullUpdate();
+		zhou[0].ImageCandidats();
+
+//		int ir = zhou[0].CheckValidityQuick(ze);
+
+
+	}
+
+}
+
+
 int TWO_DIGITS::Hiden_Pairs_Box(){// etude recherche hidden biv
 	nhp = 0;
 	for (int iband = 0; iband < 3; iband++){

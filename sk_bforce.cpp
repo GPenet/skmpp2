@@ -46,12 +46,31 @@ void Go_c11() { // count valid puzzles in entry
 		cerr << "error open file " << sgo.finput_name << endl;
 		return;
 	}
+	int loop = sgo.vx[1], mode = 0;
+	if (loop) {
+		mode = 1;
+		cout << "go for n loop=<<loop" << endl;
+	}
 	uint64_t cc[3] = { 0,0,0 };
 	char ze[200]; ze[81] = 0;
-	while (finput.GetPuzzle(ze)) {
-		int ir=zhou[0].CheckValidityQuick(ze);
-		if (ir < 0 || ir>2) ir = 0;
-		cc[ir]++;
+	switch (mode) {
+	case 0:
+		while (finput.GetPuzzle(ze)) {
+			int ir = zhou[0].CheckValidityQuick(ze);
+			if (ir < 0 || ir>2) ir = 0;
+			cc[ir]++;
+		}
+		break;
+	case 1: {
+		while (finput.GetPuzzle(ze)) {
+			for (int i = 0; i < loop; i++) {
+				int ir = zhou[0].CheckValidityQuick(ze);
+				if (ir < 0 || ir>2) ir = 0;
+				cc[ir]++;
+			}
+		}
+	}
+			break;
 	}
 	cout << "count " << cc[0] << ";" << cc[1] << ";" << cc[2] << endl;
 }

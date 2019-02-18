@@ -231,7 +231,8 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	uint32_t fd_sols[2][9];//start puzzle/ solution
 	uint32_t fdsw[3][9];//morphed digits puzzle/ solution rev
 	uint32_t ndigits;
-	uint32_t previous_ua_status[6];// index 0 is for digit 3
+	uint32_t previous_ua_status[6],// index 0 is for digit 3
+		upstream_unsolved_cells[6];
 
 	ZHONE_GLOBAL();
 	void GetBand(int * b, uint32_t * t);
@@ -264,6 +265,7 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	 int InitSudokux(GINT * t, int n);
 	 void AddMissingUAs(int * tcells,int ncells);
 	 int Update();
+	 int Update4();
 	 int Update6();
 	 int Update7();
 	 int FullUpdate();

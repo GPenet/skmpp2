@@ -586,7 +586,8 @@ void GENUAS_B12::CollectMoreTry6_7() {
 		int fl3 = floors_3d[i6];// , fl6 = 0x1ff ^ fl3;
 		if (fl3&digp) continue;// digits must be in the multi floors
 		floors = 0x1ff ^ fl3;
-		if (zh1b_g.diag) cout << "start floors 0" << oct << floors << dec << endl;
+		if (zh1b_g.diag) 
+			cout << "start floors 0" << oct << floors << dec << endl;
 		//zhone[0].InitOne_std_band();
 		zhone[0].Start_Uas_Mini(floors, digp);
 		if (0 &&modemore == 4) {
@@ -595,6 +596,8 @@ void GENUAS_B12::CollectMoreTry6_7() {
 			cout << endl;
 			for (int i = 0; i < 9; i++) cout << bb->revised_g[i] << "\t";
 			cout << dec << endl;
+			if (floors == 0374)zh1b_g.diag = 1;
+			else 		zh1b_g.diag = 0;
 		}
 		zhone[0].ApplyGangsterChanges(bb->gangster, bb->revised_g);
 		zh1b_g.nua = 0;
@@ -604,12 +607,15 @@ void GENUAS_B12::CollectMoreTry6_7() {
 		zhone[0].Guess6();
 		if (zh1b_g.nua) EndCollectMoreStep();
 	}
+
 	nfloors = 7;// for debugging
 	//____________ try now 7 digits unsolved in band a
 	for (int i7 = 0; i7 < 36; i7++) {
 		int fl2 = floors_2d[i7];// , fl7 = 0x1ff ^ fl2;
 		if (fl2&digp) continue;// digits must be in the multi floors
 		floors = 0x1ff ^ fl2;
+		if (zh1b_g.diag) 
+		cout << "start floors 0" << oct << floors << dec << endl;
 		//zhone[0].InitOne_std_band();
 		zhone[0].Start_Uas_Mini(floors, digp);
 		if (0 && modemore == 4) {
@@ -635,16 +641,19 @@ void GENUAS_B12::EndCollectMoreStep() {
 		ua = zh1b_g.tua[i] &= BIT_SET_27;
 		if (!ib) ua <<= 32;
 		ua |= w0;
-		if (1 ||g17b.debug17) {
+		if (g17b.debug17) {
 			if (!(ua&g17b.band12_17)) {
 				cout << "EndCollectMoreStep error wrong ua more  seen i="<<i 
 					<<" zh1b_g.nua= "<< zh1b_g.nua << endl;
-				cout << Char2Xout(ua) << " wrong ua" << endl;
+				cout << Char2Xout(ua) << " wrong ua table coming out of zhone" << endl;
+				for (uint32_t i = 0; i < zh1b_g.nua; i++) {
+					cout << Char27out(zh1b_g.tua[i]) << endl;
+				}
 				cout << "floors 0" << oct << floors << " digs 0" << digp <<dec<< endl;
-				zhone[0].InitOne_std_band();
+				//zhone[0].InitOne_std_band();
 				zhone[0].Start_Uas_Mini(floors, digp);
 				zhone[0].ApplyGangsterChanges(bb->gangster, bb->revised_g);
-				zhone[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+				//zhone[0].ImageCandidats();//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 				zh1b_g.nua = 0;
 				zhone[0].InitGuess();
 				zh1b_g.diag = 1;
@@ -695,7 +704,7 @@ void GENUAS_B12::CollectMore2minirows() {
 	modemore = 4;
 	STD_B1_2 * mybx[2] = { &myband1 ,&myband2 };
 	for (ib = 0; ib < 2; ib++) {
-		if(ib)	zh1b_g.diag = 1;
+		//if(ib)	zh1b_g.diag = 1;
 		ba = mybx[ib];
 		bb = mybx[1 - ib];
 		zh1b_g.GetBand(bb->band0, tuamore);

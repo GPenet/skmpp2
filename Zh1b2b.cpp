@@ -1378,7 +1378,6 @@ void ZHONE::Seta(int digit, int cell) { // single in cell
 	FD[5] &= cl; FD[6] &= cl; FD[7] &= cl; FD[8] &= cl;
 	FD[digit] |= bit;// restore digit
 }
-
 int ZHONE::Update() {
 	int Shrink = 1;
 	register int S, A, cl;
@@ -1403,40 +1402,51 @@ int ZHONE::Update() {
 #endif
 	return 1;
 }
-
+int ZHONE::Update4() {
+	int Shrink = 1;
+	register int S, A, cl;
+	register uint32_t *wcl = FD;
+	while (Shrink) {
+		Shrink = 0;
+		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
+		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
+		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
+	}// end while
+	return 1;
+}
 int ZHONE::Update6() {
 	int Shrink = 1;
 	register int S, A, cl;
 	register uint32_t *wcl = FD;
 	while (Shrink) {
 		Shrink = 0;
-		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
-		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
-		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
-		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
-		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
 		if ((A = FD[5]) - CompFD[5]) { UPDN1(5, 0, 1, 2, 3, 4, 6, 7, 8); }
+		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
+		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
+		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
 	}// end while
 	return 1;
 }
-
 int ZHONE::Update7() {
 	int Shrink = 1;
 	register int S, A, cl;
 	register uint32_t *wcl = FD;
 	while (Shrink) {
 		Shrink = 0;
-		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
-		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
-		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
-		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
-		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
-		if ((A = FD[5]) - CompFD[5]) { UPDN1(5, 0, 1, 2, 3, 4, 6, 7, 8); }
 		if ((A = FD[6]) - CompFD[6]) { UPDN1(6, 0, 1, 2, 3, 4, 5, 7, 8); }
+		if ((A = FD[5]) - CompFD[5]) { UPDN1(5, 0, 1, 2, 3, 4, 6, 7, 8); }
+		if ((A = FD[4]) - CompFD[4]) { UPDN1(4, 0, 1, 2, 3, 5, 6, 7, 8); }
+		if ((A = FD[3]) - CompFD[3]) { UPDN1(3, 0, 1, 2, 4, 5, 6, 7, 8); }
+		if ((A = FD[2]) - CompFD[2]) { UPDN1(2, 0, 1, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[1]) - CompFD[1]) { UPDN1(1, 0, 2, 3, 4, 5, 6, 7, 8); }
+		if ((A = FD[0]) - CompFD[0]) { UPDN1(0, 1, 2, 3, 4, 5, 6, 7, 8); }
 	}// end while
 	return 1;
 }
-
 void ZHONE::Guess() {
 	if (!cells_unsolved) {
 		if (zh1b_g.type) {
@@ -1611,6 +1621,10 @@ int ZHONE::Start_nFloors(int floors) {
 		FD[i] &= cells_unsolved;
 		if (_popcnt32(FD[i]) == 3)return 1;
 	}
+	if (zh1b_g.diag) {
+		cout << "end start nfloors" << endl;
+		ImageCandidats();
+	}
 	return 0;
 }
 void ZHONE::Start_Uas_Mini(int floors, int floors_mini_row) {
@@ -1661,12 +1675,25 @@ void ZHONE::ApplyGangsterChanges(int * g0, int * g1) {
 			else FD[digit] |= col & cells_unsolved;
 		}
 	}
+	if (zh1b_g.diag) {
+		cout << "end apply gangster changes" << endl;
+		ImageCandidats();
+	}
+
 }
 void ZHONE::InitGuess() {// after start floors before guess
 	for (uint32_t idig = 0; idig < zh1b_g.ndigits; idig++)
 		FD[idig] |= 7 << 27;
 	memset(zh1b_g.previous_ua_status, 0,
 		sizeof zh1b_g.previous_ua_status); //no previous status
+	for (int i = 0; i < 6; i++)
+		zh1b_g.upstream_unsolved_cells[i] = BIT_SET_27;
+	if (zh1b_g.diag) {
+		cout << "end Init guess" << endl;
+		ImageCandidats();
+		cout << "end Init guess bis" << endl;
+		ImageCandidats();
+	}
 }
 int ZHONE::UpdateDigit(int digit) {
 	register int S, A = FD[digit], cl;
@@ -1692,7 +1719,21 @@ void ZHONE::Set2(int cell) { // single in cell
 	FD[1] &= cl;
 }
 void ZHONE::Guess2() {	// note if all 1 are settled, the puzzle is solved
+	if (zh1b_g.diag) {
+		cout << Char27out(zh1b_g.previous_ua_status[0]) << "guess 2 with previous" << endl;
+		cout << Char27out(zh1b_g.upstream_unsolved_cells[0]) << "upstream" << endl;
+		ImageCandidats();	}
 	int v = FD[0], vr = v >> 27;
+	if (!vr) {
+		register uint32_t w0 = FD[0] & zh1b_g.fdsw[2][0],
+			w1 = FD[1] & zh1b_g.fdsw[2][1];
+		if ((!w0) || (!w1)) return;
+		w0 |= (w1 | zh1b_g.previous_ua_status[0]);
+		w0 |= _popcnt32(w0) << 27;
+		zh1b_g.AddUA(w0);
+		if (zh1b_g.diag)	cout << Char27out(w0) << " ua added direct guess2 + count " << (w0 >> 27) << "  nua=" << zh1b_g.nua << endl;
+		return;
+	}
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown rows
 	//cout << Char27out(v) << " v guess2" << endl;
@@ -1708,20 +1749,38 @@ void ZHONE::Guess2() {	// note if all 1 are settled, the puzzle is solved
 			}
 			else {// all digit 0 solved this is a solution
 				//cout << Char27out(mynext->FD[0]) << " solution digit 0 " << endl;
+				int unsolved = zh1b_g.upstream_unsolved_cells[0] & ~mynext->FD[0];
 				register uint32_t w0 = mynext->FD[0] & zh1b_g.fdsw[2][0],
-					w1 = mynext->FD[1] & zh1b_g.fdsw[2][1]& mynext->cells_unsolved;
+					w1 =( mynext->FD[1] & unsolved) & zh1b_g.fdsw[2][1];
 				if ((!w0) || (!w1)) continue;
 				w0 |= (w1  | 	zh1b_g.previous_ua_status[0]);
 				w0 |= _popcnt32(w0) << 27;
-				if (zh1b_g.diag)
-					cout << Char27out(w0) << " ua added guess2 + count "<<(w0>>27)  << endl;
 				zh1b_g.AddUA(w0);
+				if (zh1b_g.diag)	cout << Char27out(w0) << " ua added guess2 + count " << (w0 >> 27) << "  nua=" << zh1b_g.nua << endl;
 			}
 		}
 	}
 }
 void ZHONE::Guess3() {	// solve digit 3/2
+	if (zh1b_g.diag) {
+		cout<<Char27out(zh1b_g.previous_ua_status[1]) << "guess 3 with previous" << endl;
+		cout << Char27out(zh1b_g.upstream_unsolved_cells[1]) << "upstream unsolved" << endl;
+		ImageCandidats();
+	}
 	int v = FD[2], vr = v >> 27;
+	if (!vr) {
+		uint32_t w3 = FD[2] & zh1b_g.fdsw[2][2];
+		if (!w3) return;
+		zh1b_g.upstream_unsolved_cells[0] =
+			zh1b_g.upstream_unsolved_cells[1]  &~FD[2];
+		if (zh1b_g.diag)			cout << Char27out(w3) << " guess3 ua" << endl;
+		zh1b_g.previous_ua_status[0] = w3 | zh1b_g.previous_ua_status[1];
+		//				mynext->FD[4] &= (mynext->cells_unsolved | 7 << 27);
+		uint32_t cl = (zh1b_g.upstream_unsolved_cells[0] | 7 << 27);
+		FD[1] &= cl; FD[0] &= cl;
+		Guess2();
+		return;
+	}
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row
 	uint32_t cell;
@@ -1739,16 +1798,36 @@ void ZHONE::Guess3() {	// solve digit 3/2
 					cout << Char27out(mynext->FD[2]) << " guess2 " << endl;
 				uint32_t w3 = mynext->FD[2] & zh1b_g.fdsw[2][2];
 				if (!w3) continue;
+				zh1b_g.upstream_unsolved_cells[0] =
+					zh1b_g.upstream_unsolved_cells[1] & ~mynext->FD[2];
 				zh1b_g.previous_ua_status[0] = w3 | zh1b_g.previous_ua_status[1];
-				mynext->FD[1] &= (mynext->cells_unsolved|7<<27);
-				mynext->FD[0] &= (mynext->cells_unsolved | 7 << 27);
+				uint32_t cl = (zh1b_g.upstream_unsolved_cells[0] | 7 << 27);
+				mynext->FD[1] &= cl;		mynext->FD[0] &= cl;
 				mynext->Guess2();
 			}
 		}
 	}
 }
 void ZHONE::Guess4() {	//  solve digit 4/3
+	if (zh1b_g.diag) {
+		cout << Char27out(zh1b_g.previous_ua_status[2]) << "guess 4" << endl;
+		cout << Char27out(zh1b_g.upstream_unsolved_cells[2]) << "upstream unsolved" << endl;
+		ImageCandidats();
+	}
 	int v = FD[3], vr = v >> 27;
+	if (!vr) {
+		uint32_t w4 = FD[3] & zh1b_g.fdsw[2][3];
+		if (!w4) return;
+		zh1b_g.upstream_unsolved_cells[1] =
+			zh1b_g.upstream_unsolved_cells[2]  &~FD[3];
+		if (zh1b_g.diag)			cout << Char27out(w4) << " direct guess4 ua" << endl;
+		zh1b_g.previous_ua_status[1] = w4 | zh1b_g.previous_ua_status[2];
+		//				mynext->FD[4] &= (mynext->cells_unsolved | 7 << 27);
+		uint32_t cl = (zh1b_g.upstream_unsolved_cells[1] | 7 << 27);
+		FD[2] &= cl; FD[1] &= cl; FD[0] &= cl;
+		Guess3();
+		return;
+	}
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row
 	uint32_t cell;
@@ -1762,23 +1841,39 @@ void ZHONE::Guess4() {	//  solve digit 4/3
 				mynext->Guess4();
 			}
 			else {// all digit 4 solved go to guess3 if not a zero deviation
-				if (zh1b_g.diag > 1)
-					cout << Char27out(mynext->FD[3]) << " guess3 " << endl;
 				uint32_t w4 = mynext->FD[3] & zh1b_g.fdsw[2][3];
 				if (!w4) continue;
+				if (zh1b_g.diag > 1)
+					cout << Char27out(mynext->FD[3]) << " new guess4" << endl;
+				zh1b_g.upstream_unsolved_cells[1] =
+					zh1b_g.upstream_unsolved_cells[2] & ~mynext->FD[3];
 				zh1b_g.previous_ua_status[1] = w4 | zh1b_g.previous_ua_status[2];
-				mynext->FD[2] &= (mynext->cells_unsolved | 7 << 27);
-				mynext->Guess3();
+				uint32_t cl = (zh1b_g.upstream_unsolved_cells[1] | 7 << 27);
+				mynext->FD[2] &= cl;
+				mynext->Guess3(); mynext->FD[1] &= cl;	mynext->FD[0] &= cl;
 			}
 		}
 	}
 }
 void ZHONE::Guess5() {	//  solve digit 5/4
-	if (zh1b_g.diag) {
-		cout << "guess 5" << endl;
-		ImageCandidats();
-	}
+	if (zh1b_g.diag) {		
+		cout << Char27out(zh1b_g.previous_ua_status[3]) << "guess 5 previous ua" << endl;
+		cout << Char27out(zh1b_g.upstream_unsolved_cells[3]) << "upstream unsolved" << endl;
+		ImageCandidats();	}
+	if (!Update4()) return;;// digit 5 done in guess6
 	int v = FD[4], vr = v >> 27;
+	if (!vr) {
+		uint32_t w5 = FD[4] & zh1b_g.fdsw[2][4];
+		if (!w5) return;
+		zh1b_g.upstream_unsolved_cells[2] =
+			zh1b_g.upstream_unsolved_cells[3] & ~FD[4];
+		if (zh1b_g.diag)			cout << Char27out(w5) << " direct guess5 ua" << endl;
+		zh1b_g.previous_ua_status[2] = w5 | zh1b_g.previous_ua_status[3];
+		uint32_t cl = (zh1b_g.upstream_unsolved_cells[2] | 7 << 27);
+		FD[3] &= cl; FD[2] &= cl; FD[1] &= cl; FD[0] &= cl;
+		Guess4();
+		return;
+	}
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row
 	uint32_t cell;
@@ -1792,49 +1887,98 @@ void ZHONE::Guess5() {	//  solve digit 5/4
 				mynext->Guess5();
 			}
 			else {// all digit 5 solved go to guess4 if not a zero deviation
-				if (zh1b_g.diag > 1)
-					cout << Char27out(mynext->FD[4]) << " guess5 " << endl;
 				uint32_t w5 = mynext->FD[4] & zh1b_g.fdsw[2][4];
 				if (!w5) continue;
+				if (zh1b_g.diag) {
+					cout << Char27out(mynext->FD[4]) << " new guess5 " << endl;
+					cout << Char27out(w5) << " new guess5 ua" << endl;
+				}
+				zh1b_g.upstream_unsolved_cells[2] =
+					zh1b_g.upstream_unsolved_cells[3]  &~mynext->FD[4];
 				zh1b_g.previous_ua_status[2] = w5 | zh1b_g.previous_ua_status[3];
-				mynext->FD[3] &= (mynext->cells_unsolved | 7 << 27);
+				uint32_t cl = (zh1b_g.upstream_unsolved_cells[2] | 7 << 27);
+				mynext->FD[3] &= cl;
+				mynext->FD[2] &= cl;	mynext->FD[1] &= cl;	mynext->FD[0] &= cl;
 				mynext->Guess4();
 			}
 		}
 	}
 }
 void ZHONE::Guess6() {	//  solve digit 6/5
-	if (zh1b_g.diag) {
-		cout << "guess 6" << endl;
-		ImageCandidats();
-	}
+	if (zh1b_g.diag) {		
+		cout << Char27out(zh1b_g.previous_ua_status[4]) << "guess 6" << endl;
+		cout << Char27out(zh1b_g.upstream_unsolved_cells[4]) << "upstream unsolved" << endl;
+		ImageCandidats();}
+	if (!Update6()) return;
 	int v = FD[5], vr = v >> 27;
+	if (!vr) {
+		uint32_t w6 = FD[5] & zh1b_g.fdsw[2][5];
+		if (!w6) return;
+		zh1b_g.upstream_unsolved_cells[3] =
+			zh1b_g.upstream_unsolved_cells[4] & ~FD[5];
+		if (zh1b_g.diag) {
+			cout << Char27out(w6) << " guess6 ua exit solved" << endl;
+		}
+		zh1b_g.previous_ua_status[3] = w6 | zh1b_g.previous_ua_status[4];
+		//				mynext->FD[4] &= (mynext->cells_unsolved | 7 << 27);
+		uint32_t cl = (zh1b_g.upstream_unsolved_cells[3] | 7 << 27);
+		FD[4] &= cl; FD[3] &= cl; FD[2] &= cl; FD[1] &= cl; FD[0] &= cl;
+		Guess5();
+		return;
+	}
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row
+	if (zh1b_g.diag) cout << Char27out(v) << " row digit'6' for bit 0" << oct << vr << dec << endl;
 	uint32_t cell;
 	while (bitscanforward(cell, v)) {// first cell
 		v ^= 1 << cell; // clear bit
+		if (zh1b_g.diag) cout << " guess cell " << cell << endl;
 		ZHONE * mynext = this + 1; // start next guess
 		*mynext = *this;
-		mynext->Assign(5, cell);
+		mynext->Assign(5, cell); 
 		if (mynext->UpdateDigit(5)) {// update digit 4/3
+			if (zh1b_g.diag) {
+				cout << "status after mynext->UpdateDigit(5)" << endl;
+				cout << Char27out(mynext->FD[5]) << " FD[5] digit  "<< zh1b_g.digmap[5] + 1 << endl;
+				mynext->ImageCandidats();
+			}
 			if (mynext->FD[5] >> 27) {
 				mynext->Guess6();
 			}
 			else {// all digit 6 solved go to guess5 if not a zero deviation
-				if (zh1b_g.diag>1)
+				if (zh1b_g.diag)
 					cout << Char27out(mynext->FD[5]) << " guess6 " << endl;
 				uint32_t w6 = mynext->FD[5] & zh1b_g.fdsw[2][5];
 				if (!w6) continue;
+				zh1b_g.upstream_unsolved_cells[3] =
+					zh1b_g.upstream_unsolved_cells[4] & ~mynext->FD[5];
 				zh1b_g.previous_ua_status[3] = w6 | zh1b_g.previous_ua_status[4];
-				mynext->FD[4] &= (mynext->cells_unsolved | 7 << 27);
+				uint32_t cl= (zh1b_g.upstream_unsolved_cells[3] | 7 << 27);
+				mynext->FD[4] &= cl;	mynext->FD[3] &= cl;
+				mynext->FD[2] &= cl;	mynext->FD[1] &= cl;	mynext->FD[0] &= cl;
 				mynext->Guess5();
 			}
 		}
 	}
 }
 void ZHONE::Guess7() {	//  solve digit 7/6
+	if (zh1b_g.diag) {		cout << "guess 7" << endl;		ImageCandidats();	}
+	if (!Update7()) return;;
 	int v = FD[6], vr = v >> 27;
+	if (!vr) {
+		uint32_t w7 = FD[6] & zh1b_g.fdsw[2][6];
+		if (!w7) return;
+		zh1b_g.upstream_unsolved_cells[4] =
+			zh1b_g.upstream_unsolved_cells[5] &~ FD[6];
+		if (zh1b_g.diag)			cout << Char27out(w7) << " guess7 ua" << endl;
+		zh1b_g.previous_ua_status[4] = w7 | zh1b_g.previous_ua_status[5];
+		//				mynext->FD[4] &= (mynext->cells_unsolved | 7 << 27);
+		uint32_t cl = (zh1b_g.upstream_unsolved_cells[4] | 7 << 27);
+		FD[5] &= cl; FD[4] &= cl; FD[3] &= cl; 
+		FD[2] &= cl; FD[1] &= cl; FD[0] &= cl;
+		Guess6();
+		return;
+	}
 	vr = (-vr)&vr; // catch last bit
 	v &= TblRowUnsolved[vr];// unknown in last unknown row
 	uint32_t cell;
@@ -1850,8 +1994,12 @@ void ZHONE::Guess7() {	//  solve digit 7/6
 			else {// all digit 7 solved go to guess6 if not a zero deviation
 				uint32_t w7 = mynext->FD[6] & zh1b_g.fdsw[2][6];
 				if (!w7) continue;
+				zh1b_g.upstream_unsolved_cells[4] =
+					zh1b_g.upstream_unsolved_cells[5] & ~ mynext->FD[6];
 				zh1b_g.previous_ua_status[4] = w7 | zh1b_g.previous_ua_status[5];
-				mynext->FD[5] &= (mynext->cells_unsolved | 7 << 27);
+				uint32_t cl = (zh1b_g.upstream_unsolved_cells[4] | 7 << 27);
+				mynext->FD[5] &= cl;	mynext->FD[4] &= cl;	mynext->FD[3] &= cl;
+				mynext->FD[2] &= cl;	mynext->FD[1] &= cl;	mynext->FD[0] &= cl;
 				mynext->Guess6();
 			}
 		}

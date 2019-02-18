@@ -32,7 +32,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	}
 	//=========================== collect UAs (still room for improvement)
 	if(genuasb12.Initgen()) return;
-	if (1) return;
+	//if (1) return;
 	genb12.BuildGang9x3();
 	genb12.SecondSockets2Setup();// collect GUA2s 
 	genb12.SecondSockets3Setup();// collect GUA3s 
@@ -593,9 +593,12 @@ void G17XY::Go_Guas_collect(){//
 		int i81= indexstep.tactive2[i],
 			b1 = indexstep.tactive2_start[i] >> 7,
 			b2 = indexstep.tactive2_end[i] >> 7;
-		if (b2 > NVGUAS256) continue; // lost uas 
+
+		if (b1 > NVGUAS256) continue; // lost uas 
+		if (b2 > NVGUAS256)b2 = b1; // partially lost uas 
 		BF128 vw = xyvg.v[b1] & indexstep.vid81s2[i81].v[b1];
 		if (vw.isEmpty()) {// check second 
+			if (b1 == b2) continue;
 			vw = xyvg.v[b2] & indexstep.vid81s2[i81].v[b2];
 			if (vw.isEmpty()) continue;// all hit
 		}
@@ -605,9 +608,11 @@ void G17XY::Go_Guas_collect(){//
 		int i81 = indexstep.tactive3[i],
 			b1 = indexstep.tactive3_start[i] >> 7,
 			b2 = indexstep.tactive3_end[i] >> 7;
-		if (b2 > NVGUAS256) continue; // lost uas 
+		if (b1 > NVGUAS256) continue; // lost uas 
+		if (b2 > NVGUAS256)b2=b1; // partially lost uas 
 		BF128 vw = xyvg.v[b1] & indexstep.vid81s3[i81].v[b1];
-		if (vw.isEmpty()) {// check second 
+		if (vw.isEmpty() ) {// check second 
+			if (b1 == b2) continue;
 			vw = xyvg.v[b2] & indexstep.vid81s3[i81].v[b2];
 			if (vw.isEmpty()) continue;// all hit
 		}
