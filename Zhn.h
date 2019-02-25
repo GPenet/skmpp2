@@ -26,6 +26,7 @@ const extern int TblColumnSingle[512]; // single in column applied to shrinked b
 const extern int TblShrinkSingle[512]; // keep only rows with single
 const extern int TblRowUniq[512]; // 1 is row not defined in block  mode  to 111
 const extern T128 AssignMask_Digit[81];
+const extern T128 zhoustart[19];
 //const extern T128 AssignMask_OtherDigits[81];
  /*ZH_1D class to solve one digit 3 bands
 all valid solutions  are stored in table
@@ -211,6 +212,11 @@ struct ZHOU{// size 32 bytes
 	int Full17Update();
 	void Guess17(int index,int diag);
 	void Compute17Next(int index, int diag) ;
+
+	// special one known solution
+	void GuessOneKnown(int index);
+	void ComputeNextOneKnown(int index);
+
 
 //#ifdef ISSOLVERSTEP
 	// located in go_0xx.cpp

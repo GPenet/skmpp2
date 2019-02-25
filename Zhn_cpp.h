@@ -282,7 +282,7 @@ int ZH_1D::Update() {
 //============================= ZH_GLOBAL code and workinfg areas
 
 ZH_GLOBAL zh_g;
-ZHOU zhou_i, zhou_ip,//zhou_i================== initial for a GAME
+ZHOU  zhou_ip,//
 zhou_solve;// basis to solve a puzzle using elimination logic
 ZHOU zhou[50]; // must host main brute force plus minimality analysis and recursive generation
  ZH_GLOBAL::ZH_GLOBAL(){
@@ -295,11 +295,6 @@ ZHOU zhou[50]; // must host main brute force plus minimality analysis and recurs
 	init_3x.bf.u32[3] = 0;
 	init_digit = init_3x;
 	init_digit.bf.u32[3] = 0777;//all rows unsolved
-	for (int i = 0; i < 9; i++)	{
-		zhou_i.FD[i][0] = init_digit;
-		zhou_i.FD[i][1] = init_3x;
-	}
-	zhou_i.cells_unsolved = init_3x;
 }
 
 int ZH_GLOBAL::Go_InitSudoku(char * ze){
@@ -568,7 +563,7 @@ inline void ZHOU::Assign(int digit, int cell, int xcell) {
 int ZHOU::PartialInitSearch17(uint32_t * t, int n) {
 	zh_g2.digitsbf = 0;
 	memset(zh_g2.Digit_cell_Assigned, 0, sizeof zh_g2.Digit_cell_Assigned);
-	*this = zhou_i;
+	memcpy(this, zhoustart, sizeof zhoustart);
 	for (int icell = 0; icell < n; icell++) {
 		int cell = t[icell], digit = zh_g2.grid0[cell];
 		zh_g2.digitsbf |= 1 << digit;
@@ -654,7 +649,7 @@ exit_digits:
 int ZHOU::InitSudoku(GINT16 * t, int n){ 
 	BF128 Digit_cell_Assigned[9];
 	memset(Digit_cell_Assigned, 0, sizeof Digit_cell_Assigned);
-	*this = zhou_i;
+	memcpy(this, zhoustart, sizeof zhoustart);
 	for (int ic = 0; ic < n; ic++)   {
 		int digit = t[ic].u8[1], cell = t[ic].u8[0], xcell = C_To128[cell];
 		if (FD[digit][0].Off(xcell))  return 1;// check not valid entry
@@ -721,7 +716,7 @@ int ZHOU::IsMinimale(GINT16 * to, int no){// assumed checked valid before
 
 int ZHOU::PartialInitSudoku(GINT16 * t, int n){// if morph, done before
 	memset(zh_g2.Digit_cell_Assigned, 0, sizeof zh_g2.Digit_cell_Assigned);
-	*this = zhou_i;
+	memcpy(this, zhoustart, sizeof zhoustart);
 	for (int ic = 0; ic < n; ic++)   {
 		int digit = t[ic].u8[1], cell = t[ic].u8[0], xcell = C_To128[cell];
 		if (FD[digit][0].Off(xcell))  return 1;// check not valid entry

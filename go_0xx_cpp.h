@@ -89,6 +89,7 @@ void Go_c10() { // extract valid puzzles from entry
 
 }
 void Go_c11() { // count valid puzzles in entry
+	//zh_g.diag = 1;
 	if (!sgo.finput_name) return;
 	cout << "brute force Go_10 entry " << sgo.finput_name << " input" << endl;
 	finput.open(sgo.finput_name);
@@ -128,31 +129,177 @@ void Go_c11() { // count valid puzzles in entry
 }
 
 
-void Go_c20() { // Serg file
-	int filter = sgo.bfx[0];
+void Go_c21() { // Serg file
+	uint64_t cc[3] = { 0,0,0 };
+	int loop = sgo.vx[1], mode = 0;
+	if (loop) {
+		mode = 1;
+		cout << "go for n loop=<<loop" << endl;
+	}
 	if (!sgo.finput_name) return;
-	cout << "brute force Go_20 entry " << sgo.finput_name << " input" << endl;
+	cout << "brute force Go_21 entry " << sgo.finput_name << " input" << endl;
 	finput.open(sgo.finput_name);
 	if (!finput.is_open()) {
 		cerr << "error open file " << sgo.finput_name << endl;
 		return;
 	}
-	char ze[200]; ze[81] = 0;
-	while (finput.GetPuzzle(ze)) {
-		zh_g.Init(1);// maxsols=1
-		if (zh_g.Go_InitSudoku(ze))continue;
-		cout << ze << endl;
-		//zhou[0].ImageCandidats();
+	char *ze=finput.ze;
+	int grid0[81];
+	zh_g2.grid0 = grid0;
+	while (finput.GetLigne()) {
+		if (strlen(ze) != 163)continue;
+		char * p2 = &ze[82];
+		for (int i = 0; i < 81; i++) {
+			register int c = p2[i];
+			if (c<'1' || c>'9')goto next;;
+			grid0[i] = c - '1';
+		}
+	switch (mode) {
+	case 0: {
+		zh_g.Init(0);// maxsols=0
+		if (zh_g.Go_InitSudoku(ze)) { cc[0]++; continue; }
 		int ir = zhou[0].FullUpdate();
-		zhou[0].ImageCandidats();
-
-//		int ir = zhou[0].CheckValidityQuick(ze);
-
+		if (!ir) { cc[0]++; continue; }
+		if (ir == 2) { cc[1]++; continue; }
+		zhou[0].GuessOneKnown(0);
+		if (zh_g.nsol) cc[2]++;
+		else cc[1]++;
 
 	}
+		break;
+	case 1: {
+		for (int i = 0; i < loop; i++) {
+			zh_g.Init(0);// maxsols=0
+			if (zh_g.Go_InitSudoku(ze)) { cc[0]++; continue; }
+			int ir = zhou[0].FullUpdate();
+			if (!ir) { cc[0]++; continue; }
+			if (ir == 2) { cc[1]++; continue; }
+			zhou[0].GuessOneKnown(0);
+			if (zh_g.nsol) cc[2]++;
+			else cc[1]++;
+		}
+	}
+			break;
+	}
+	/*
+	zh_g.Init(0);// maxsols=0
+		if (zh_g.Go_InitSudoku(ze)) { cc[0]++; continue; }
+		int ir = zhou[0].FullUpdate();
+		if (!ir) { cc[0]++; continue; }
+		if (ir == 2) { cc[1]++; continue; }
+		zhou[0].GuessOneKnown(0);
+		if (zh_g.nsol) cc[2]++;
+		else cc[1]++;
+		*/
+next:;
+	}
+	cout << "count " << cc[0] << ";" << cc[1] << ";" << cc[2] << endl;
 
 }
 
+void ZHOU::ComputeNextOneKnown(int index) {
+
+	int ir = FullUpdate();
+	if (!ir) return;// locked 
+	//if (1) { cout << "index=" << index << endl; }// ImageCandidats();}
+	if (ir == 2) {//solved
+		if (index)zh_g.nsol++;
+		zh_g.go_back = 1;// closed anyway
+		return;
+	}
+	//if (index > 10) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	GuessOneKnown(index);// continue the process
+}
+
+void ZHOU::GuessOneKnown(int index) {
+	BF128 w = zh_g.pairs;
+	if (0) {
+		char ws[82];
+		cout << w.String3X(ws) << "paires" << endl;
+//		return;
+	}
+	if (w.isEmpty()){  // find triplets quads
+		BF128 R1 = FD[0][0], R2 = R1 & FD[1][0]; 	R1 |= FD[1][0];
+		BF128 R3 = R2 & FD[2][0]; R2 |= R1 & FD[2][0]; R1 |= FD[2][0];
+		BF128 R4 = R3 & FD[3][0];
+		R3 |= R2 & FD[3][0]; R2 |= R1 & FD[3][0]; R1 |= FD[3][0];
+		BF128 R5 = R4 & FD[4][0]; R4 |= R3 & FD[4][0];
+		R3 |= R2 & FD[4][0]; R2 |= R1 & FD[4][0]; R1 |= FD[4][0];
+		R5 |= R4 & FD[5][0]; R4 |= R3 & FD[5][0];
+		R3 |= R2 & FD[5][0]; R2 |= R1 & FD[5][0]; R1 |= FD[5][0];
+		R5 |= R4 & FD[5][6]; R4 |= R3 & FD[6][0];
+		R3 |= R2 & FD[6][0]; R2 |= R1 & FD[6][0]; R1 |= FD[6][0];
+		R5 |= R4 & FD[7][0]; R4 |= R3 & FD[7][0];
+		R3 |= R2 & FD[7][0]; R2 |= R1 & FD[7][0]; R1 |= FD[7][0];
+		R5 |= R4 & FD[8][0]; R4 |= R3 & FD[8][0];
+		R3 |= R2 & FD[8][0]; R2 |= R1 & FD[8][0]; R1 |= FD[8][0];
+		w= R3 - R4;
+		if (w.isEmpty())w =  R4 - R5;
+	}
+	if (w.isEmpty())w = cells_unsolved;
+	if (0) {
+		char ws[82];
+		cout << w.String3X(ws) << " w to process" << endl;
+		//		return;
+	}
+
+	{ // select band with more unsolved cells 
+		uint32_t nfreecells = 0, nw;
+		if (w.bf.u32[0]) 
+			nfreecells = _popcnt32(cells_unsolved.bf.u32[0]);
+		if (w.bf.u32[1]) {
+			if (nfreecells) {
+				nw = _popcnt32(cells_unsolved.bf.u32[1]);
+				if (nw > nfreecells) {
+					nfreecells = nw;
+					w.bf.u32[0] = 0;
+				}
+			}
+			else	nfreecells = _popcnt32(cells_unsolved.bf.u32[1]);
+		}
+		if (w.bf.u32[2]) {
+			if (nfreecells) {
+				nw = _popcnt32(cells_unsolved.bf.u32[2]);
+				if (nw > nfreecells) {
+					nfreecells = nw;
+					w.bf.u32[0] = w.bf.u32[1] = 0;
+				}
+			}
+		}
+	}
+	if (0) {
+		char ws[82];
+		cout << w.String3X(ws) << " w in best band" << endl;
+		//return;
+	}
+
+	int xcell = w.getFirst128(),
+		cell = From_128_To_81[xcell],
+		digit = zh_g2.grid0[cell],
+		tdig[10], ndig = 0;
+	if (0) {
+		cout << "cell " << cellsFixedData[cell].pt << endl; //return;
+	}
+	// if first step try first false
+	if (!index)	ClearCandidate_c(digit, cell);// force false
+	for (int idig = 0; idig < 9; idig++)
+		if (FD[idig][0].On(xcell))tdig[ndig++] = idig;
+	for (int idig = 0; idig < ndig; idig++) {
+		if (0) cout<<index  << " try false/all " << tdig[idig] + 1 << cellsFixedData[cell].pt << endl;
+		ZHOU * mynext = (this + 1);
+		*mynext = *this;
+		mynext->SetaCom(tdig[idig], cell, xcell);
+		mynext->ComputeNextOneKnown(index + 1);
+		if (zh_g.go_back) return;
+
+	}
+	if (!index) {
+		if (0) cout<<index  << " try good" << digit + 1 << cellsFixedData[cell].pt << endl;
+		FD[digit]->Set_c(cell);// restore the candidate
+		SetaCom(digit, cell, xcell);
+		ComputeNextOneKnown(0);
+	}
+}
 
 int TWO_DIGITS::Hiden_Pairs_Box(){// etude recherche hidden biv
 	nhp = 0;

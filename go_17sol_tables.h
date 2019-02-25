@@ -56,9 +56,6 @@ struct MINLEXUSINGBANDS{
 
 extern int perm_0_8_size3[84][3];
 extern int perm_0_8_size4[126][4];
-extern int subsets_2d_3d[84][3];
-extern int subsets_3d_4d[126][4];
-extern int subsets_2d_4d[126][6];
 extern int t16_min_clues[416];
 extern int t416_to_n6[416];
 extern int tn6_to_416[416];

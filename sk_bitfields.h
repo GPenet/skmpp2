@@ -270,7 +270,7 @@ public:
 			bf.u64[0]=(uint64_t) 1<< theBit;
 		}
 		else {
-			bf.u64[0] = (uint64_t)1;
+			bf.u64[0] = (uint64_t)0;
 			bf.u64[1] = (uint64_t)1 << (theBit-64);
 		}
 	}
@@ -402,7 +402,7 @@ public:
 		}
 		return -1;
 	}
-	inline int getFirsCell() const {
+	inline int getFirstCell() const {
 		uint32_t res;
 		if (bf.u32[0]) {
 			bitscanforward(res, bf.u32[0]);

@@ -366,7 +366,7 @@ next:// erase previous fill and look for next
 		it16_2 = pband2.i416;
 		i2t16 = t416_to_n6[it16_2];
 		if (i2t16 < i1t16)goto next;// not canonical
-		if (i2t16 == i1t16)if (it16_2 < it16)goto next;// not canonical
+		//if (i2t16 == i1t16)if (it16_2 < it16)goto next;// not canonical
 
 		n_auto_b1b2 = 0;
 		if (n_auto_b1) {

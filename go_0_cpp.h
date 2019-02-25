@@ -13,7 +13,7 @@ const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 	// case 0: Go_c0(); break;// test on brute force
 	 case 10: Go_c10(); break;// extract valid puzzles from entry
 	 case 11: Go_c11(); break;// count valid puzzles in entry 
-	 case 20: Go_c20(); break;// count valid puzzles in entry 
+	 case 21: Go_c21(); break;// count valid puzzles in entry 
 	 }
 }
 void Go_sol_1xx(){
