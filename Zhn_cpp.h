@@ -556,7 +556,7 @@ void  ZHOU::GuessFullDigit() {
 		if (zh_g.go_back) return;
 	}
 }
-inline void ZHOU::Assign(int digit, int cell, int xcell) {
+void ZHOU::Assign(int digit, int cell, int xcell) {
 	FD[digit][0] &= AssignMask_Digit[cell];
 	cells_unsolved.Clear(xcell);
 }

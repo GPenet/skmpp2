@@ -13,7 +13,7 @@ uint32_t zh2b_t_runsolvedshift[9] = { 0,6,12,18,24,32,38,44,50 };
 //========================= global variable and working areas 
 extern ZH_GLOBAL zh_g;
 ZH2B zh2b[40]; //  
-ZH2B zh2b_i, zh2b_i1;
+//ZH2B zh2b_i, zh2b_i1;
 ZH2B_GLOBAL   zh2b_g;   // 2 bands 9 digits
 ZH2B5_GLOBAL   zh2b5_g;   // 2_5 digits 2 bands
 ZH2B_1D_GLOBAL zh2b1d_g;  // one digit 2 bands
@@ -32,6 +32,7 @@ ZHONE zhone_i;
 ZH2B_GLOBAL::ZH2B_GLOBAL(){
 	zsol = 0; // no solution unless required buy the user
 	nctlg = test = 0;
+	/*
 	val_init1_81.bf.u64 = BIT_SET_2X;
 	for (int i = 0; i < 9; i++) {
 		zh2b_i.FD[i] = val_init1_81;
@@ -40,10 +41,7 @@ ZH2B_GLOBAL::ZH2B_GLOBAL(){
 	zh2b_i.cells_unsolved = val_init1_81;
 	zh2b_i.rows_unsolved.bf.u32[0] = BIT_SET_30; //6x5
 	zh2b_i.rows_unsolved.bf.u32[1] = 077777777;  //6x4
-	for (int i = 0; i < 50; i++) {// for X+Y+27 format 50 blocs
-		zh2b[i] = zh2b_i;
-	}
-
+	*/
 }
 void ZH2B_GLOBAL::GetBands(int * g1, int * g2) {
 	// build sol per digit and pm per digit at start
@@ -111,13 +109,13 @@ void ZH2b::Start_nFloors(int floors, BF64 * mypm) {
 //============================================ ZH2B code
 void ZH2B::Init_std_bands() {//init after zh1b_g getband
 	zh2b_g.ndigits = 9;
-	*this = zh2b_i;
+	memcpy(this, zh2b_start, sizeof this);
 	memcpy(FD, zh2b_g.fd_sols[1], sizeof FD);
 	memset(CompFD, 0, sizeof CompFD);
 }
 void ZH2B::Init_gang() {//init after zh1b_g InitGangster
 	zh2b_g.ndigits = 9;
-	*this = zh2b_i;
+	memcpy(this, zh2b_start, sizeof this);
 	memcpy(FD, zh2b_g.fd_revised, sizeof FD);
 	memset(CompFD, 0, sizeof CompFD);
 }

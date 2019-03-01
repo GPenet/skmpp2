@@ -22,6 +22,8 @@ const extern int TblColumnSingle[512]; // single in column applied to shrinked b
 const extern int TblShrinkSingle[512]; // keep only rows with single
 const extern int TblRowUniq[512]; // 1 is row not defined in block  mode  to 111
 const extern T128 AssignMask_Digit[81];
+extern uint64_t zh2b_start[20];
+
 //const extern T128 AssignMask_OtherDigits[81];
 // tables for UA collectors
 extern int floors_2d[36];

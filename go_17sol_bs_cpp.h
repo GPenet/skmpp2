@@ -1,14 +1,16 @@
-#define VALc15 13438
-#define VALc17 1032
-#define TESTXY 0
+//#define VALc15 13438
+//#define VALc17 1032
+//#define TESTXY 0
 //2536435903110145  i1=2 i2=35
-#define TESTXY2 0
+//#define TESTXY2 0
 //22521159232789761
 //536435903110145
-#define TESTDEBUG 0
-#define DEBUGLEVEL 4
+//#define TESTDEBUG 0
+//#define DEBUGLEVEL 10
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
-	if (1) {
+	p_cpt2g[0] ++;
+	p_cpt2g[7] +=genb12.nband3;
+	if (0) {
 		for (int i = 0; i < 54; i++)
 			cout << genb12.grid0[i] + 1;
 		cout << "entry m10 debug17=" << debug17 << endl;
@@ -17,7 +19,6 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	g17xy.go_back = 0;
 	zh2b_g.test = 0;
 	if (!debug17) {
-		p_cpt2g[0] ++;
 		//if (p_cpt2g[0] > 1)	return; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
 	}
 	memset(p_cpt, 0, sizeof p_cpt);// used in debugging sequences only
@@ -43,7 +44,7 @@ void G17B::Go(){// search process external loop 2X2Y
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
-	GodebugInit(1);//  1 base 2 all UAs 
+	if(0)GodebugInit(1);//  1 base 2 all UAs 
 	for (int i1 = 0; i1 < n1; i1++) {
 		if (g17b.debug17) {
 			int * t1= myband1.index2[i1];
@@ -69,11 +70,11 @@ void G17B::Go(){// search process external loop 2X2Y
 			indexstep.ShrinkGuas();
 			//if (1)		indexstep.PrintUasShrinked(1);
 			indexstep.diag_on = 0;
-			if (i1==12 && i2==15)indexstep.diag_on = 1;
+		//	if (i1==12 && i2==15)indexstep.diag_on = 1;
 			g17more.Init();
 			g17morebig.Init();
 			genb12.Init_tmore_sockets2();
-			if (TESTDEBUG)indexstep.DebugIndex(i1,i2);
+			//if (TESTDEBUG)indexstep.DebugIndex(i1,i2);
 			if (indexstep.n52) 				indexstep.Do65();
 			if (g17xy.go_back) return;
 			if (indexstep.n51)				indexstep.Do56();
@@ -132,7 +133,7 @@ int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 		if (Rw & Ru) continue;
 		Ru &= Rn;// erase dead cells
 		if (Ru) {
-			if (TESTDEBUG) fout1 << "ua " << ntua << " " << Ru << endl;
+			//if (TESTDEBUG) fout1 << "ua " << ntua << " " << Ru << endl;
 			tua[ntua++] = Ru;
 		}
 		else return 1;// dead branch
@@ -150,7 +151,7 @@ int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 		}
 	}
 	for (int i = 0; i < 54; i++) v256uas[i] = v256a;
-	if (TESTDEBUG) v256a.Fout(" v256a ");
+	//if (TESTDEBUG) v256a.Fout(" v256a ");
 
 	uint32_t cc;
 	for (int i = 0; i < ntua; i++) {// set uas
@@ -162,6 +163,7 @@ int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 			v256uas[From_128_To_81[cc]].v[bloc].clearBit(ir);
 		}
 	}
+	/*
 	if (TESTDEBUG) {
 		fout1 << "table des vecteurs cells_ua" << endl;
 		for (int i = 0; i < 54; i++) {
@@ -169,6 +171,7 @@ int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 			v256uas[i].Fout("<-cell ");
 		}
 	}
+	*/
 	return 0;
 }
 
@@ -358,11 +361,8 @@ void G17INDEXSTEP::Do_Common_2(){// build  Y tables of vectors
 			d256 &= v256uas[cell];
 			dg256 &= v256guas[cell];
 		}
-		if (0 &&iy<10) {
-			cout << Char2Xout(xyew1[iy].cellsbf) << " un Y" << endl;
-			d256.Debug("Y debug direct");
-		}
 	}
+	/*
 	if (TESTDEBUG>1) {
 		fout1 << "table des vecteurs yua" << endl;
 		for (int i = 0; i < nw1; i++) {
@@ -370,6 +370,7 @@ void G17INDEXSTEP::Do_Common_2(){// build  Y tables of vectors
 			yv256uas[i].Fout("<-yindex ");
 		}
 	}
+	*/
 }
 void G17INDEXSTEP::Do_Common_3_BuildXvectors(){// in fact, in the chunk for 256 X maximum
 	// re using the code for 'y', iy is in fact ix
@@ -384,11 +385,8 @@ void G17INDEXSTEP::Do_Common_3_BuildXvectors(){// in fact, in the chunk for 256 
 			d256 &= v256uas[cell];
 			dg256 &= v256guas[cell];
 		}
-		if (0 &&ix < 10) {
-			cout << Char2Xout(xyew2[ix].cellsbf) << " un X" << endl;
-			d256.Debug("X debug direct");
-		}
 	}
+	/*
 	if (TESTDEBUG) {
 		fout1 << "check cell vector status building x vectors" << endl;
 		for (int i = 0; i < 54; i++) {
@@ -403,7 +401,7 @@ void G17INDEXSTEP::Do_Common_3_BuildXvectors(){// in fact, in the chunk for 256 
 			g17chunk.xv[i].Fout("<-xindex ");
 		}
 	}
-
+	*/
 }
 void G17INDEXSTEP::Do_Common_3(){// launch chunks 256 x256 
 	// now combining all 'x' to all 'y' in chunks size ..
@@ -485,8 +483,6 @@ void G17CHUNK::GoChunk() {// elementary 'X' x 'Y' ychunk is 256x256
 
 		limit_store = pstore;
 	}
-	if (TESTDEBUG) fout1 << "chunk \t"<<i1<<" "<<i2<<" "<<i56
-		<<"\tstore n=" << limit_store - tstore << endl;
 	{//=========== send such XY to next step in the process
 		uint16_t * wstore = tstore;
 		while (wstore < limit_store) {
@@ -538,8 +534,8 @@ void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 	if (indexstep.diag_on > 1)cout << "call CheckValidBand12()" << endl;
 	if (CheckValidBand12()) return;
 	p_cpt2g[5]++;
-	if (TESTDEBUG)fout1 << "XY" << cellsbf << endl;
-	if (DEBUGLEVEL == 1) return;
+	//if (TESTDEBUG)fout1 << "XY" << cellsbf << endl;
+	//if (DEBUGLEVEL == 1) return;
 	if (g17b.debug17) {
 		cout << " entry Go_0 active nclues=" << nclues << " n=" << p_cptg[8]
 			<< " stacks " << stacksxy.u16[0] << stacksxy.u16[1] << stacksxy.u16[2]
@@ -686,8 +682,8 @@ int G17XY::CheckValidBand12(){
 			go_back = 1;
 			return 1;
 		}
-		if (TESTDEBUG) fout1 << "0]addua " << myua << " cc="<<cc
-			<<"\t"<< genuasb12.nua << "\t" << g17more.nt << "\t" << g17morebig.nt << endl;
+		//if (TESTDEBUG) fout1 << "0]addua " << myua << " cc="<<cc
+		//	<<"\t"<< genuasb12.nua << "\t" << g17more.nt << "\t" << g17morebig.nt << endl;
 		if (cc <= UALIMSIZE) {
 			g17more.Add(myua);
 			genuasb12.AddUACheck(myua | (cc << 59));// and update the UA table
@@ -841,6 +837,7 @@ int G17XY::Find_More_Sockets3(uint32_t free_minis) {
 
 void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in band 3
 	//cout <<Char2Xout(g17xy.cellsbf)<< "entry Go_ValideB12() ntb3=" << ntb3 << endl;
+	/*
 	if (g17xy.cellsbf == TESTXY) {
 		cout << Char2Xout(g17xy.cellsbf) << " enter XY test mode" << endl;
 		g17hh0.diagh = 1;
@@ -848,7 +845,9 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 	if (g17xy.cellsbf == TESTXY2) {
 		cout << Char2Xout(g17xy.cellsbf) << " leave XY test mode" << endl;
 		g17hh0.diagh = 0;
-	}	int zinitdone = 0;
+	}	
+	*/
+	int zinitdone = 0;
 	for (int i3 = 0; i3 < ntb3; i3++){
 		wg3 = g17tb3go[i3];
 		int nmiss= 17 - wg3.countstack.u16[3];
@@ -892,7 +891,7 @@ void G17XY::Go_ValideB12(){// UA2 and UA3 known not yet dead with min clues in b
 				return;// would be  bug 
 		}
 		memcpy(&genb12.grid0[54], genb12.bands3[wg3.ib3].band0, 4*27);
-		if (DEBUGLEVEL == 2) continue;
+		//if (DEBUGLEVEL == 2) continue;
 		//if (++p_cpt2g[19] > 10) return;
 		//wg3.Debug();
 		//for (int i = 54; i < 81; i++)
@@ -1177,7 +1176,7 @@ void  G17B3HANDLER::Go(){
 	g17xy.ntuab3 = 0;
 	//if (DEBUGLEVEL == 3) return;
 	if (nmiss){
-		if (DEBUGLEVEL == 3 && nmiss > 0) return;
+		//if (DEBUGLEVEL == 3 && nmiss > 0) return;
 		Not_Critical_wactive();// if the band is full all cells outfield are dead
 		if (nmiss == g17xy.b3lim){// no ua2_3 expand the uas table within the limits
 			SPOT17_NOUAS2_3 s;

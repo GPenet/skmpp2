@@ -64,7 +64,7 @@ extern int t416n6[416];
 extern int t16_indua[416];
 extern int t16_nua[416];
 extern int t16_UAs[11041];
-extern char * t416[416];
+const extern char * t416[416];
 extern int tgen_band_cat[24][5];
 extern int gangster_pairs_in_box[27][2];
 
@@ -73,7 +73,6 @@ extern int GetI416_L16(char * ze);
 extern BANDMINLEX bandminlex;
 extern MINLEXUSINGBANDS minlexusingbands;
 extern int MinLexUsingBandsCompB23(int * zcomp, int b23[6][9], int diag);
-extern char * t416[416];
 extern int tgen_band_cat[24][5];
 
 

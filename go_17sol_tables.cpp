@@ -1539,7 +1539,7 @@ int t16_UAs[11041] = {
 
 //============================================
 
-char * t416[416] = {
+const char * t416[416] = {
 	"6789123789123456", "6789123789123465", "6789123789123564", "6789123789132465",
 	"6789123789132546", "6789123789132564", "6789123789231564", "6789123789231645",
 	"6789123798132465", "6789123798132546", "6789123798132564", "6789123798213564",
@@ -1833,7 +1833,7 @@ int BANDMINLEX::Getmin7(){// this is a 123456789 457 mode
 				pmrx[i][j] = &band0[3 * iix];
 			}
 			// must have 2 common digits r2c123 r1c456 (in fact r2c12 r1c456)
-			if (__popcnt(minirows[mrx[0][1]] & minirows[mrx[1][0]]) - 2) continue; // not good box order	
+			if (_popcnt32(minirows[mrx[0][1]] & minirows[mrx[1][0]]) - 2) continue; // not good box order	
 			//cout << "good box order" << " ipb=" << ipb << " ipr=" << ipr << endl;
 			if (diag)cout << "ipb;ipr" << ipb << ipr << endl;
 			for (int ipc = 0; ipc < 6; ipc++){
@@ -1928,7 +1928,7 @@ int BANDMINLEX::CheckR3c49(int *ise){
 //	cout << "c4;c5;c7;c8 " << (char)c4 << (char)c5 << (char)c7 << (char)c8 << endl;
 
 	for (int i = ise[0]; i < ise[1]; i++){
-		register char * tt = t416[i];
+		const register char * tt = t416[i];
 		if (c4 == tt[10] && c5 == tt[11] &&	c7 == tt[13] && c8 == tt[14]){
 			SetPout(i); 
 			return 1;
@@ -2115,7 +2115,7 @@ int BANDMINLEX::Getmin7_Switch (){// this is a 123456789 457 mode morphed ok
 int BANDMINLEX::GetAutoMorphs(int ei416, PERM * tpout){// find automorphism for a band
 	int band[27] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 3, 4 };// band in 0 mode
 	int nperm = 0;
-	char * tt = t416[ei416];
+	const char * tt = t416[ei416];
 	for (int i = 11; i < 27; i++)band[ i] = tt[i-11] - '1';
 	for (int ib = 0; ib < 3; ib++){
 		for (int ipr = 0; ipr < 6; ipr++){

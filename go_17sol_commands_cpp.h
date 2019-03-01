@@ -11,7 +11,7 @@ const char * libs_c17_00_cpt2g[20] = {
 	"4 XY brute force",//4
 	"5 valid brute force",//5
 	"6 more sockets2 searched ",//6
-	"7 more sockets2 searched found",//7
+	"7 total bands 3",//7
 	"8 valid b12 after build active",//8
 	"9 band3 active after build active",//9
 	"10 critical band3",//10
@@ -58,7 +58,7 @@ void Go_c17_00( ) {// p2 process
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
 }
-//========================= known s17 file
+//========================= known s17 file 10/19
 void Go_c17_10( ) {
 	zh_g.modevalid = 1;
 	zh_g2.grid0 = genb12.grid0;
@@ -159,7 +159,56 @@ void Go_c17_10( ) {
 	}
 
 }
+void Go_c17_11() {// extract cout xx5 file1 xx6
+	// search 17 using a file having known  as entry and one 17 given 6 6 5
+	char * ze = finput.ze;
+	int * zs0 = genb12.grid0, npuz = 0;
+	cout << "Go_c17_11() split known 17 b3_5 b3_6 " << endl;
+	while (finput.GetLigne()) {
+		// =======================morph entry to have min n6 count in first
+		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
+		BANDMINLEX::PERM perm_ret;
+		bandminlex.Getmin(zs0, &perm_ret);
+		int ib1 = perm_ret.i416, ib1a = t416_to_n6[ib1];
+		bandminlex.Getmin(&zs0[27], &perm_ret);
+		int ib2 = perm_ret.i416, ib2a = t416_to_n6[ib2];
+		bandminlex.Getmin(&zs0[54], &perm_ret);
+		int ib3 = perm_ret.i416, ib3a = t416_to_n6[ib3];
+		if (ib1a > ib2a) {// change band2 <-> band1
+			for (int i = 0; i < 27; i++) {
+				char temp = ze[i];	ze[i] = ze[i + 27];	ze[i + 27] = temp;
+				temp = ze[i + 82];	ze[i + 82] = ze[i + 109]; ze[i + 109] = temp;
+				int w = ib1a;	ib1a = ib2a;	ib2a = w;
+			}
+		}
+		if (ib1a > ib3a) {// change band3 <-> band1
+			for (int i = 0; i < 27; i++) {
+				char temp = ze[i];	ze[i] = ze[i + 54];		ze[i + 54] = temp;
+				temp = ze[i + 82];	ze[i + 82] = ze[i + 136];	ze[i + 136] = temp;
+				int w = ib1a;	ib1a = ib3a;	ib3a = w;
+			}
+		}
+		int ncb3 = 0;
+		for (int i = 0; i < 27; i++) {
+			if (ze[i + 136] - '.')ncb3++;
+		}
+		if (ncb3 == 6) {
+			fout1 <<&ze[82] << ";" << ib2a 
+				<< ";" << ib3a <<endl;
+				continue;
+		}
+		// now 5 clues in band 3 exchange bands
+		for (int i = 0; i < 27; i++) {
+			char temp = ze[i + 27];	ze[i + 27] = ze[i + 54];	ze[i + 54] = temp;
+				temp = ze[i + 109];	ze[i + 109] = ze[i + 136];	ze[i + 136] = temp;
+		}
+		int w = ib2a;	ib2a = ib3a;	ib3a = w;
+		cout << &ze[82]  << ";" << ib2a
+			<< ";" << ib3a << endl;
 
+	}
+
+}
 
 
 //=========================== regressive tests

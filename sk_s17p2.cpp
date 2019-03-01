@@ -84,7 +84,8 @@ void Go_0() {
 		strcpy(&zn[ll], "_file1.txt");
 		fout1.open(zn);
 	}
-	if (sgo.command == 10) {// input file expected
+	if (sgo.command >= 10
+		&& sgo.command <20 ) {// input file expected
 		if (!sgo.finput_name) {
 			cerr << "missing input file name" << sgo.finput_name << endl; return;
 		}
@@ -97,8 +98,8 @@ void Go_0() {
 	cerr << "running command " << sgo.command << endl;
 	switch (sgo.command) {
 	case 0: Go_c17_00(); break; // search one band1
-	case 10: Go_c17_10()
-		; break; // search known 17s 
+	case 10: Go_c17_10(); break; // search known 17s 
+	case 11: Go_c17_11(); break; // split knwon 17s p2
 
 	case 80: Go_c17_80(); break; // enumeration test 
 	case 90: Go_c17_90(); break; // regressive test uas one band	

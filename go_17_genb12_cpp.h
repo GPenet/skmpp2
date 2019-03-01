@@ -88,8 +88,8 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		}
 		if (g17b.debug17)Debug17(w);// check all guas are valid for known 17
 	}
-	cout << "endSecondSockets2Setup ntua2=" << ntua2
-		<< " nactive i81=" << nactive2 << endl;
+	//cout << "endSecondSockets2Setup ntua2=" << ntua2
+	//	<< " nactive i81=" << nactive2 << endl;
 }
 
 int GEN_BANDES_12::Debug17(SGUA2 & w) {// check validity of guas
