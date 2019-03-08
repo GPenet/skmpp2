@@ -116,7 +116,11 @@ struct ZH2B {// size 32 bytes
 		rows_unsolved.Clear(ddig + C_row[cell]);//6*digit + row
 	}
 	inline int Unsolved_Count() { return rows_unsolved.Count(); }
+	
 	void InitTclues(uint32_t * tclues, int n);
+	void Init_2digits_banda(int fl, int ibanda);
+	void EndInit_2digits_bandb(int fl, int ibandb);
+
 	uint64_t ValidXY(uint32_t * tclues, int n,int test=0);
 	uint64_t MoreSocket2();
 	uint64_t MoreSocket2First(int digit);

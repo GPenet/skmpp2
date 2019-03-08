@@ -21,8 +21,8 @@ struct STD_B416 {
 };
 struct STD_B1_2 :STD_B416 {
 	// 12 115 maximum see band 28
-	int index1[30][3], index2[135][3],
-		n5,n6,nind[2];// bitfiedl,current index 5 current index 6
+	int index1[30][3], index2[135][3],index3 [2000][2],
+		n5,n6,nind[3];// bitfiedl,current index 5 current index 6
 	XY_EXPAND xye6[MAXN6], xye5[MAXN5];
 	// row solution pattern in digit
 	int mini_digs[9],mini_pairs[27],
@@ -36,6 +36,7 @@ struct STD_B1_2 :STD_B416 {
 	uint32_t GetMiniData(int index,  uint32_t & bcells, STD_B1_2 *bb);
 	void DoExpandBand(int dband);// dband 0/27
 	void DebugIndex(int ind6 = 0);
+	void Debug_2_3();
 	void PrintShortStatus();
 };
 

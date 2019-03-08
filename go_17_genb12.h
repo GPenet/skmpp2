@@ -85,6 +85,7 @@ struct GEN_BANDES_12{// encapsulating global data
 	void InitialSockets3Setup();// batch level
 	void BuildGang9x3();
 	void SecondSockets2Setup();// band1+2 level
+	void SecondSockets2MoreUAs();// band1+2 level
 	void Sockets2SetupForB12(uint64_t cluesbf);
 	void SecondSockets3Setup();// band1+2 level
 	void GuaCollect(int fl,int diag=0);

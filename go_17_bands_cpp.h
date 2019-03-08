@@ -158,7 +158,7 @@ void STD_B1_2::DoExpandBand(int dband) {// find all 5 and 6 clues solutions
 	s3->possible_cells = tua[0];
 	register XY_EXPAND * t5 = xye5, *t6 = xye6;
 	n5 = 0; n6 = 0;
-	nind[1] = nind[0] = 0;
+	memset(nind, 0, sizeof nind);
 	int tcells[10];
 	//____________________  here start the search
 next:
@@ -184,6 +184,12 @@ next:
 			t[1] = n5;
 			t[2] = n6;
 		}
+		if (ispot ==2) {
+			int ind = nind[2]++;
+			int * t = index3[ind];
+			t[0] = filter;
+			t[1] = n6;
+		}
 
 		sn3->active_cells = s3->active_cells = ac;
 		// nextspot:take the next available ua to loop		
@@ -203,7 +209,7 @@ next:
 		int t[32], nt = 0;
 		register int ac = s3->active_cells;
 		while (bitscanforward(cell, ac)) {// put active cells in table
-			register int bit = (uint64_t)1 << cell;
+			register int bit = 1 << cell;
 			ac ^= bit;
 			t[nt++] = cell + dband;
 		}
@@ -240,6 +246,10 @@ next:
 		else if (ispot == 1) { // valid 2 clues  
 			for (int i3 = 0; i3 < nt - 2; i3++) {
 				tcells[2] = t[i3];
+				// must open a 3 clues item
+				int * tx = index3[nind[2]++];
+				tx[0] = sn3->all_previous_cells | (1 << tcells[2]);
+				tx[1] = n6;
 				for (int i4 = i3 + 1; i4 < nt - 1; i4++) {
 					tcells[3] = t[i4];
 					for (int i5 = i4 + 1; i5 < nt; i5++) {
@@ -266,6 +276,9 @@ back:
 	t = index2[nind[1]];
 	t[1] = n5;
 	t[2] = n6;
+	t = index3[nind[2]];
+	t[1] = n6;
+	if (g17b.debug17 > 1)cout << "indices bandes " << nind[0] << " " << nind[1] << " " << nind[2] << endl;
 }
 void STD_B1_2::DebugIndex(int ind6) {
 	int nn = nind[ind6];
@@ -273,6 +286,22 @@ void STD_B1_2::DebugIndex(int ind6) {
 	for (int i = 0; i <= nn; i++) {
 		int *w = (ind6) ? index2[i] : index1[i];
 		cout << oct << w[0] << dec << "\t" << w[1] << "\t" << w[2] << endl;
+	}
+}
+void STD_B1_2::Debug_2_3() {
+	cout << "debug index 2 index 3" << endl;
+
+	int nn = nind[1];// index 2
+	cout << "debugindex 2 for n6 nindex=" << nn << endl;
+	for (int i = 0; i <= nn; i++) {
+		int *w =  index2[i] ;
+		cout <<i<< oct << " 0" << w[0] << dec << "\t"  << w[2] << endl;
+	}
+	nn = nind[2];// index 3
+	cout << "debugindex 3  nindex=" << nn << endl;
+	for (int i = 0; i <= nn; i++) {
+		int *w = index3[i];
+		cout<<i << oct <<" 0"<< w[0] << dec << "\t" << w[1] << endl;
 	}
 }
 void STD_B1_2::PrintShortStatus() {
@@ -472,7 +501,7 @@ int GENUAS_B12::DebugUas() {
 	for (uint32_t i = 0; i < nua; i++) {
 		uint64_t w = tua[i];
 		int cc = (w >> 59);
-		if(cc==13)
+		//if(cc==13)
 		cout << Char2Xout(w) << " " << cc << " i=" << i << endl;
 	}
 	cout << " end debug uas" << endl;
@@ -507,7 +536,7 @@ void GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
 	//if (1) return;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< first test
 	// check subsets and add to main table
 	for (uint32_t i = 0; i < zh2b5_g.nuaf5; i++) {
-		ua = zh2b5_g.tuaf5[i].bf.u64;
+		ua = zh2b5_g.tuaf5[i].bf.u64&BIT_SET_2X;// be sure to use only relevant bits
 		uint64_t cc = _popcnt64(ua);
 		if (cc > limsize) continue;
 		if (diag) cout << Char2Xout(ua) << "verif cc=" << cc << endl;
@@ -664,6 +693,7 @@ void GENUAS_B12::EndCollectMoreStep() {
 			}
 
 		}
+		ua &= BIT_SET_2X;// be sure to use only relevant bits
 		uint64_t cc = _popcnt64(ua);
 		if (diag)cout << Char2Xout(ua) << "\t " << cc << "  ua to check" << endl;
 		if (cc > limsize) continue;

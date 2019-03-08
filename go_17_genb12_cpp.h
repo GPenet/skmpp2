@@ -92,6 +92,72 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 	//	<< " nactive i81=" << nactive2 << endl;
 }
 
+void ZH2B::Init_2digits_banda(int fl, int ibanda) {
+	Init_std_bands();
+	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
+
+	int db= 27 * ibanda,xdb=32*ibanda, * pp0=&zh2b_g.puz0[db];
+	for (int i = 0; i < 27; i++) {
+		int digit = pp0[i], bit = 1 << digit,cell=i+db,xcell=i+xdb;
+		if (fl&bit)continue;
+		Assign(digit, cell, xcell);
+		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
+	}
+	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved |
+		zh2b_g.Digit_cell_Assigned_init[i];
+}
+void ZH2B::EndInit_2digits_bandb(int fl, int ibandb) {
+}
+/*
+uint64_t  ZH2B5_GLOBAL::FindUAsInit(int fl, int source) {
+	BF64 * mypm = zh2b_g.fd_sols[1];
+	if (source) mypm = zh2b_g.fd_revised;
+	uint64_t solved_cells = 0;
+	uint32_t nd = 0;
+	for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
+		if (fl & bit) {
+			fdsw[0][nd] = zh2b_g.fd_sols[0][idig];
+			fdsw[2][nd].bf.u64 = (~fdsw[0][nd].bf.u64) & BIT_SET_2X;
+			myfd[nd++] = mypm[idig];
+		}
+		else solved_cells |= zh2b_g.fd_sols[0][idig].bf.u64;
+	}
+	ndigits = nd;
+	cells_unsolved.bf.u64 = BIT_SET_2X ^ solved_cells;
+	for (uint32_t i = 0; i < nd; i++) {
+		myfd[i] &= cells_unsolved;
+		if (myfd[i].Count() == 6)return 0;
+	}
+	return solved_cells;
+*/
+
+void GEN_BANDES_12::SecondSockets2MoreUAs() {
+	STD_B1_2 * mybx[2] = { &myband1 ,&myband2 },*ba,*bb;
+	int ib;
+	for (ib = 0; ib < 2; ib++) {
+		ba = mybx[ib];
+		bb = mybx[1 - ib];
+		for (int ip = 0; ip < 36; ip++) {// try all digit pairs
+			int fl = floors_2d[ip];
+			// init *ba to all except the 2 digits
+			for (int i6 = 0; i6 < 84; i6++) {// try all digit pairs
+				int fl2 = floors_3d[i6];
+				if (fl2&fl)continue;
+				// init *bb to all except the 6 digits
+
+			}
+			for (int i7 = 0; i7 < 36; i7++) {// try all digit pairs
+				int fl2 = floors_2d[i7];
+				if (fl2&fl)continue;
+				// init *bb to all except the 7 digits
+
+			}
+
+		}
+	}
+}
+
+
 int GEN_BANDES_12::Debug17(SGUA2 & w) {// check validity of guas
 	STD_B3 & myb3 = bands3[0];
 	if( myb3.guas.isguasocket2.Off_c(w.i_81)) return 0;

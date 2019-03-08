@@ -10,7 +10,7 @@ const char * libs_c17_00_cpt2g[20] = {
 	"3 XY passing UA filter",//3
 	"4 XY brute force",//4
 	"5 valid brute force",//5
-	"6 more sockets2 searched ",//6
+	"6 number of y3 ",//6
 	"7 total bands 3",//7
 	"8 valid b12 after build active",//8
 	"9 band3 active after build active",//9
@@ -72,12 +72,10 @@ void Go_c17_10( ) {
 		g17b.npuz = npuz;
 		g17b.a_17_found_here = 0;
 		if (npuz <= (int)sgo.vx[2]) continue;
-		if (npuz > (int)sgo.vx[3]) return;
+		if (npuz > (int)sgo.vx[3]) break;
 		g17b.debug17 = sgo.vx[0];
 		//if (npuz >5) return;
-		if (g17b.debug17) { 
-			cout << ze << " to process  n="<<dec << npuz << endl;
-		}
+		cout << " to process  n="<<dec << npuz << endl;
 		long tdeb = GetTimeMillis();
 		// =======================morph entry to have min n6 count in first
 		for (int i = 0; i < 81; i++)zs0[i] = ze[i] - '1';
@@ -132,8 +130,9 @@ void Go_c17_10( ) {
 		genb12.bands3[0].InitBand3(ib3, &ze[54], perm_ret);
 		genb12.nband3 = 1;
 		myband1.DoExpandBand(0);// expand band1
-
-		if (g17b.debug17)cout << ze << " morphed source n=" << npuz << endl;
+		ze[81] = 0;
+		if (g17b.debug17)cout << ze << " morphed source "<<endl
+			<< &ze[82] << endl;
 		char * ze2 = &ze[82];
 		g17b.band1_17 = g17b.band2_17 = g17b.band3_17 = 0;
 		for (int i = 0; i < 27; i++) {
@@ -142,20 +141,20 @@ void Go_c17_10( ) {
 			if (ze2[i + 54] - '.') g17b.band3_17 |= 1 << i;
 		}
 		g17b.band12_17 = ((uint64_t)g17b.band2_17 << 32) | g17b.band1_17;
-		cout << Char2Xout(g17b.band12_17) << " b12 pattern for the 17" << endl;
-		cout << Char2Xout(g17b.band12_17) << Char27out(g17b.band3_17) << " full pattern" << endl;
+		if (g17b.debug17)
+			cout << Char2Xout(g17b.band12_17) << " b12 pattern for the 17" << endl;
 		genb12.ValidInitGang();
 		g17b.GoM10();
-		cout << "print final stats" << endl;
-		for (int i = 0; i < 20; i++) {
-			if (!p_cpt2g[i])continue;
-			cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
-		}
 		if (!g17b.a_17_found_here) {
 			cout << "puz="<<npuz << " failed to find the searched 17" << endl;
 			cerr << "puz=" << npuz << " failed to find the searched 17" << endl;
 			return;
 		}
+	}
+	cout << "print final stats" << endl;
+	for (int i = 0; i < 20; i++) {
+		if (!p_cpt2g[i])continue;
+		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
 
 }

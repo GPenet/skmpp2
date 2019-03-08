@@ -232,14 +232,14 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	int tactive2[81], nactive2, tactive3[81], nactive3,
 		tactive2_start[81], tactive2_end[81],
 		tactive3_start[81], tactive3_end[81];
-	uint64_t  b1b2_2Xbf, b1b2_54bf, nb1b2_2Xbf, nb1b2_54bf, searched17_54;
+	uint64_t  b1b2_2Xbf, start_b1b2bf, nb1b2_2Xbf, nb1b2_54bf, searched17_54;
 	int searched17_band3, searched_nclues1, searched_nclues2;
 	BF128 pairsok, tripletsok;// found one empty gua 
 	int ntua,ntua_raw, ntgua, ntgua_raw,  n128vgua;
 	int * t1, *t2; // index used in band1 and band2
 	uint32_t xfirstdead, x2dead, yfirstdead, y2dead, oldx1, oldy1, oldx2;
-	uint64_t dead, dead54;
-	int n51, n52, n61, n62, nw1, nw2, ncluesw2;
+	uint64_t dead, start_dead;// , dead54;
+	int n51, n52, n61, n62, nw1, nw2, ncluesw2,mode3y;
 	int diag_on;// debugginn known 17
 	//======================================= process
 	// initial for a new step
@@ -247,12 +247,16 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	void Init(int i1, int i2);
 	int ShrinkUas();// shrink table of UAs for bands1+2
 	void ShrinkGuas();// shrink table for gangster uas2 ua3s
+	int ShrinkUas_2_3();// shrink table of UAs for bands1+2
+	void ShrinkGuas_2_3();// shrink table for gangster uas2 ua3s
 	int ShrinkGuasLoad(uint64_t *tu, int itu1);
 	void SetV(V256_GUAS & vid, int i1, int i2); // ste bit 1 in v from i1 to i2
 
 	// process summary
 	void Do65(); // do 6 clues b1 5 clues b2  
 	void Do56(); // do 5 clues b1 6 clues b2
+	void Do65_3y(); // do 6 clues b1 5 clues b2  
+	void Do56_3y(); // do 5 clues b1 6 clues b2
 	void Do_Common();// after xye w1('Y')  and w2('X') have been loaded
 	void Do_Common_2();// build  Y tables of vectors
 	void Do_Common_3_BuildXvectors();// in fact, in the chunk for 256 X maximum

@@ -109,20 +109,20 @@ void ZH2b::Start_nFloors(int floors, BF64 * mypm) {
 //============================================ ZH2B code
 void ZH2B::Init_std_bands() {//init after zh1b_g getband
 	zh2b_g.ndigits = 9;
-	memcpy(this, zh2b_start, sizeof this);
+	memcpy(this, zh2b_start, sizeof zh2b_start);
 	memcpy(FD, zh2b_g.fd_sols[1], sizeof FD);
 	memset(CompFD, 0, sizeof CompFD);
 }
 void ZH2B::Init_gang() {//init after zh1b_g InitGangster
 	zh2b_g.ndigits = 9;
-	memcpy(this, zh2b_start, sizeof this);
+	memcpy(this, zh2b_start, sizeof zh2b_start);
 	memcpy(FD, zh2b_g.fd_revised, sizeof FD);
 	memset(CompFD, 0, sizeof CompFD);
 }
 
 void ZH2B::DebugSol() {//init after zh1b_g getband
 	zh2b_g.ndigits = 9;
-	memset(this, 0, sizeof this);
+	memset(this, 0, sizeof zh2b[0]);
 	memcpy(FD, zh2b_g.fd_sols[0], sizeof FD);
 	ImageCandidats();
 }
@@ -187,6 +187,7 @@ void ZH2B::InitTclues(uint32_t * tclues, int n) {
 	for (int icell = 0; icell < n; icell++) {
 		int cell = tclues[icell], digit = zh2b_g.puz0[cell];
 		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
+
 		Assign(digit, cell, xcell);
 		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
 	}
@@ -309,7 +310,12 @@ uint64_t ZH2B::ValidXY(uint32_t * tclues, int n,int test) {
 	if(test)cout << "entry validxy" << endl;
 	zh2b_g.ua_ret = 0;
 	Init_std_bands();
+	if (test) {
+		cout << Char2Xout(cells_unsolved.bf.u64) << "unsolved" << endl;
+		ImageCandidats();
+	}
 	InitTclues(tclues, n);
+	if (test)	ImageCandidats();
 	if (FullUpdate()) {
 		if (rows_unsolved.isEmpty()) return 0;// solved 
 		// try worse case true
@@ -2009,7 +2015,7 @@ void ZHONE::AddMissingUAs(int * tcells, int ncells) {
 	zh1b_g.go_back = 0;
 	int Digit_cell_Assigned[9];
 	memset(Digit_cell_Assigned, 0, sizeof Digit_cell_Assigned);
-	memset(this, 0, sizeof this);
+	memset(this, 0, sizeof zhone[0]);
 	InitOne_std_band();
 	for (int icell = 0; icell < ncells; icell++) {
 		int cell = tcells[icell],
