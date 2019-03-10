@@ -27,6 +27,28 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	myband2.DoExpandBand(27);// expand band2
 	if (!(myband1.n5| myband2.n5)) return; // no 656 no 566
 	int nb3 = genb12.nband3;
+	if (0) {
+		cout << " debug band 2 index 3 status " << endl;
+		int ni2 = myband2.nind[1];
+		for (int i3 = 0; i3 < ni2; i3++) {
+			int * ti = myband2.index2[i3];
+			uint64_t bf = (uint64_t)ti[0] << 32;
+			uint64_t cc = _popcnt64(bf&BIT_SET_2X);
+			if (cc != 2) cout << "erreur 0x" << hex << bf << dec << endl;
+			cout << Char2Xout(bf) << " bf i2=" << i3 << endl;
+
+		}
+		int ni3 = myband2.nind[2];
+		for (int i3 = 0; i3 < ni3; i3++) {
+			int * ti = myband2.index3[i3];
+			uint64_t bf = (uint64_t) ti[0]<< 32;
+			uint64_t cc = _popcnt64(bf&BIT_SET_2X);
+			if (cc != 3) cout << "erreur 0x" << hex << bf << dec << endl;
+			cout << Char2Xout(bf) << " bf i3=" << i3 << endl;
+
+		}
+		return;
+	}
 	if (0 &&debug17 && TESTDEBUG) {
 		cout << "first check" << endl;
 		myband1.PrintStatus(); myband1.PrintShortStatus();
@@ -36,7 +58,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	
 	//=========================== collect UAs (still room for improvement)
 	if(genuasb12.Initgen()) return;
-	genuasb12.DebugUas();
+	//genuasb12.DebugUas();
 	genb12.BuildGang9x3();
 	genb12.SecondSockets2Setup();// collect GUA2s 
 	genb12.SecondSockets3Setup();// collect GUA3s 
@@ -76,6 +98,12 @@ void G17B::Go(){// search process external loop 2X2Y
 			indexstep.ShrinkGuas();
 			uint64_t n56 = indexstep.n51*indexstep.n62,
 				n65 = indexstep.n52*indexstep.n61;
+			if (0) {
+
+				cout << "first shrinkua i1,i2 " << i1 << " " << i2
+					<<" n56="<<n56<<" n65= "<<n65 << endl;
+
+			}
 			if (no_3y) {
 				if (indexstep.n51)	indexstep.Do56();
 				if (g17xy.go_back) return;
@@ -91,6 +119,7 @@ void G17B::Go(){// search process external loop 2X2Y
 				if (g17xy.go_back) return;
 				if (n56 < LIM3Y ) {
 					if (indexstep.n51) {
+						//cout << "second shrinkua i1,i2 " << i1 << " " << i2 << endl;
 						indexstep.ShrinkUas();
 						indexstep.Do56();
 					}
@@ -178,16 +207,30 @@ int G17INDEXSTEP::ShrinkUas() {// shrink table of UAs for bands1+2
 		else return 1;// dead branch
 	}
 	ntua_raw = ntua;
-	if (ntua > 256) ntua = 256; //limit in the chunk loop
-	//cout << "rawuas=" << ntua_raw << " ntua=" << ntua <<" ontua="<<ontua<< endl;
+	if (0) {
+		cout << "shrinkua nua=" << ontua << " new count " << ntua << endl;
+		cout << Char2Xout(Rw) << " b1b2_2xbf ox" << hex<< Rw <<dec<< endl;
+		cout << Char2Xout(Rn) << " not dead ox" << hex << Rn << dec << endl;
+	}
+	if (ntua > 128* NVUAS128) ntua = 128 * NVUAS128; //limit in the chunk loop
+
+	n128vua = (ntua + 127) >> 7;
+
+								//cout << "rawuas=" << ntua_raw << " ntua=" << ntua <<" ontua="<<ontua<< endl;
 	{ // initial vectors to appropriate value and actives vector
-		if (ntua > 128) {
-			v256a.v[0].SetAll_1();
-			v256a.v[1] = maskLSB[ntua - 128];
-		}
+		memset(v256a.v, 0, sizeof v256a.v);
+		if (ntua <= 128)	v256a.v[0] = maskLSB[ntua];
 		else {
-			v256a.v[0] = maskLSB[ntua];
-			v256a.v[1].SetAll_0();
+			v256a.v[0].SetAll_1();
+			if (ntua <= 256)				v256a.v[1] = maskLSB[ntua - 128];
+			else {
+				v256a.v[1].SetAll_1();
+				if (ntua <= 384)	v256a.v[2] = maskLSB[ntua - 256];
+				else {
+					v256a.v[2].SetAll_1();
+					v256a.v[3] = maskLSB[ntua - 384];
+				}
+			}
 		}
 	}
 	for (int i = 0; i < 54; i++) v256uas[i] = v256a;
@@ -465,6 +508,13 @@ void G17INDEXSTEP::Do56_3y() {
 	for (int i3 = i3d; i3 < i3f; i3++) {
 		int * t3 = myband2.index3[i3],filter=t3[0];
 		uint64_t f2x = (uint64_t)filter << 32;
+		if (0) {
+			cout << "y3=" << i3 << " filter 0" <<oct<< t3[0]<<dec<<endl;
+			XY_EXPAND w = myband2.xye6[t3[1]];
+			cout << "xye " << (int)w.cells.u8[0] << " " << (int)w.cells.u8[1]
+				<< " " << (int)w.cells.u8[2] << endl;
+		}
+
 		y3_dead |= f2x;		dead = y3_dead;
 		b1b2_2Xbf= y3_b1b2_2Xbf| f2x;
 		if(ShrinkUas()) continue;
@@ -616,16 +666,26 @@ void G17CHUNK::GoChunk() {// elementary 'X' x 'Y' ychunk is 256x256
 		register uint16_t * pstore = tstore;
 		register int iy, store, ix;
 		register BF128 * tvx = xv[0].v;
-		for (ix = 0; ix < nxc; ix++, tvx += 2) {
+		for (ix = 0; ix < nxc; ix++, tvx += NVUAS128) {
 			store = ix << 8; //8 low bits for iy
 			register uint64_t Rx = txec[ix].stacks.u64;
-			BF128 vx = tvx[0], vx2 = tvx[1];
+			BF128 vx = tvx[0], vx2 = tvx[1], vx3 = tvx[2], vx4 = tvx[3];
 			register BF128 * tvy = yv[0].v;
-			for (iy = 0; iy < nyc; iy++,tvy+=2) {
+			for (iy = 0; iy < nyc; iy++,tvy+= NVUAS128) {
 				BF128 vy = tvy[0]; 
 				if ((vx & vy).isNotEmpty())continue;
-				vy = tvy[1];
-				if ((vx2 & vy).isNotEmpty()) continue;
+				if (indexstep.n128vua > 1) {
+					vy = tvy[1];
+					if ((vx2 & vy).isNotEmpty()) continue;
+					if (indexstep.n128vua > 2) {
+						vy = tvy[2];
+						if ((vx3 & vy).isNotEmpty()) continue;
+						if (indexstep.n128vua > 3) {
+							vy = tvy[3];
+							if ((vx4 & vy).isNotEmpty()) continue;
+						}
+					}
+				}
 				register uint64_t Ry = Rx + tyec[iy].stacks.u64;
 				if ((Ry & 0xff) > 6) continue;
 				if ((Ry & 0xff0000) > 0x60000) continue;
@@ -743,8 +803,8 @@ void G17XY::Go_Guas_collect(){//
 			b1 = indexstep.tactive2_start[i] >> 7,
 			b2 = indexstep.tactive2_end[i] >> 7;
 
-		if (b1 > NVGUAS256) continue; // lost uas 
-		if (b2 > NVGUAS256)b2 = b1; // partially lost uas 
+		if (b1 > NVGUAS128) continue; // lost uas 
+		if (b2 > NVGUAS128)b2 = b1; // partially lost uas 
 		BF128 vw = xyvg.v[b1] & indexstep.vid81s2[i81].v[b1];
 		if (vw.isEmpty()) {// check second 
 			if (b1 == b2) continue;
@@ -757,8 +817,8 @@ void G17XY::Go_Guas_collect(){//
 		int i81 = indexstep.tactive3[i],
 			b1 = indexstep.tactive3_start[i] >> 7,
 			b2 = indexstep.tactive3_end[i] >> 7;
-		if (b1 > NVGUAS256) continue; // lost uas 
-		if (b2 > NVGUAS256)b2=b1; // partially lost uas 
+		if (b1 > NVGUAS128) continue; // lost uas 
+		if (b2 > NVGUAS128)b2=b1; // partially lost uas 
 		BF128 vw = xyvg.v[b1] & indexstep.vid81s3[i81].v[b1];
 		if (vw.isEmpty() ) {// check second 
 			if (b1 == b2) continue;

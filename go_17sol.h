@@ -163,20 +163,24 @@ struct G17B3HANDLER{
 #define G17CHKX 256
 #define G17CHKY 256
 #define MAXNIND6 12080
-#define NVGUAS256 15
+#define NVUAS128 4
+#define NVGUAS128 15
 struct V256_UAS { 
-	BF128 v[2]; 
+	BF128 v[NVUAS128];
 	inline void operator&= (const V256_UAS &r) {
 		v[0] &= r.v[0]; v[1] &= r.v[1];
+		// assuming NVUAS128 4
+		v[2] &= r.v[2]; v[3] &= r.v[3];
+
 	}
 	void Debug(const char * lib,int mirror=0);
 	void Fout(const char * lib);
 	void Cout();
 };
 struct V256_GUAS { 
-	BF128 v[NVGUAS256]; 
+	BF128 v[NVGUAS128]; 
 	inline void operator&= (const V256_GUAS &r) {
-		for (int i = 0; i < NVGUAS256; i++)v[i] &= r.v[i];
+		for (int i = 0; i < NVGUAS128; i++)v[i] &= r.v[i];
 	}
 };
 
@@ -235,7 +239,7 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 	uint64_t  b1b2_2Xbf, start_b1b2bf, nb1b2_2Xbf, nb1b2_54bf, searched17_54;
 	int searched17_band3, searched_nclues1, searched_nclues2;
 	BF128 pairsok, tripletsok;// found one empty gua 
-	int ntua,ntua_raw, ntgua, ntgua_raw,  n128vgua;
+	int ntua,ntua_raw, ntgua, ntgua_raw,  n128vgua, n128vua;
 	int * t1, *t2; // index used in band1 and band2
 	uint32_t xfirstdead, x2dead, yfirstdead, y2dead, oldx1, oldy1, oldx2;
 	uint64_t dead, start_dead;// , dead54;

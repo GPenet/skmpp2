@@ -248,7 +248,7 @@ next:
 				tcells[2] = t[i3];
 				// must open a 3 clues item
 				int * tx = index3[nind[2]++];
-				tx[0] = sn3->all_previous_cells | (1 << tcells[2]);
+				tx[0] = sn3->all_previous_cells | (1 << (tcells[2]-dband));
 				tx[1] = n6;
 				for (int i4 = i3 + 1; i4 < nt - 1; i4++) {
 					tcells[3] = t[i4];
