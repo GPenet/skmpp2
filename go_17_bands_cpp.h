@@ -19,6 +19,17 @@ void STD_B416::SetGangster() {
 	for (int ir = 0, i = 0; ir < 3; ir++)
 		for (int ic = 0; ic < 9; ic++, i++)
 			gangster[ic] |= 1 << band0[i];
+	// build sol per digit and pm per digit at start
+	memset(fd_sols, 0, sizeof fd_sols);
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 3; j++) {
+			int cell = 9 * j + i, dig = band0[cell];
+			fd_sols[1][dig] |= Zhoucol << i; // add candidates in the column
+			fd_sols[0][dig] |= 1 << cell;
+		}
+	}
+
+
 }
 void STD_B416::InitC10(int i) {
 	GetBandTable(i); SetGangster();
@@ -510,7 +521,7 @@ int GENUAS_B12::DebugUas() {
 
 void GENUAS_B12::BuildFloorsAndCollectOlds(int fl) {
 	int diag = 0;
-	if (0 && fl == 0352) {
+	if (0 &&fl == 055) {
 		diag = 1;
 		zh2b5_g.diag = 1;
 	}

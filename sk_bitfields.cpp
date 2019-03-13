@@ -26,7 +26,14 @@ int BF32::Table(int * r) {
 	BitsInTable32(r, n, f, 0);
 	return n;
 }
-
+int  BF64::SolRow(int col) {
+	uint64_t wcol = (uint64_t)Zhoucol64 << col,
+		w=bf.u64&wcol;
+	if(_popcnt64(w)!=1 )return 0;
+	uint32_t res;
+	bitscanforward64(res, w);
+	return From_128_To_81[res]/9;
+}
 
 void  BF128::ClearDiag(int band, int stack) {
 	// stack appears here as a band

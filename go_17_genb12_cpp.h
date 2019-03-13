@@ -75,6 +75,8 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 			int fl = 0x1ff ^ floors_4d[i];
 			if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
+		if (nband3 <= 2 && nua2 < 100)
+			SecondSockets2MoreUAs(i81);
 		if (nua2) {
 			tactive2[nactive2++]=i81;
 			ntua2 += nua2;
@@ -92,14 +94,13 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 	//	<< " nactive i81=" << nactive2 << endl;
 }
 
-void ZH2B::Init_2digits_banda(int fl, int ibanda) {
-	Init_std_bands();
+void ZH2B::Init_2digits_banda(BF64  cellsbf) {
+	int txcells[50], nxcells = 0;
+	BitsInTable64(txcells,nxcells, cellsbf.bf.u64);
 	memset(zh2b_g.Digit_cell_Assigned_init, 0, sizeof zh2b_g.Digit_cell_Assigned_init);
-
-	int db= 27 * ibanda,xdb=32*ibanda, * pp0=&zh2b_g.puz0[db];
-	for (int i = 0; i < 27; i++) {
-		int digit = pp0[i], bit = 1 << digit,cell=i+db,xcell=i+xdb;
-		if (fl&bit)continue;
+	for (int i = 0; i < nxcells; i++) {
+		int xcell=txcells[i],cell=From_128_To_81[xcell],
+		digit = zh2b_g.puz0[cell];
 		Assign(digit, cell, xcell);
 		zh2b_g.Digit_cell_Assigned_init[digit].Set(xcell);
 	}
@@ -130,13 +131,68 @@ uint64_t  ZH2B5_GLOBAL::FindUAsInit(int fl, int source) {
 	}
 	return solved_cells;
 */
+void ZHONE_GLOBAL::InitBand_6_7(BF64 & o, int ib) {
+}
+void GEN_BANDES_12::SecondSockets2MoreUAs(int i81) {
+	// this is for a given GUA2 socket i81
+	SGUA2 s = tsgua2[i81];
+/*	struct SGUA2 {// 81 possible UA2 sockets
+uint64_t tua[SIZETGUA];
+int digs, gangcols[9];// revised gangster
+uint32_t nua;// nua_start, nua_end;
+*/
+	int rx0[2], bx0[2], dx3[2];
+	rx0[0] = zh2b_g.fd_sols[0][s.dig1].SolRow(s.col2);
+	dx3[0] = genb12.grid0[9 * rx0[0] + s.col1];
+	rx0[1] = zh2b_g.fd_sols[0][s.dig2].SolRow(s.col1);
+	dx3[1] = genb12.grid0[9 * rx0[1] + s.col2];
+	bx0[0] = rx0[0] / 3;
+	bx0[1] = rx0[1] / 3;
 
-void GEN_BANDES_12::SecondSockets2MoreUAs() {
-	STD_B1_2 * mybx[2] = { &myband1 ,&myband2 },*ba,*bb;
+	if (bx0[0] == bx0[1]) return; // want digitsin 2 bands
+	if (dx3[0] == dx3[1]) return; // ua 6 cells
+	for (int idig = 0; idig < 2; idig++) {
+		int dx[2], cx[2],row,dig3;
+		if (idig) {
+			dx[0] = s.dig1; dx[1] = s.dig2;
+			cx[0] = s.col1; cx[1] = s.col2;
+			row = rx0[0]; dig3 = dx3[0];
+		}
+		else {
+			dx[0] = s.dig2; dx[1] = s.dig1;
+			cx[0] = s.col2; cx[1] = s.col1;
+			row = rx0[1]; dig3 = dx3[1];
+		}
+		int band=row/3;
+		// dig3 must be possible in 
+		if (!((1 << dig3) & s.gangcols[cx[1]])) {
+			//cout << " not a valid pattern dig3 col" << endl;
+			continue;
+		}
+		if (1) {
+			cout << "SecondSockets2MoreUAs" << endl;
+			cout << "digs " << s.dig1 + 1 << s.dig2 + 1 << "\tcols " << s.col1 + 1 << s.col2 + 1 << endl;
+			cout << "rows " << rx0[0] + 1 << rx0[1] + 1 << "\tdigs3 " << dx3[0] + 1 << dx3[1] + 1 << endl;
+		}
+		// now fill band bx[0] except the 2 cells
+		zh2b_g.InitGangster(gangb12, s.gangcols);
+		zh2b[0].Init_gang();
+		BF64 cells_to_fill;
+		cells_to_fill.bf.u64=BIT_SET_2X;// all cells
+		cells_to_fill.bf.u32[1-band] = 0;// nothing in the other band
+		int c1 = row * 9 + s.col1, c2 = row * 9 + s.col2;
+		if (row >= 3) { c1 += 5; c2 += 5; }// must be 2X mode
+		cells_to_fill.bf.u64 ^= (uint64_t)1 << c1;
+		cells_to_fill.bf.u64 ^= (uint64_t)1 << c2;
+		zh2b[0].Init_2digits_banda(cells_to_fill);
+		zh2b[0].FullUpdate();
+		zh2b[0].ImageCandidats();
+		//==============  now find more uas 6/7 digits
+
+	}
+	if (1) return;
 	int ib;
 	for (ib = 0; ib < 2; ib++) {
-		ba = mybx[ib];
-		bb = mybx[1 - ib];
 		for (int ip = 0; ip < 36; ip++) {// try all digit pairs
 			int fl = floors_2d[ip];
 			// init *ba to all except the 2 digits

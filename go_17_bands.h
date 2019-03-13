@@ -5,6 +5,7 @@ struct STD_B416 {
 	char band[28];
 	int band0[27],i416,gangster[9],map[27],dband;
 	uint32_t tua[100], nua;//   maximum 81  
+	uint32_t fd_sols[2][9];//start puzzle/ solution
 	void Initstd();
 	void GetBandTable(int i) ;
 	void SetGangster();

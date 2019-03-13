@@ -5,51 +5,34 @@
 //#define TESTXY2 0
 //22521159232789761
 //536435903110145
-#define TESTDEBUG 0
 #define LIM3Y 2000000
 //#define DEBUGLEVEL 10
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
+	const char * diagband = "241578693378691245596243178";
 	p_cpt2g[0] ++;
 	p_cpt2g[7] +=genb12.nband3;
-	if (0) {
+	if (diag) {
 		for (int i = 0; i < 54; i++)
 			cout << genb12.grid0[i] + 1;
-		cout << "entry m10 debug17=" << debug17 << endl;
+		cout << "entry m10 nb12=" << genb12.nb12 << endl;
+		if (strcmp(diagband, myband2.band)) return;
+		cout << "this is the band in diag" << endl;
+	}
+	if (1) {
+		for (int i = 0; i < 54; i++)
+			cout << genb12.grid0[i] + 1;
+		cout << "entry m10 "  << endl;
 	}
 	g17xy.g17hh0.diagh = 0;
 	g17xy.go_back = 0;
 	zh2b_g.test = 0;
-	if (!debug17) {
-		//if (p_cpt2g[0] > 1)	return; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<first test 
-	}
 	memset(p_cpt, 0, sizeof p_cpt);// used in debugging sequences only
 	memset(p_cpt1, 0, sizeof p_cpt1);// used in debugging sequences only
 	myband2.DoExpandBand(27);// expand band2
 	if (!(myband1.n5| myband2.n5)) return; // no 656 no 566
 	int nb3 = genb12.nband3;
-	if (0) {
-		cout << " debug band 2 index 3 status " << endl;
-		int ni2 = myband2.nind[1];
-		for (int i3 = 0; i3 < ni2; i3++) {
-			int * ti = myband2.index2[i3];
-			uint64_t bf = (uint64_t)ti[0] << 32;
-			uint64_t cc = _popcnt64(bf&BIT_SET_2X);
-			if (cc != 2) cout << "erreur 0x" << hex << bf << dec << endl;
-			cout << Char2Xout(bf) << " bf i2=" << i3 << endl;
-
-		}
-		int ni3 = myband2.nind[2];
-		for (int i3 = 0; i3 < ni3; i3++) {
-			int * ti = myband2.index3[i3];
-			uint64_t bf = (uint64_t) ti[0]<< 32;
-			uint64_t cc = _popcnt64(bf&BIT_SET_2X);
-			if (cc != 3) cout << "erreur 0x" << hex << bf << dec << endl;
-			cout << Char2Xout(bf) << " bf i3=" << i3 << endl;
-
-		}
-		return;
-	}
-	if (0 &&debug17 && TESTDEBUG) {
+	int ni3 = myband2.nind[2];
+	if (0 &&debug17 ) {
 		cout << "first check" << endl;
 		myband1.PrintStatus(); myband1.PrintShortStatus();
 		myband2.PrintStatus(); myband2.PrintShortStatus();
@@ -58,9 +41,14 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	
 	//=========================== collect UAs (still room for improvement)
 	if(genuasb12.Initgen()) return;
-	//genuasb12.DebugUas();
+	if (diag) {
+		genuasb12.DebugUas();
+		return;
+	}
 	genb12.BuildGang9x3();
 	genb12.SecondSockets2Setup();// collect GUA2s 
+	//if (1) return;
+	if (1) return;
 	genb12.SecondSockets3Setup();// collect GUA3s 
 	Go();// standard entry point for all 
 }
@@ -70,7 +58,7 @@ void G17B::Go(){// search process external loop 2X2Y
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
-	if (debug17 && TESTDEBUG)GodebugInit(1);//  1 base 2 all UAs 
+	if (0 && debug17 )GodebugInit(1);//  1 base 2 all UAs 
 	for (int i1 = 0; i1 < n1; i1++) {
 		if (g17b.debug17) {
 			int * t1= myband1.index2[i1];
@@ -886,6 +874,9 @@ int G17XY::CheckValidBand12(){
 		if (cc < 12) {
 			cout<<Char2Xout(cellsbf) << " invalid ua CheckValidBand12() "
 				<<cellsbf<< endl; 
+			cout << Char2Xout(myua) << "  ua produced " << endl;
+			cout << myband1.band << myband2.band << " bands 1+2 studied num "
+				<<genb12.nb12<< endl;
 			genuasb12.DebugUas();
 			cout << endl << endl;
 			cout << Char2Xout(indexstep.b1b2_2Xbf) << " b1b2step" << endl;

@@ -788,10 +788,16 @@ void ZH2B5_GLOBAL::CollectUas5() {
 	zh2b5[0].ComputeNext5();
 }
 void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
+	if (zh2b5_g.diag) {
+		cout << "valid sol nuaf5="<<nuaf5<< endl;
+	}
 	uint64_t ua = 0, *s0 = &fdsw[0][0].bf.u64;
 	for (uint32_t i = 0; i < ndigits; i++) {
 		uint64_t w = sol[i] & ~s0[i];// digit ua
-		if (!w) return; //a subset exists
+		if (!w) {
+			if (zh2b5_g.diag) cout << "subset assumed rdigit" << i << endl;
+			return; //a subset exists
+		}
 		ua |= w;
 	}
 	/* not true can be small gua not a band ua
@@ -803,18 +809,18 @@ void ZH2B5_GLOBAL::ValidSol5(uint64_t * sol) {//Ua to catch
 	}
 	*/
 	uint64_t  cc = (int)_popcnt64(ua);
+	if (zh2b5_g.diag)cout << "cc=" << cc << endl;
 	if (cc > sizef5) return;
-	if (nuaf5 >= 30) {// reasonnable limit for a given step
-		int limit = tuaf5[29].bf.u64 >> 59;
+	if (nuaf5 >= 40 && modevalid) {// reasonnable limit for a given step
+		int limit = tuaf5[39].bf.u64 >> 59;
 		if (cc >= limit)return; // too many uas found here, skip it
-		nuaf5 = 29;
+		nuaf5 = 39;
 	}
 	ua |= cc << 59;
 	//int ir = genuasb12.AddUA64(&tuaf5[0].bf.u64, nuaf5);
 	//uint64_t cc = _popcnt64(genuasb12.ua);
 	//genuasb12.ua.bf.u64  |= cc << 59;
 	if (zh2b5_g.diag)cout << Char2Xout(ua) << " ua found nuaf5=" << nuaf5 << "cc=" << cc << endl;
-	tuaf5[nuaf5++] = ua;
 	AddUA64(&tuaf5[0].bf.u64, nuaf5,ua);
 }
 
@@ -965,7 +971,7 @@ int ZH2B5::Seta5(int digit, int xcell) { // single in cell
 void  ZH2B5::Guess5() {// solve in table digit with lowest count
 	if (zh2b5_g.diag) {
 		cout << oct << rows_unsolved.bf.u64 << dec << " unsolved guess5" << endl;
-		//ImageCandidats();
+		ImageCandidats();
 	}
 	if (!rows_unsolved.bf.u64) {// this is a solution
 		//cout << "valid sol" << endl;
@@ -1006,7 +1012,10 @@ void  ZH2B5::Guess5() {// solve in table digit with lowest count
 			nextz->FD[digmin].bf.u64 = R;// restore the solution for digit
 		}	
 		// if ncount=2 it is a solution
-		if(ncount==2)zh2b5_g.ValidSol5(&nextz->FD[0].bf.u64);
+		if (ncount == 2) {
+			if (zh2b5_g.diag) nextz->ImageCandidats();
+			zh2b5_g.ValidSol5(&nextz->FD[0].bf.u64);
+		}
 		else nextz->ComputeNext5();// continue solving
 	}
 }
@@ -1186,6 +1195,11 @@ void ZHONE_GLOBAL::GetBand(int * b, uint32_t * t) {
 		}
 	}
 }
+void ZHONE_GLOBAL::GetBand(uint32_t fd_solsb[2][9], int * b, uint32_t * t) {
+	band0 = b; tua = t;  nua = 0;
+	memcpy(fd_sols, fd_solsb, sizeof fd_sols);
+}
+
 
 void ZHONE_GLOBAL::AddUA(uint32_t ua) {// add if and clear supersets
 	// ua 27 bit + 5 bit length
@@ -1297,6 +1311,8 @@ void ZHONE_GLOBAL::PrintTua() {
 		cout << i << "\t" << Char27out(ua27) << "\t" << nd << endl;
 	}
 }
+
+
 //============================================ ZHONE
 void ZHONE::InitOne_std_band() {//init after zh1b_g getband
 	cells_unsolved = BIT_SET_27;

@@ -142,7 +142,7 @@ int GENSTEP::PuzzleToTest(){
 	int digits = 0,nguess=0;
 	for (int i = 0; i < nclues; i++) digits |= 1<<tclues[i].u8[1];
 	if (_popcnt32(digits) < 8) return 0;// minimum 8 digits given to have a sudoku
-	if(tclues[0].u8[1]==3)	cout << zh_g2.puz << endl;
+	//if(tclues[0].u8[1]==3)	cout << zh_g2.puz << endl;
 
 
 	int irx = zh_g.Go_InitSolve(tclues, nclues);
