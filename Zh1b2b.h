@@ -119,7 +119,7 @@ struct ZH2B {// size 32 bytes
 	
 	void InitTclues(uint32_t * tclues, int n);
 	void Init_2digits_banda(BF64  cellsbf);
-	void EndInit_2digits_bandb(int fl, int ibandb);
+	//void EndInit_2digits_bandb(int fl, int ibandb);
 
 	uint64_t ValidXY(uint32_t * tclues, int n,int test=0);
 	uint64_t MoreSocket2();
@@ -237,7 +237,7 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	uint32_t fd_sols[2][9];//start puzzle/ solution
 	//uint32_t gua_gang_6_7[9]; // band initial pm for guas 6_7
 	uint32_t fdsw[3][9];//morphed digits puzzle/ solution rev
-	uint32_t ndigits;
+	uint32_t ndigits,modegua;
 	uint32_t previous_ua_status[6],// index 0 is for digit 3
 		upstream_unsolved_cells[6];
 
@@ -254,7 +254,6 @@ struct ZHONE_GLOBAL { // global variables for the game table
 	void AddUA(uint32_t ua);
 	void PrintTua();
 	void FindMissingUAs();
-	void InitBand_6_7(BF64 & o, int ib);
 };
 
 

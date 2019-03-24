@@ -36,7 +36,7 @@ struct STD_B1_2 :STD_B416 {
 	int ReviseG_triplet(int imini, int ip, STD_B1_2 * bb);
 	uint32_t GetMiniData(int index,  uint32_t & bcells, STD_B1_2 *bb);
 	void DoExpandBand(int dband);// dband 0/27
-	void DebugIndex(int ind6 = 0);
+	void DebugIndex2();
 	void Debug_2_3();
 	void PrintShortStatus();
 };

@@ -3,7 +3,7 @@
 const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 "fupd ", "hpair ", "htripl ", " ", " " };
 
-const char * libs_c17_00_cpt2g[20] = {
+const char * libs_c17_00_cpt2g[40] = {
 	"0 bands1+2 processed entries M10",//0
 	"1 chunks processed entries gochunk",//1
 	"2 XY count",//2
@@ -22,8 +22,11 @@ const char * libs_c17_00_cpt2g[20] = {
 	"15 entry band3 handler excluding critical+ua outfield",//15
 	"16 critical + sub critical",//16
 	"17 add 1 from active",//17
-	"18",//18
-	"19  ",//19
+	"18 n uas at start",//18
+	"19 n gua2s at start  ",//19
+	"20 n gua3s at start  ",//20
+	"21 n sockets2",//21
+	"22 n sockets1",//22
 };
 void Go_c17_00( ) {// p2 process
 	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;
@@ -32,6 +35,7 @@ void Go_c17_00( ) {// p2 process
 	cout << sgo.vx[3] << " -v3- last entry number for this batch must be > vx[2]" << endl;
 	int it16_start = sgo.vx[0];
 	g17b.debug17 = 0;
+	g17b.diag = sgo.vx[6];
 	genb12.skip = sgo.vx[2];
 	genb12.last = sgo.vx[3];
 	if (sgo.vx[2] < 0) {
@@ -53,7 +57,7 @@ void Go_c17_00( ) {// p2 process
 	genb12.Start(0);
 	genb12.NewBand1(sgo.vx[0]);
 	cout << "print final stats" << endl;
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < 40; i++) {
 		if (!p_cpt2g[i])continue;
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
@@ -222,6 +226,8 @@ void Go_c17_80() {// enumeration test
 	cout << "Go_c17_20 phase 2a enumeration test " << endl;
 	cout << sgo.vx[0] << " -v0- first id 0_415" << endl;
 	cout << sgo.vx[1] << " -v1- second id 0_415" << endl;
+	cout << sgo.vx[2] << " -v2- if 1 printout asked" << endl;
+	cout << sgo.vx[3] << " -v3- 0 mode p2a 1 mode p2b 2 mode p1" << endl;
 	int it16_start = sgo.vx[0], it16_end = sgo.vx[1];
 	genb12.skip = 0;
 	genb12.last = 100000;
@@ -231,7 +237,7 @@ void Go_c17_80() {// enumeration test
 		return;
 	}
 	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
-	genb12.Start(11);
+	genb12.Start(11);// mode p2a or p2b or p1
 	for (int i1t16 = it16_start; i1t16 <= it16_end; i1t16++) {
 		memset(p_cpt, 0, sizeof p_cpt);// band2 and band 3 count
 		genb12.nb12 = 0;
@@ -353,7 +359,118 @@ void Go_c17_92() {// test UAs 5 6 expand
 		//wband.DebugIndex(1);
 	}
 }
-// extraction des 17 6 6 5
+
+
+//====== 15  extraction des 17 6 6 5
+void Go_c17_15() {
+	char * ze = finput.ze;
+
+	while (finput.GetLigne()) {
+		int count[6];
+		memset(count, 0, sizeof count);
+		for (int i = 0; i < 81; i++) {
+			if (ze[i] - '.') {
+				int band = i / 27, stack = C_stack[i] + 3;
+				++count[band];
+				++count[stack];
+			}
+		}
+		if (count[0] > 6 || count[1] > 6 ||
+			count[2] > 6 || count[3] > 6 ||
+			count[4] > 6 || count[5] > 6)
+			cout << ze << endl;
+		else fout1 << ze << endl;
+	}
+}
+
+void Go_c17_16() {
+	char * ze = finput.ze,zout[82],zdiag[82];
+	zout[81] = 0;
+	zh_g2.zsol = zout;
+	while (finput.GetLigne()) {
+		if (zhou[0].CheckValidityQuick(ze) == 1) {
+			int count[6];
+			memset(count, 0, sizeof count);
+			for (int i = 0; i < 81; i++) {
+				if (ze[i] - '.') {
+					int band = i / 27, stack = C_stack[i] + 3;
+					++count[band];
+					++count[stack];
+				}
+			}
+			for (int i = 0; i < 81; i++)
+				zdiag[C_transpose_d[i]] = zout[i];
+			int zw[27], indexr[6], indexmin = 500;
+			BANDMINLEX::PERM pr;
+			char * zz = zout;
+			for (int i = 0; i < 27; i++)
+				zw[i] = zz[i] - '1';
+			bandminlex.Getmin(zw, &pr);
+			indexmin = indexr[0] = t416_to_n6[pr.i416];
+			zz = &zout[27];
+			for (int i = 0; i < 27; i++)
+				zw[i] = zz[i] - '1';
+			bandminlex.Getmin(zw, &pr);
+			indexr[1] = t416_to_n6[pr.i416];
+			if (indexmin > indexr[1])indexmin = indexr[1];
+			zz = &zout[54];
+			for (int i = 0; i < 27; i++)
+				zw[i] = zz[i] - '1';
+			bandminlex.Getmin(zw, &pr);
+			indexr[2] = t416_to_n6[pr.i416];
+			if (indexmin > indexr[2])indexmin = indexr[2];
+			zz = zdiag;
+			for (int i = 0; i < 27; i++)
+				zw[i] = zz[i] - '1';
+			bandminlex.Getmin(zw, &pr);
+			indexr[3] = t416_to_n6[pr.i416];
+			if (indexmin > indexr[3])indexmin = indexr[3];
+			zz = &zdiag[27];
+			for (int i = 0; i < 27; i++)
+				zw[i] = zz[i] - '1';
+			bandminlex.Getmin(zw, &pr);
+			indexr[4] = t416_to_n6[pr.i416];
+			if (indexmin > indexr[4])indexmin = indexr[4];
+			zz = &zdiag[54];
+			for (int i = 0; i < 27; i++)
+				zw[i] = zz[i] - '1';
+			bandminlex.Getmin(zw, &pr);
+			indexr[5] = t416_to_n6[pr.i416];
+			if (indexmin > indexr[5])indexmin = indexr[5];
+			// sort and keep track of the count or split the file
+
+			uint32_t tx[3], tdx[3], temp;
+			tx[0] = (indexr[0] << 8) | count[0];
+			tx[1] = (indexr[1] << 8) | count[1];
+			tx[2] = (indexr[2] << 8) | count[2];
+			tdx[0] = (indexr[3] << 8) | count[3];
+			tdx[1] = (indexr[4] << 8) | count[4];
+			tdx[2] = (indexr[5] << 8) | count[5];
+			if (tx[0] > tx[1]) { temp = tx[0]; tx[0] = tx[1]; tx[1] = temp; }
+			if (tx[1] > tx[2]) { temp = tx[1]; tx[1] = tx[2]; tx[2] = temp; }
+			if (tx[0] > tx[1]) { temp = tx[0]; tx[0] = tx[1]; tx[1] = temp; }
+			if (tdx[0] > tdx[1]) { temp = tdx[0]; tdx[0] = tdx[1]; tdx[1] = temp; }
+			if (tdx[1] > tdx[2]) { temp = tdx[1]; tdx[1] = tdx[2]; tdx[2] = temp; }
+			if (tdx[0] > tdx[1]) { temp = tdx[0]; tdx[0] = tdx[1]; tdx[1] = temp; }
+			BF64 va, vb; va.bf.u64 = vb.bf.u64 = 0;
+			va.bf.u16[2] = tx[0] >> 8; va.bf.u16[1] = tx[1] >> 8; va.bf.u16[0] = tx[2] >> 8;
+			vb.bf.u16[2] = tdx[0] >> 8; vb.bf.u16[1] = tdx[1] >> 8; vb.bf.u16[0] = tdx[2] >> 8;
+			if (va.bf.u64 < vb.bf.u64) {
+				fout1 << ze << ";" << indexmin	<< ";" << va.bf.u16[1] << ";"
+					<< va.bf.u16[0] <<";"<<(tx[2]&0xff)	<<";va" << endl;
+			}
+			else {
+				fout1 << ze << ";" << indexmin	 << ";" << vb.bf.u16[1] << ";"
+					<< vb.bf.u16[0] <<";" << (tdx[2] & 0xff) << ";vb"
+					 << endl;
+
+			}
+		}
+		else cout << ze << "non resolu" << endl;
+	}
+}
+
+
 
 /*
 

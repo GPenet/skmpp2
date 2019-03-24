@@ -340,7 +340,10 @@ int ZHOU::CheckValidityQuick(char *puzzle) {
 	if (zh_g.Go_InitSudoku(puzzle)) return 0;
 	int ir = FullUpdate();
 	if (!ir) return 0;// not valid
-	if (ir == 2) return 1;// solved can not be multiple
+	if (ir == 2) {
+		if(zh_g2.zsol)zh_g.ValidPuzzle(this);
+		return 1;// solved can not be multiple
+	}
 	Guess();
 	return zh_g.nsol;
 }

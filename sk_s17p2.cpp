@@ -8,6 +8,7 @@
 //#define MODE66_ON
 #define GTEST17_ON 1
 #define UALIMSIZE 20
+#define GUALIMSIZE 18
 #define UA32_10 0xffc00000
 #define UA64_54 0x3fffffffffffff
 #define TUA64_12SIZE 2000
@@ -70,7 +71,7 @@ GEN_BANDES_12 genb12;
 
 #include "go_17_genb12_cpp.h"     
 #include "go_17sol_bs_cpp.h"     
-#include "go_17sol_zx_cpp.h"  
+//#include "go_17sol_zx_cpp.h"  
 #include "go_17sol_commands_cpp.h"
 
 
@@ -100,6 +101,10 @@ void Go_0() {
 	case 0: Go_c17_00(); break; // search one band1
 	case 10: Go_c17_10(); break; // search known 17s 
 	case 11: Go_c17_11(); break; // split knwon 17s p2
+
+	case 15: Go_c17_15(); break; // split knwon 17s 665 and others
+	case 16: Go_c17_16(); break; // add solution+bands index
+
 
 	case 80: Go_c17_80(); break; // enumeration test 
 	case 90: Go_c17_90(); break; // regressive test uas one band	

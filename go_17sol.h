@@ -162,7 +162,7 @@ struct G17B3HANDLER{
 
 #define G17CHKX 256
 #define G17CHKY 256
-#define MAXNIND6 12080
+#define MAXNIND6 20000
 #define NVUAS128 4
 #define NVGUAS128 15
 struct V256_UAS { 
@@ -272,7 +272,7 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 };
 
 struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
-	int debug17, //xyexpand_size,
+	int debug17,diag, 
 		band1_17,band2_17,band3_17,
 		npuz, a_17_found_here;
 	uint64_t  band12_17;

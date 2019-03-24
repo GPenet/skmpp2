@@ -9,16 +9,20 @@
 //#define DEBUGLEVEL 10
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
 	const char * diagband = "241578693378691245596243178";
+	uint64_t diagval = 657035;
 	p_cpt2g[0] ++;
 	p_cpt2g[7] +=genb12.nband3;
 	if (diag) {
-		for (int i = 0; i < 54; i++)
-			cout << genb12.grid0[i] + 1;
-		cout << "entry m10 nb12=" << genb12.nb12 << endl;
-		if (strcmp(diagband, myband2.band)) return;
-		cout << "this is the band in diag" << endl;
+		if (genb12.nb12 == diagval) {
+			for (int i = 0; i < 54; i++)
+				cout << genb12.grid0[i] + 1;
+			cout << "entry m10 nb12=" << genb12.nb12 << endl;
+			//if (strcmp(diagband, myband2.band)) return;
+			cout << "this is the band in diag" << endl;
+		}
+		else return;
 	}
-	if (1) {
+	if (0) {
 		for (int i = 0; i < 54; i++)
 			cout << genb12.grid0[i] + 1;
 		cout << "entry m10 "  << endl;
@@ -32,24 +36,38 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	if (!(myband1.n5| myband2.n5)) return; // no 656 no 566
 	int nb3 = genb12.nband3;
 	int ni3 = myband2.nind[2];
-	if (0 &&debug17 ) {
+	if (diag ) {
 		cout << "first check" << endl;
-		myband1.PrintStatus(); myband1.PrintShortStatus();
-		myband2.PrintStatus(); myband2.PrintShortStatus();
+		//myband1.PrintStatus();
+		myband1.PrintShortStatus();
+		//myband2.PrintStatus(); 
+		myband2.PrintShortStatus();
 	}
-	if (0) 		myband2.Debug_2_3();
-	
+	//if (diag) 		myband2.Debug_2_3();
+	if (diag) {
+		myband1.DebugIndex2();
+		myband2.DebugIndex2();
+		return;
+	}
+
 	//=========================== collect UAs (still room for improvement)
+	zh1b_g.modegua = 0;//must be to activate filter in UAs b12 more
 	if(genuasb12.Initgen()) return;
 	if (diag) {
 		genuasb12.DebugUas();
 		return;
 	}
 	genb12.BuildGang9x3();
+	zh1b_g.modegua = 1;//must be to kill  filter in GUAs 6_7 more
 	genb12.SecondSockets2Setup();// collect GUA2s 
 	//if (1) return;
-	if (1) return;
+	//if (1) return;
 	genb12.SecondSockets3Setup();// collect GUA3s 
+	p_cpt2g[18] += genuasb12.nua;
+	p_cpt2g[19] += genb12.ntua2;
+	p_cpt2g[20] += genb12.ntua3;
+	p_cpt2g[21] += genb12.nactive2;
+	p_cpt2g[22] += genb12.nactive3;
 	Go();// standard entry point for all 
 }
 
@@ -58,7 +76,8 @@ void G17B::Go(){// search process external loop 2X2Y
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
-	if (0 && debug17 )GodebugInit(1);//  1 base 2 all UAs 
+	//if (0 && debug17 )
+	//	GodebugInit(1);//  1 base 2 all UAs 
 	for (int i1 = 0; i1 < n1; i1++) {
 		if (g17b.debug17) {
 			int * t1= myband1.index2[i1];
@@ -72,7 +91,6 @@ void G17B::Go(){// search process external loop 2X2Y
 			//if (i2) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 			indexstep.Init(i1, i2);
 			g17morebig.Init();
-			genb12.Init_tmore_sockets2();
 			if (!(indexstep.n51 | indexstep.n52)) continue;
 			if (indexstep.ShrinkUas())continue;// dead branch
 			if (g17b.debug17) {

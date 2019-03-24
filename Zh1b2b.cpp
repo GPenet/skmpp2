@@ -26,7 +26,7 @@ ZHONE zhone[20]; // one band 9 digits
 ZHONE zhone_i; 
 
 
-#include "go_17sol_zx_UaCollector_cpp.h"
+//#include "go_17sol_zx_UaCollector_cpp.h"
 //GENUAS_1Bx genuas1b;
 //============================= ZH_GLOBAL code
 ZH2B_GLOBAL::ZH2B_GLOBAL(){
@@ -1639,7 +1639,7 @@ int ZHONE::Start_nFloors(int floors) {
 	cells_unsolved=BIT_SET_27^ solved_cells;
 	for (uint32_t i = 0; i < nd; i++) {
 		FD[i] &= cells_unsolved;
-		if (_popcnt32(FD[i]) == 3)return 1;
+		if (_popcnt32(FD[i]) == 3 && (!zh1b_g.modegua))return 1;
 	}
 	if (zh1b_g.diag) {
 		cout << "end start nfloors" << endl;
@@ -1747,7 +1747,8 @@ void ZHONE::Guess2() {	// note if all 1 are settled, the puzzle is solved
 	if (!vr) {
 		register uint32_t w0 = FD[0] & zh1b_g.fdsw[2][0],
 			w1 = FD[1] & zh1b_g.fdsw[2][1];
-		if ((!w0) || (!w1)) return;
+		if (!zh1b_g.modegua) 
+			if ((!w0) || (!w1)) return;
 		w0 |= (w1 | zh1b_g.previous_ua_status[0]);
 		w0 |= _popcnt32(w0) << 27;
 		zh1b_g.AddUA(w0);
@@ -1790,7 +1791,7 @@ void ZHONE::Guess3() {	// solve digit 3/2
 	int v = FD[2], vr = v >> 27;
 	if (!vr) {
 		uint32_t w3 = FD[2] & zh1b_g.fdsw[2][2];
-		if (!w3) return;
+		if ((!zh1b_g.modegua) && (!w3)) return;
 		zh1b_g.upstream_unsolved_cells[0] =
 			zh1b_g.upstream_unsolved_cells[1]  &~FD[2];
 		if (zh1b_g.diag)			cout << Char27out(w3) << " guess3 ua" << endl;
@@ -1837,7 +1838,7 @@ void ZHONE::Guess4() {	//  solve digit 4/3
 	int v = FD[3], vr = v >> 27;
 	if (!vr) {
 		uint32_t w4 = FD[3] & zh1b_g.fdsw[2][3];
-		if (!w4) return;
+		if ((!zh1b_g.modegua) && (!w4)) return;
 		zh1b_g.upstream_unsolved_cells[1] =
 			zh1b_g.upstream_unsolved_cells[2]  &~FD[3];
 		if (zh1b_g.diag)			cout << Char27out(w4) << " direct guess4 ua" << endl;
@@ -1884,7 +1885,7 @@ void ZHONE::Guess5() {	//  solve digit 5/4
 	int v = FD[4], vr = v >> 27;
 	if (!vr) {
 		uint32_t w5 = FD[4] & zh1b_g.fdsw[2][4];
-		if (!w5) return;
+		if ((!zh1b_g.modegua) && (!w5)) return;
 		zh1b_g.upstream_unsolved_cells[2] =
 			zh1b_g.upstream_unsolved_cells[3] & ~FD[4];
 		if (zh1b_g.diag)			cout << Char27out(w5) << " direct guess5 ua" << endl;
@@ -1933,7 +1934,7 @@ void ZHONE::Guess6() {	//  solve digit 6/5
 	int v = FD[5], vr = v >> 27;
 	if (!vr) {
 		uint32_t w6 = FD[5] & zh1b_g.fdsw[2][5];
-		if (!w6) return;
+		if((!zh1b_g.modegua)&& (!w6)) return;
 		zh1b_g.upstream_unsolved_cells[3] =
 			zh1b_g.upstream_unsolved_cells[4] & ~FD[5];
 		if (zh1b_g.diag) {
@@ -1987,7 +1988,7 @@ void ZHONE::Guess7() {	//  solve digit 7/6
 	int v = FD[6], vr = v >> 27;
 	if (!vr) {
 		uint32_t w7 = FD[6] & zh1b_g.fdsw[2][6];
-		if (!w7) return;
+		if ((!zh1b_g.modegua) && (!w7)) return;
 		zh1b_g.upstream_unsolved_cells[4] =
 			zh1b_g.upstream_unsolved_cells[5] &~ FD[6];
 		if (zh1b_g.diag)			cout << Char27out(w7) << " guess7 ua" << endl;

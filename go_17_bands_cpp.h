@@ -291,12 +291,13 @@ back:
 	t[1] = n6;
 	if (g17b.debug17 > 1)cout << "indices bandes " << nind[0] << " " << nind[1] << " " << nind[2] << endl;
 }
-void STD_B1_2::DebugIndex(int ind6) {
-	int nn = nind[ind6];
-	cout <<"debugindex ind6="<<ind6 <<" nindex="<<nn<<endl;
+void STD_B1_2::DebugIndex2() {
+	int nn = nind[1];
+	cout <<"debugindex2 nindex="<<nn<<endl;
 	for (int i = 0; i <= nn; i++) {
-		int *w = (ind6) ? index2[i] : index1[i];
-		cout << oct << w[0] << dec << "\t" << w[1] << "\t" << w[2] << endl;
+		int *w =  index2[i] ;
+		cout << w[1] << "\t" << w[2] 
+			<<"\t"<< Char27out(w[0])<< endl;
 	}
 }
 void STD_B1_2::Debug_2_3() {
@@ -811,7 +812,7 @@ void GENUAS_B12::CollectMore2minirows() {
 	}
 	
 }
-//=============== ua cillector socket 2
+//=============== ua collector socket 2
 
 void GENUAS_B12::ProcessSocket2(int i81) {
 	GEN_BANDES_12::SGUA2 &wi81 = genb12.tsgua2[i81];

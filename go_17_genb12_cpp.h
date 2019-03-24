@@ -25,8 +25,10 @@ void GEN_BANDES_12::InitialSockets2Setup() {//load permanent data
 	}
 }
 void GEN_BANDES_12::SecondSockets2Setup() {
+
 	ntua2 = 0; nactive2 = 0;
-	for (int i81 = 0; i81 < 81; i81++) {// initial socket 2
+	Build_CheckUAs_Subsets_Table();
+	for (i81 = 0; i81 < 81; i81++) {// initial socket 2
 		SGUA2 & w = tsgua2[i81];
 		w.dig1 = gang27[w.id1];
 		w.dig2 = gang27[w.id2];
@@ -44,7 +46,7 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		w.gangcols[w.col2] ^= w.digs;
 		// find guas of the socket
 		zh2b_g.InitGangster(gangb12, w.gangcols);
-		zh2b5_g.sizef5 = UALIMSIZE;// -2;
+		zh2b5_g.sizef5 = GUALIMSIZE;
 		zh2b5_g.modevalid = 0;
 		w.nua = 0;
 		//w.nua_start = ntua2;
@@ -75,8 +77,8 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 			int fl = 0x1ff ^ floors_4d[i];
 			if ((fl & w.digs) == w.digs) GuaCollect(fl);
 		}
-		if (nband3 <= 2 && nua2 < 100)
-			SecondSockets2MoreUAs(i81);
+		//if (nband3 <= 2 && nua2 < 100)
+		SecondSockets2MoreUAs();
 		if (nua2) {
 			tactive2[nactive2++]=i81;
 			ntua2 += nua2;
@@ -86,7 +88,7 @@ void GEN_BANDES_12::SecondSockets2Setup() {
 		if (0) {
 			cout << "try collect socket2 for i81=" << i81 << "\tnua2=" << nua2 << endl;
 			for (uint32_t i =0; i < w.nua; i++)
-				cout << Char2Xout(w.tua[i]) << endl;
+				cout << Char2Xout(w.tua[i]) <<" cc="<< (w.tua[i] >>59)<< endl;
 		}
 		if (g17b.debug17)Debug17(w);// check all guas are valid for known 17
 	}
@@ -107,33 +109,68 @@ void ZH2B::Init_2digits_banda(BF64  cellsbf) {
 	for (int i = 0; i < 9; i++)  FD[i] &= cells_unsolved |
 		zh2b_g.Digit_cell_Assigned_init[i];
 }
-void ZH2B::EndInit_2digits_bandb(int fl, int ibandb) {
-}
+//void ZH2B::EndInit_2digits_bandb(int fl, int ibandb) {
+//}
 /*
-uint64_t  ZH2B5_GLOBAL::FindUAsInit(int fl, int source) {
-	BF64 * mypm = zh2b_g.fd_sols[1];
-	if (source) mypm = zh2b_g.fd_revised;
-	uint64_t solved_cells = 0;
-	uint32_t nd = 0;
-	for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
-		if (fl & bit) {
-			fdsw[0][nd] = zh2b_g.fd_sols[0][idig];
-			fdsw[2][nd].bf.u64 = (~fdsw[0][nd].bf.u64) & BIT_SET_2X;
-			myfd[nd++] = mypm[idig];
-		}
-		else solved_cells |= zh2b_g.fd_sols[0][idig].bf.u64;
-	}
-	ndigits = nd;
-	cells_unsolved.bf.u64 = BIT_SET_2X ^ solved_cells;
-	for (uint32_t i = 0; i < nd; i++) {
-		myfd[i] &= cells_unsolved;
-		if (myfd[i].Count() == 6)return 0;
-	}
-	return solved_cells;
+extract from bands 1 2 and UAs bands1+2 all uas (uint64_t)
+having a chance to be a subset of a gua
+Note : this is to save time. A UA having a subset is not an error.
+Note 2 : All digits of a subset are in the UA to check  
 */
-void ZHONE_GLOBAL::InitBand_6_7(BF64 & o, int ib) {
+void GEN_BANDES_12::Build_CheckUAs_Subsets_Table() {
+	nua_for_check = 0;
+	for (uint32_t i = 0; i < genuasb12.nuab1b2; i++) {// uAs bands
+		register uint64_t R = genuasb12.tuab1b2[i]& BIT_SET_2X;
+		uint64_t cc = _popcnt64(R);
+		if (cc > 10) continue;// nearly no chance to be subset
+		tua_for_check[nua_for_check++] = R| (cc<<59);
+	}
+	for (uint32_t i = 0; i < genuasb12.nua; i++){
+		register uint64_t R = genuasb12.tua[i];
+		if ((R >> 59) > 10) continue;// nearly no chance to be subset
+		tua_for_check[nua_for_check++] = R;
+	}
+	// and build the digit pattern of the uas in tua_for_check
+	for (uint32_t i = 0; i < nua_for_check; i++) {
+		uint32_t digs = 0,res;
+		register uint64_t R = tua_for_check[i]&BIT_SET_2X;
+		while (bitscanforward64(res, R)) {
+			R ^= (uint64_t)1 << res;
+			int cell = From_128_To_81[res],digit=grid0[cell];
+			digs |= 1 << digit;
+		}
+		uadigs_for_check[i] = digs;
+		if (0) {
+			cout << Char2Xout(tua_for_check[i]) << " ua for check digs 0"
+				<< oct << digs << dec <<" ndigs "<<_popcnt32(digs)<< endl;
+		}
+	}
+
 }
-void GEN_BANDES_12::SecondSockets2MoreUAs(int i81) {
+void GEN_BANDES_12::Build_tuacheck(int fl) {
+	nua_check=0;
+	int ndigs = 0x1ff ^ fl;
+	for (uint32_t i = 0; i < nua_for_check; i++) {
+		uint32_t digs = uadigs_for_check[i];
+		if (digs & ndigs) continue;
+		tuacheck[nua_check++]= tua_for_check[i];
+	}
+}
+
+int GEN_BANDES_12::Have_tuacheck_subset(  ) {// ua 2x27  + 5 bit length
+	uint64_t * t = tuacheck;
+	register uint64_t ua2x = ua & BIT_SET_2X;
+	for (uint32_t iua = 0; iua < nua_check; iua++) {
+		register uint64_t R = t[iua];
+		R &= BIT_SET_2X;
+		if ((R&ua2x) == R)		return 1;// we have a subset
+	}
+	return 0;
+}
+
+void GEN_BANDES_12::SecondSockets2MoreUAs() {
+	diagmore = 0;
+	//if (i81 == 29)diagmore = 1;
 	// this is for a given GUA2 socket i81
 	SGUA2 s = tsgua2[i81];
 /*	struct SGUA2 {// 81 possible UA2 sockets
@@ -163,56 +200,107 @@ uint32_t nua;// nua_start, nua_end;
 			cx[0] = s.col2; cx[1] = s.col1;
 			row = rx0[1]; dig3 = dx3[1];
 		}
-		int band=row/3;
+		band=row/3;
 		// dig3 must be possible in 
 		if (!((1 << dig3) & s.gangcols[cx[1]])) {
 			//cout << " not a valid pattern dig3 col" << endl;
 			continue;
 		}
-		if (1) {
+		if (diagmore) {
 			cout << "SecondSockets2MoreUAs" << endl;
 			cout << "digs " << s.dig1 + 1 << s.dig2 + 1 << "\tcols " << s.col1 + 1 << s.col2 + 1 << endl;
 			cout << "rows " << rx0[0] + 1 << rx0[1] + 1 << "\tdigs3 " << dx3[0] + 1 << dx3[1] + 1 << endl;
 		}
 		// now fill band bx[0] except the 2 cells
-		zh2b_g.InitGangster(gangb12, s.gangcols);
 		zh2b[0].Init_gang();
 		BF64 cells_to_fill;
 		cells_to_fill.bf.u64=BIT_SET_2X;// all cells
 		cells_to_fill.bf.u32[1-band] = 0;// nothing in the other band
-		int c1 = row * 9 + s.col1, c2 = row * 9 + s.col2;
+		c1 = row * 9 + s.col1;
+		c2 = row * 9 + s.col2;
 		if (row >= 3) { c1 += 5; c2 += 5; }// must be 2X mode
 		cells_to_fill.bf.u64 ^= (uint64_t)1 << c1;
 		cells_to_fill.bf.u64 ^= (uint64_t)1 << c2;
 		zh2b[0].Init_2digits_banda(cells_to_fill);
 		zh2b[0].FullUpdate();
-		zh2b[0].ImageCandidats();
+		if(diagmore)zh2b[0].ImageCandidats();
+		// at this point,we have only one band with a gangster 
+		//not equal to the start and a partial GUA 2cells in the other band
+		//we  prepare ZHONE to find partial uas in one band
+		uint32_t tua[300]; // supply a tua to ZHONE
+		zh1b_g.tua = tua;
+		for (int i = 0; i < 9; i++) {// load the gangster pm
+			zh1b_g.fd_sols[1][i] = zh2b[0].FD[i].bf.u32[1 - band];
+		}
+		STD_B416 * myb = &myband1;
+		if(!band) myb= &myband2; // to catch the solution
+		memcpy(zh1b_g.fd_sols[0], myb->fd_sols[0], sizeof zh1b_g.fd_sols[0]);
+		zh1b_g.band0 = myb->band0;
+		digp = s.digs | (1 << dig3);// must be in the floor
 		//==============  now find more uas 6/7 digits
-
-	}
-	if (1) return;
-	int ib;
-	for (ib = 0; ib < 2; ib++) {
-		for (int ip = 0; ip < 36; ip++) {// try all digit pairs
-			int fl = floors_2d[ip];
-			// init *ba to all except the 2 digits
-			for (int i6 = 0; i6 < 84; i6++) {// try all digit pairs
-				int fl2 = floors_3d[i6];
-				if (fl2&fl)continue;
-				// init *bb to all except the 6 digits
-
-			}
-			for (int i7 = 0; i7 < 36; i7++) {// try all digit pairs
-				int fl2 = floors_2d[i7];
-				if (fl2&fl)continue;
-				// init *bb to all except the 7 digits
-
-			}
-
+		ngua6_7 = 6;
+		wua0 = ((uint64_t)1 << c1) | ((uint64_t)1 << c2);
+		for (int i6 = 0; i6 < 84; i6++) {
+			int fl3 = floors_3d[i6];// , fl6 = 0x1ff ^ fl3;
+			if (fl3&digp) continue;// digits must be in the multi floors
+			floors = 0x1ff ^ fl3;
+			if (diagmore)cout << "try 6 floors 0" << oct << floors << dec << endl;
+			GuaCollectMore();
+		}
+		ngua6_7 = 7;
+		for (int i7 = 0; i7 < 36; i7++) {
+			int fl2 = floors_2d[i7];// , fl7 = 0x1ff ^ fl2;
+			if (fl2&digp) continue;// digits must be in the multi floors
+			floors = 0x1ff ^ fl2;
+			if (diagmore)cout << "try 7 floors 0" << oct << floors << dec << endl;
+			GuaCollectMore();
 		}
 	}
 }
 
+void GEN_BANDES_12::GuaCollectMore() {
+	//if (diagmore)if (floors == 0663) { diagmore = 2; zh1b_g.diag = 1; }
+	//else { diagmore = 1; zh1b_g.diag = 0; }
+	zh1b_g.nua = 0;
+	zhone[0].Start_nFloors(floors);
+	zhone[0].InitGuess();
+	if (diagmore > 1) zhone[0].ImageCandidats();
+	else zh1b_g.diag = 0;
+	if (ngua6_7 == 6)zhone[0].Guess6();
+	else zhone[0].Guess7();
+	if (zh1b_g.nua) {
+		Build_tuacheck(floors);
+		SGUA2 s = tsgua2[i81];
+		for (uint32_t i = 0; i < zh1b_g.nua; i++) {
+			uint32_t w = zh1b_g.tua[i]&BIT_SET_27,	cc=_popcnt32(w),cell;
+			//cout << Char27out(w) << endl;;
+			if (cc < 8) continue;
+			if (cc < 12 && ngua6_7 == 7) continue;
+			if (cc > GUALIMSIZE - 2) continue;
+			int digpw = digp;// assigned outside the band
+			register uint32_t R = w;
+			while (bitscanforward(cell, R)) {
+				R ^= 1 << cell;
+				int dig = zh1b_g.band0[cell]; // digit changed
+				digpw |= 1 << dig;
+			}
+			if (_popcnt32(digpw) != ngua6_7) continue;
+			//cout << "valid ua to add to the table" << endl;
+			ua = wua0;
+			ua |= (uint64_t)w << 32 * (1 - band);
+			if (Have_tuacheck_subset()) {
+				//cout << Char2Xout(ua) << " ua has subset" << endl;
+				continue;
+			}
+			ua |= (uint64_t)(cc + 2) << 59;
+			if (nua2 >= SIZETGUA)nua2 = SIZETGUA - 1; // guess it will be a smaller
+			int ir = 		AddUA64(ptua2, nua2, ua);
+			if(ir && diagmore)		cout << Char2Xout(ua) << " wua added cc=" << cc + 2 <<" nua2="<<nua2<< endl;
+
+		}
+	}
+	// try to add the ua to the file
+}
 
 int GEN_BANDES_12::Debug17(SGUA2 & w) {// check validity of guas
 	STD_B3 & myb3 = bands3[0];
@@ -237,39 +325,22 @@ int GEN_BANDES_12::Debug17(SGUA2 & w) {// check validity of guas
 
 
 void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
-	if (0) {
-		cout << "GuaCollect fl=" << oct << fl << dec << endl;
-		if (fl == 0546) {
-			cout << "detailed analysis asked" << endl;
-			zh2b5_g.diag = 1;
-			diag = 1;
-		}
-		else zh2b5_g.diag=diag = 0;
-	}
-	//if (0 &&diag) zh2b5_g.diag = 1; else zh2b5_g.diag = 0;
 	uint64_t solved_cells = zh2b5_g.FindUAsInit(fl, 1);
 	if (!solved_cells) return;// one digit solved true
 	if (diag) cout << "return from zh2b5_g.FindUAsInit(fl, 1);" << endl;
 	zh2b5_g.CollectUas5();// collect uas for this set of floors
 	if (diag) cout << "zh2b5_g.CollectUas5();" << endl;
 	if (!zh2b5_g.nuaf5) return;
-	// now collect UAs not hit by solved cells  
-	genuasb12.nuaold = 0;
-	{	register uint64_t R = solved_cells;
-	for (uint32_t i = 0; i < genuasb12.nuab1b2; i++)
-		if (!(R & genuasb12.tuab1b2[i]))
-			genuasb12.tuaold[genuasb12.nuaold++] = genuasb12.tuab1b2[i];
-	for (uint32_t i = 0; i < genuasb12.nua; i++)
-		if (!(R & genuasb12.tua[i]))
-			genuasb12.tuaold[genuasb12.nuaold++] = genuasb12.tua[i];
-	}
+	Build_tuacheck( fl);
+
 	// check subsets and add to main table
 	for (uint32_t i = 0; i < zh2b5_g.nuaf5; i++) {
-		uint64_t ua = zh2b5_g.tuaf5[i].bf.u64;
-		genuasb12.ua = ua;
-		if (diag)cout << Char2Xout(genuasb12.ua) << " to add if new2 nua=" << nua2 << endl;
-		if (genuasb12.CheckOld()) continue;// superset of a previous ua
-		uint64_t cc = _popcnt64(genuasb12.ua);
+		ua = zh2b5_g.tuaf5[i].bf.u64;
+		//genuasb12.ua = ua;
+		if (diag)cout << Char2Xout(ua) << " to add if new2 nua=" << nua2 << endl;
+		if (Have_tuacheck_subset()) continue;// superset of a previous ua
+		//		if (genuasb12.CheckOld()) continue;// superset of a previous ua
+		uint64_t cc = _popcnt64(ua&BIT_SET_2X);
 		ua |= cc << 59;
 		//if (genuasb12.CheckMain(ua)) continue;// superset of a previous ua
 		// see why, seems to be of no effect
@@ -280,7 +351,6 @@ void GEN_BANDES_12::GuaCollect(int fl,int diag) {//use revised gangster
 			if (diag)cout << Char2Xout(genuasb12.ua) <<" ir="<<ir << " added nua2="<<nua2 << endl;
 		}
 	}
-
 }
 
 void GEN_BANDES_12::BuildGang9x3() {
@@ -430,6 +500,8 @@ void GEN_BANDES_12::NewBand1(int iw) {
 	it16 = tn6_to_416[iw];
 	myband1.InitG12(it16);
 	memcpy(grid0, myband1.band0, sizeof myband1.band0);
+	memcpy(gcheck, myband1.band0, sizeof myband1.band0);
+
 	strcpy(zsol, myband1.band);
 	n_auto_b1 = bandminlex.GetAutoMorphs(it16, t_auto_b1);
 	for (int i = 0; i < 9; i++) // init columns status
@@ -446,6 +518,121 @@ void GEN_BANDES_12::NewBand1(int iw) {
 		if (go_back)return;
 	}
 }
+int GEN_BANDES_12::Band2Check() {
+	int * zs0 = &gcheck[27];
+	n_auto_b1b2 = 0;
+	if (n_auto_b1) {
+		for (int imorph = 0; imorph < n_auto_b1; imorph++) {
+			BANDMINLEX::PERM &p = t_auto_b1[imorph];
+			int band[27];// morph the band
+			for (int i = 0; i < 9; i++) {
+				band[i] = p.map[zs0[p.cols[i]]];
+				band[i + 9] = p.map[zs0[p.cols[i] + 9]];
+				band[i + 18] = p.map[zs0[p.cols[i] + 18]];
+			}
+			int ir = G17ComparedOrderedBand(zs0, band);
+			if (ir == 1)				return 1;
+			else if (!ir) {// auto morph b1 b2 store it for later
+				t_auto_b1b2[n_auto_b1b2++] = p;
+			}
+		}
+	}
+
+	n_auto_b2b1 = 0;// possible automorph after perm b1b2
+	if (i1t16 == ib2check) {// must try perm bands 12 auto morphs
+		int b23[3][9];
+		for (int i = 0; i < 3; i++) {// morph band1 to band2 minlex
+			register int * rrd = b23[i], *rro = &gcheck[9 * i];
+			for (int j = 0; j < 9; j++)
+				rrd[j] = pcheck2.map[rro[pcheck2.cols[j]]];
+		}
+		int ir = G17ComparedOrderedBand(zs0, b23[0]);// is it same as base
+		if (ir == 1) 			return 1;
+		else if (!ir)// auto morph b1 b2 store it for later
+			t_auto_b2b1[n_auto_b2b1++].InitBase(ib2check);
+		// must also test all auto morphs b2b1
+		for (int imorph = 0; imorph < n_auto_b1; imorph++) {// same automorphs b1 b2
+			BANDMINLEX::PERM &pp = t_auto_b1[imorph];
+			int b23_a[3][9];
+			for (int i = 0; i < 3; i++) {
+				register int * rrd = b23_a[i], *rro = b23[i];
+				for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
+			}
+			int ir = G17ComparedOrderedBand(zs0, b23_a[0]);
+			if (ir == 1)return 1;
+			else if (!ir)// auto morph b1 b2 store it for later
+				t_auto_b2b1[n_auto_b2b1++] = pp;
+		}
+	}
+	return 0;
+}
+int GEN_BANDES_12::Band3Check() {
+	if (i1t16 == ib3check && ib3check == ib2check) {// 3 bands equal use diagonal test 
+		BANDMINLEX::PERM * p = minlexusingbands.pout;
+		p[0].InitBase(i1t16);
+		p[1] = pcheck2;
+		p[2] = pcheck3;
+		if (minlexusingbands.IsLexMinDirect(gcheck, i1t16, t_auto_b1, n_auto_b1))
+			return 1;
+		return 0; 
+	}
+	{
+		//========================== morphs on b1b2 base test
+		if (n_auto_b1b2) {// still direct automorphism b1b2
+			for (int imorph = 0; imorph < n_auto_b1b2; imorph++) {
+				BANDMINLEX::PERM &p = t_auto_b1b2[imorph];
+				int b23[3][9];
+				// direct
+				for (int i = 0; i < 3; i++) {// band 3 only
+					register int * rrd = b23[i], *rro = &gcheck[54 + 9 * i];
+					for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
+				}
+				if (G17ComparedOrderedBand(&gcheck[54], b23[0]) == 1)
+					return 1;
+			}
+		}
+		//=========================== perm b1b2 and base test (b1=b2)
+		if (n_auto_b2b1) {// possible lower band3 with a perm band1 band2
+			int b23[3][9];//first morph to band 2 min lexical
+			for (int i = 0; i < 3; i++) {// rows 4 to 9 as of band 2 perm
+				register int * rrd = b23[i], *rro = &gcheck[54 + 9 * i];
+				for (int j = 0; j < 9; j++)
+					rrd[j] = pcheck2.map[rro[pcheck2.cols[j]]];
+			}
+			for (int imorph = 0; imorph < n_auto_b2b1; imorph++) {// then apply auto morphs 
+				BANDMINLEX::PERM &pp = t_auto_b2b1[imorph];
+				int b23_a[3][9];
+				for (int i = 0; i < 3; i++) {
+					register int * rrd = b23_a[i], *rro = b23[i];
+					for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
+				}
+				if (G17ComparedOrderedBand(&gcheck[54], b23_a[0]) == 1)
+					return 1;
+			}
+		}
+		//========================= (b2=b3)#b1  perm b2b3 to consider (direct done)
+		if (ib3check == ib2check) {// check b3b2 on  auto morphs b1
+			if (gcheck[27] - 1) return 1; // must be '2' in r4c1
+			for (int imorph = 0; imorph < n_auto_b1; imorph++) {
+				BANDMINLEX::PERM &p = t_auto_b1[imorph];
+				int b23[6][9];
+				for (int i = 0; i < 6; i++) {// rows 4 to 9 from band 2
+					register int * rrd = b23[i], *rro = &gcheck[27 + 9 * i];
+					for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
+				}
+				int ir = G17ComparedOrderedBand(&gcheck[27], b23[3]);
+				if (ir == 1)return 1;
+				if (ir < 1 && G17ComparedOrderedBand(&gcheck[54], b23[0]) == 1)return 1;
+			}
+		}
+		//============================= b1=b3 #b2 
+		if (minlexusingbands.IsLexMinDiagB(gcheck, i1t16, ib2check, ib3check, t_auto_b1, n_auto_b1))
+			return 1;
+	}
+	return 0;
+}
+
+
 void GEN_BANDES_12::Find_band2B() {
 	int * zs0= &grid0[27];
 	register int  *crcb, bit;
@@ -485,59 +672,20 @@ next:// erase previous fill and look for next
 			cerr << "Find B2 invalid return  Getmin" << endl;
 			return;
 		}
+		pcheck2 = pband2;
 		it16_2 = pband2.i416;
-		i2t16 = t416_to_n6[it16_2];
+		ib2check=i2t16 = t416_to_n6[it16_2];
 		if (i2t16 < i1t16)goto next;// not canonical
 		//if (i2t16 == i1t16)if (it16_2 < it16)goto next;// not canonical
-
-		n_auto_b1b2 = 0;
-		if (n_auto_b1) {
-			for (int imorph = 0; imorph < n_auto_b1; imorph++) {
-				BANDMINLEX::PERM &p = t_auto_b1[imorph];
-				int band[27];// morph the band
-				for (int i = 0; i < 9; i++) {
-					band[i] = p.map[zs0[p.cols[i]]];
-					band[i + 9] = p.map[zs0[p.cols[i] + 9]];
-					band[i + 18] = p.map[zs0[p.cols[i] + 18]];
-				}
-				int ir = G17ComparedOrderedBand(zs0, band);
-				if (ir == 1)				goto next;
-				else if (!ir) {// auto morph b1 b2 store it for later
-					t_auto_b1b2[n_auto_b1b2++] = p;
-				}
-			}
+		if(sgo.vx[3]==1)memcpy(&gcheck[54], zs0, 27 * sizeof gcheck[0]);
+		else {
+			memcpy(&gcheck[27], zs0, 27 * sizeof gcheck[0]);			
+			if ( Band2Check())goto next;// do nothing if p2b
 		}
 
-		n_auto_b2b1 = 0;// possible automorph after perm b1b2
-		if (i1t16 == i2t16) {// must try perm bands 12 auto morphs
-			int b23[3][9];
-			for (int i = 0; i < 3; i++) {// morph band1 to band2 minlex
-				register int * rrd = b23[i], *rro = &grid0[9 * i];
-				for (int j = 0; j < 9; j++)
-					rrd[j] = pband2.map[rro[pband2.cols[j]]];
-			}
-			int ir = G17ComparedOrderedBand(zs0, b23[0]);// is it same as base
-			if (ir == 1) 			goto next;
-			else if (!ir)// auto morph b1 b2 store it for later
-				t_auto_b2b1[n_auto_b2b1++].InitBase(i2t16);
-			// must also test all auto morphs b2b1
-			for (int imorph = 0; imorph < n_auto_b1; imorph++) {// same automorphs b1 b2
-				BANDMINLEX::PERM &pp = t_auto_b1[imorph];
-				int b23_a[3][9];
-				for (int i = 0; i < 3; i++) {
-					register int * rrd = b23_a[i], *rro = b23[i];
-					for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
-				}
-				int ir = G17ComparedOrderedBand(&grid0[27], b23_a[0]);
-				if (ir == 1)goto next;
-				else if (!ir)// auto morph b1 b2 store it for later
-					t_auto_b2b1[n_auto_b2b1++] = pp;
-			}
-		}
 		nb12++;
 		if (ValidBand2()) {		go_back = 1; return;	}
 		goto next;
-
 	}
 
 back:
@@ -589,14 +737,13 @@ int GEN_BANDES_12::ValidBand2() {
 			p_cpt[0]++;
 			p_cpt[1] += nband3;
 		}
-		//cout << "nband3" << nband3 << endl;
 		return 0;
 	}
 	}
 	return 0;
 }
 void GEN_BANDES_12::Find_band3B(int m10) {
-	BANDMINLEX::PERM pout;
+	//BANDMINLEX::PERM pout;
 	register int  *crcb, bit;
 	nband3 = 0;
 	int *rd = rowdb3, *cd = cold, *bd = boxdb3; // to updates rows cols boxes
@@ -634,86 +781,37 @@ next:// erase previous fill and look for next
 		rd[crcb[1]] ^= bit; cd[crcb[2]] ^= bit; bd[crcb[3]] ^= bit;
 		if (ii < 23) goto nextii;
 		// this is a valid band, check if canonical 
-		int ir = bandminlex.Getmin(zs0, &pout, 0);
+		int ir = bandminlex.Getmin(zs0, &pband3, 0);
 		if (ir < 0) {//would be bug  did not come in enumeration
 			cerr << "gen band 3 invalid return Getmin" << endl;
 			return;
 		}
-		int it16_3 = pout.i416;
-		i3t16 = t416_to_n6[it16_3];
+		int it16_3 = pband3.i416;
+		ib3check=i3t16 = t416_to_n6[it16_3];
 		if (i3t16 < i1t16)goto next;// not canonical
-		if (i3t16 < i2t16)goto next;// not canonical (must be in this case
+		if (sgo.vx[3] != 1) {
+			if (i3t16 < i2t16)goto next;// not canonical (must be in this case
+		}
+		else if (i3t16 > i2t16)goto next;// not canonical (must be in this case
 		//==============================  b1=b2=b3 use minlex check (simplest code, not common)
-		if (i1t16 == i3t16 && i3t16 == i2t16) {// 3 bands equal use diagonal test 
-			BANDMINLEX::PERM * p = minlexusingbands.pout;
-			p[0].InitBase(i1t16);
-			p[1] = pband2;
-			p[2] = pout;
-			if (minlexusingbands.IsLexMinDirect(grid0, i1t16, t_auto_b1, n_auto_b1, ndiag))
-				goto next;
-			//int box, rows[9], cols[9], out[81];
-			//rowminlexcheck(grid0, out, box, rows, cols);
-			//for (int i = 0; i < 81; i++)if (out[i] < grid0[i])goto next;
-			goto exit_diag;// rowminlex includes diagonal check
+		if (sgo.vx[3] < 2) {// do nothing in p1
+			if (sgo.vx[3] < 1) {// p2a
+				pcheck3 = pband3;
+				memcpy(&gcheck[54], zs0, 27 * sizeof gcheck[0]);
+				if ( Band3Check())goto next;
+			}
+			else {// p2b exchanging band 2 band 3
+				memcpy(&gcheck[27], zs0, 27 * sizeof gcheck[0]);				
+				pcheck3 = pband2;
+				pcheck2 = pband3;
+				ib2check = i3t16;
+				ib3check = i2t16;
+				if (Band2Check())goto next;// band 3 must be a valid "band2"
+				if (Band3Check())goto next;// then band 2 a valid band3
+			}
 		}
-		{
-			//========================== morphs on b1b2 base test
-			if (n_auto_b1b2) {// still direct automorphism b1b2
-				for (int imorph = 0; imorph < n_auto_b1b2; imorph++) {
-					BANDMINLEX::PERM &p = t_auto_b1b2[imorph];
-					int b23[3][9];
-					// direct
-					for (int i = 0; i < 3; i++) {// band 3 only
-						register int * rrd = b23[i], *rro = &grid0[54 + 9 * i];
-						for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
-					}
-					if (G17ComparedOrderedBand(&grid0[54], b23[0]) == 1)				goto next;
-				}
-			}
-			//=========================== perm b1b2 and base test (b1=b2)
-			if (n_auto_b2b1) {// possible lower band3 with a perm band1 band2
-				int b23[3][9];//first morph to band 2 min lexical
-				for (int i = 0; i < 3; i++) {// rows 4 to 9 as of band 2 perm
-					register int * rrd = b23[i], *rro = &grid0[54 + 9 * i];
-					for (int j = 0; j < 9; j++)
-						rrd[j] = pband2.map[rro[pband2.cols[j]]];
-				}
-				for (int imorph = 0; imorph < n_auto_b2b1; imorph++) {// then apply auto morphs 
-					BANDMINLEX::PERM &pp = t_auto_b2b1[imorph];
-					int b23_a[3][9];
-					for (int i = 0; i < 3; i++) {
-						register int * rrd = b23_a[i], *rro = b23[i];
-						for (int j = 0; j < 9; j++)		rrd[j] = pp.map[rro[pp.cols[j]]];
-					}
-					if (G17ComparedOrderedBand(&grid0[54], b23_a[0]) == 1) goto next;
-				}
-			}
-			//========================= (b2=b3)#b1  perm b2b3 to consider (direct done)
-			if (i3t16 == i2t16) {// check b3b2 on  auto morphs b1
-				if (grid0[27] - 1) goto next; // must be '2' in r4c1
-				for (int imorph = 0; imorph < n_auto_b1; imorph++) {
-					BANDMINLEX::PERM &p = t_auto_b1[imorph];
-					int b23[6][9];
-					for (int i = 0; i < 6; i++) {// rows 4 to 9 from band 2
-						register int * rrd = b23[i], *rro = &grid0[27 + 9 * i];
-						for (int j = 0; j < 9; j++)		rrd[j] = p.map[rro[p.cols[j]]];
-					}
-					int ir = G17ComparedOrderedBand(&grid0[27], b23[3]);
-					if (ir == 1)goto next;
-					if (ir < 1 && G17ComparedOrderedBand(&grid0[54], b23[0]) == 1)goto next;
-				}
-			}
-			//============================= b1=b3 #b2 
-			if (minlexusingbands.IsLexMinDiagB(grid0, i1t16, i2t16, i3t16, t_auto_b1, n_auto_b1, ndiag))goto next;
-
-		}
-
-	exit_diag:
-		//genb12.B3add(pout.i416);
-		bands3[nband3++].InitBand3(i3t16, &zs[54], pout);
-		//valid_bands.bands3[nband3].Init(zs0);
+		bands3[nband3++].InitBand3(it16_3, &zs[54], pband3);
 		goto next;
-
 	}
 back:
 	if (--ii >= 0) goto next;
@@ -731,57 +829,4 @@ int GEN_BANDES_12::DebugFreshUA(uint64_t ua) {
 	if (_popcnt32(digits) >= 6) return 0;
 	cout << "bug more ua bands 1+2 not enough digits " << endl;
 	return 1;
-}
-void GEN_BANDES_12::Sockets2SetupForB12(uint64_t cluesbf) {
-	int diag = 0;
-	//if (p_cpt2g[3] == 4859)diag = 1;
-	if (diag) {
-		cout << "entry Sockets2SetupForB12" << endl;
-		cout << Char2Xout(cluesbf) << " cluesbf" << endl;
-		char ws[82];
-		cout << g17xy.bands_active_pairs.String3X(ws) << " bands active pairs" << endl;
-	}
-	for (int i = 0; i < 81; i++) {// initial socket 2
-		SGUA2 & w = tsgua2[i];
-		if (!w.valid)continue;
-		if (g17xy.bands_active_pairs.On_c(i))continue;// already active
-		//xygang assign digits bands 1+2 in gangster mode 
-		if(g17xy.xygang[w.col1]&w.digs)continue;// not valid here
-		if (g17xy.xygang[w.col2] & w.digs)continue;// not valid here
-
-		// is there a still valid GUA2 from a previous check
-		if (tmore_sockets2[i].Check(g17xy.cellsbf)) {
-			g17xy.bands_active_pairs.Set_c(i);
-			continue;
-		}
-		// this is a possible gua2 socket try to find a gua
-		p_cpt2g[6]++;
-		zh2b_g.test = 0;
-		if (diag && i==80) {
-			w.Debug("call MoreSocket2");
-			cout <<"call MoreSocket2 i81=" << i  << endl;
-			zh2b_g.test = 1;
-		}
-		uint64_t new_ua = zh2b_g.MoreSocket2(gangb12, w.gangcols,
-			g17xy.tclues, g17xy.nclues, w.digs);
-		zh2b_g.test = 0;
-		if (new_ua) {
-			p_cpt2g[7]++;
-			g17xy.bands_active_pairs.Set_c(i);
-			// insert in the ua table 
-			uint64_t ua = new_ua;
-			uint64_t cc = _popcnt64(genuasb12.ua);
-			ua |= cc << 59;
-			if (cc <= UALIMSIZE) {
-				// protect against table limit and load for future use
-				if (w.nua >= SIZETGUA)w.nua = SIZETGUA - 1; // guess it will be a smaller
-				AddUA64(w.tua, w.nua,ua);
-				if (w.nua< SIZETGUA && DebugFreshUA(new_ua))
-					cout << Char2Xout(new_ua) << "too small new ua i81=" << i
-					<< " cc=" << _popcnt64(new_ua) << endl;
-			}
-			// add ua to the relevant "more" FIFO table
-			tmore_sockets2[i].Add(new_ua);
-		}
-	}
 }

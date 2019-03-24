@@ -2199,7 +2199,7 @@ int G17ComparedOrdered2Bands(int * zs0, int * band){
 	ir= G17ComparedOrderedBand(&zs0[27], &band[27]);
 	return (ir == 1);
 }
-int MinLexUsingBandsCompB23(int * zcomp, int b23[6][9],int diag){
+int MinLexUsingBandsCompB23(int * zcomp, int b23[6][9],int diagx){
 	// exchange bands if digit 2 not in band 2
 	for (int irow = 3; irow < 6; irow++){
 		if (b23[irow][0] == 1){// digit 2 column in band 3  exchange bands

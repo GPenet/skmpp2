@@ -201,7 +201,19 @@ struct BF64 {
 	inline bool isEmpty() const { return (!bf.u64); }
 	inline int Count() { return (int)_popcnt64(bf.u64); }
 	uint64_t Convert_to_54(){ uint64_t w = bf.u32[1]; w <<= 27; w |= bf.u32[0]; return w; }// 2x27 to 54
-
+	inline int getFirstCell() const {
+		uint32_t res;
+		if (bf.u32[0]) {
+			bitscanforward(res, bf.u32[0]);
+			return res;
+		}
+		if (bf.u32[1]) {
+			bitscanforward(res, bf.u32[1]);
+			return 27 + res;
+		}
+		return -1;
+	}
+	int SolRow(int col);// in a solution per digit find the row
 };
 class BF128 {
 public:
