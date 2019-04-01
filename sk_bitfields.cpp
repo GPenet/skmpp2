@@ -119,6 +119,20 @@ char * BF128::String128(char * ws){
 	return ws;
 
 }
+void BF128::PrintCells() {// assumed not empty checked by caller
+	for (int ib = 0; ib < 3; ib++) {// three bands
+		uint32_t v = bf.u32[ib];
+		if (!v) continue;
+		for (int irr = 0; irr < 3; irr++, v >>= 9) {
+			int row = v & 0x1ff;
+			if (!row)continue;
+			cout << " R" << 3 * ib + irr + 1 << "C";
+			for (int ic = 0, bit = 1; ic < 9; ic++, bit <<= 1)
+				if (row&bit) cout << ic + 1;
+		}
+	}
+	cout << endl;
+}
 
 
 void PM3X::operator &= (const PM3X &z2){
@@ -168,7 +182,12 @@ void PM3X::Print(const char * lib){
 	cout << endl << endl;
 
 }
-
+void PM3X::PrintCells() {
+	for (int i = 0; i < 9; i++)if (pmdig[i].isNotEmpty()) {
+		cout << i + 1 << ":";
+		pmdig[i].PrintCells();
+	}
+}
 void HID_BIV::Debug(const char * lib) {
 	cout << "36x27 bits file debugging " << lib << endl;
 	for (int i = 0; i < 36; i++) {

@@ -455,7 +455,7 @@ public:
 	char * String3X(char * ws);
 	char * String3X_Rev(char * ws);
 	char * String128(char * ws);
-
+	void PrintCells();
 };
 
 class PM3X {
@@ -483,6 +483,7 @@ public:
 	int IsEmpty();
 	int Count();
 	void Print(const char * lib);
+	void PrintCells();
 };
 
 struct RBF27{

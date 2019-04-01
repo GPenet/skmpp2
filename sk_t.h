@@ -146,6 +146,8 @@ extern char * Char54out(uint64_t v);
 extern char * Char64out(uint64_t v);
 extern char * Char2Xout(uint64_t v);
 extern char * CoutGintPuzzle(GINT * t, int n);
+// standard internal sort
+extern void Sort_uint32_t(uint32_t * t, uint32_t nt);
 //extern char * CoutGint64Puzzle(GINT * t, int n);
 // general correspondance row column box band pattern 
 extern int AddUA64(uint64_t * t, uint32_t & nt, uint64_t ua);
@@ -281,5 +283,6 @@ extern USHORT  sym_tcor[3][9];
 
 // possible 2_templates 3_templates 4 templates 
 extern int floors_2d[36];
+extern int floors2d_2bands[36];
 extern int floors_3d[84];
 extern int floors_4d[126];

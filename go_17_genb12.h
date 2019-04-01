@@ -1,6 +1,6 @@
 #define SIZETGUA 150
 struct GEN_BANDES_12{// encapsulating global data 
-	STD_B3 bands3[256];
+	STD_B3 bands3[512];
 	int modeb12,go_back,diagmore,
 		it16, it16_2, imin16_1, imin16_2, imin16_3; 
 	int i1t16, i2t16, i3t16,maxnb3; // index 416 ordered in increasing size of valid clues 6

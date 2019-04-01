@@ -72,11 +72,6 @@ void ZHOU::ImageCandidats() {// only active digits ??
 		}
 		tcol += lcol[i];
 	}
-	for(i = 0; i < 9; i++) {
-		if((i == 3) || (i == 6))cout <<"|";
-		cout <<(char)('A' + i)<<Blancs(lcol[i], 1);
-	}
-	cout << endl;
 	for(i = 0; i < 9; i++) { // maintenant indice ligne
 		if((i == 3) || (i == 6)) {
 			for(int ix = 0; ix < (tcol + 10); ix++)       cout <<(char)'-';

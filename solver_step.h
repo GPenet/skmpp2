@@ -209,7 +209,121 @@ struct XYSEARCH{
 	void DebugT();
 };
 
+struct SETS_LINKS {// attempt to have a new design 
+	BF128 dig_sets[50], dig_links[50], cells_sets,cells_links;
+	uint32_t cells[81];// cell valid digits
+	GINT assigned_cands[50];
+	uint32_t ndsets, ndlinks, nassigned;
+	//dig_set 3X + digit
+	int Assign(int cell, int dig, SETS_LINKS &o);
+	void LoopNextSet();
+	int CheckCover();
+};
+struct TB_MULT_9P {// tables for a given 9 perm
+	BF128 rows, cols, boxes; // cells of the perm
+	void Init(int p9);// one out of floors tables 
+};
 
+struct TB_MULT_9P_FL  {// more with the floor seen
+	BF128 base_truths_cells;
+	int tcrossing_units[9], ncrossing_units, nraw_crossing_links;
+	int sets_per_unit[27];
+
+};
+struct MULTISEARCH {
+	BF128 tperms[5][100], mask, sol[5];
+	uint32_t  nperms[5], ntsd, digssols[5],ind;
+	GINT tsd[6];
+	inline void Init(MULTISEARCH & mso) {
+		memcpy(sol, mso.sol, sizeof sol);
+		memcpy(digssols, mso.digssols, sizeof digssols);
+	}
+	inline void AddMask(BF128 m, int index,int d) {
+		mask =m; 
+		sol[index] = m;
+		digssols[index] = d;
+		ind = index+1;
+	}
+	int Shrink(int rd2, BF128 *td2, uint32_t nd2);
+	inline void Add(int digit, int np) {
+		GINT & w = tsd[ntsd];
+		w.u8[0] = ntsd++;
+		w.u8[1] = digit;
+		w.u16[1] = np;
+	}
+	inline void OrOlds(BF128 & w) {
+		w = sol[0];
+		for (uint32_t i = 0; i < ind; i++) w |= sol[i];
+	}
+	void GetDigitPm(int digit, BF128 & pmout, BF128 & pmsolved);
+};
+struct R0SEARCH {
+	struct CROSS {
+		BF128 cross, crosstruth, cross_more;
+		int iu, ncrosstruth, nlsets, digs_cross;
+		int tcross[10], ntcross, tmore[10], ntmore,
+			tmore2[10], ntmore2;
+		int Build(R0SEARCH &r, int i);
+	};
+	TB_MULT_9P tb9p2[36], tb9p3[84], tb9p4[126], tb9p5[126];
+	PM3X cumsols;
+	BF128 tperms_digits[9][300];
+	BF128 infield, outfield, in_no_out,
+		infield_and_sols,
+		pmfloors[6],truths_basis_pm;
+	uint32_t floors,nperms[9],ndigits,lastindex;
+	GINT tin[9]; // mapping in floors
+	uint32_t ntin ,tfloors[6],// number of active digits
+		unit_sets_count[27]; // number of unsolved sets per unit
+	uint32_t ntruth, nlinks,tu_sets[10], ntu_sets, 
+		tu_links[10], 	ntu_links ;
+	// using relative digits as of tfloors
+	uint32_t dig_cells[81], cells_count[81]; 
+	
+	R0SEARCH();
+	void CollectPerms(int pr=0);
+	int IsElims(uint32_t floors, PM3X & elims);
+	int IsNext(MULTISEARCH & mso,int index);
+	int IsNextLast(MULTISEARCH & mso, int index);
+	void DebugFloors();
+	void DebugFloors2(MULTISEARCH & ms);
+	//_____ rank0 search
+	void BuildRelativetables();
+	int Try_RC(TB_MULT_9P &t9p, int p9, int mode);
+	int TryRowCol(int * tu, int ntu, int dtruth);
+
+};
+/*
+	struct R0SEARCH{
+		struct R0S_LOT4{// a 3 rows or 3 colums base for cells
+			BF81 c81;
+			BF16 rcbm;
+			USHORT rc4[5],nrc4;  // keep it open for 5 rows or columns
+		}rclot[84+126][2];
+		BF81 cellsf,cellspuref,cellstruth,cells_sets,cells_link,cells_base,
+			 subgrids[235][2];
+		USHORT rank,code_ret,opt,			  
+			   telims[100],nelims,r0count,r1count,debug,ntr1,do_elims,
+			   tcovers[50],ncovers,ntruths_cells;
+		int diag;
+		//BFCAND tr1elims[30],wr1elims;
+		PMBF telim_native[30],welim_native;
+		int TryRowColBand(USHORT * tu,USHORT ntu,USHORT dtruth);
+		int CheckBand(USHORT * tu,USHORT ntu);
+		int CheckElims();
+		int CheckElims(BF16 ordigs,R0S_LOT4 & lr,R0S_LOT4 & lc);
+		int GoForRowCol(USHORT * tu,USHORT ntu);
+		int GoForX(USHORT row1,USHORT row2,USHORT col1,USHORT col2);
+		int GoForBox4();
+		void Add(BFSETS & ss,USHORT unit);
+		void GoForCellsPrepare();
+		int GoForCells();
+		int GoForCells63(); // option no given
+		int GoForCells(R0S_LOT4 & lr,R0S_LOT4 & lc);
+		void GoForCellsRC(R0S_LOT4 & lx,BF16 digpat,int moderc);
+		int TryUsingElims(BF16 floors,BF81 * elims_floors, BF81 & elims_cells);
+
+	}r0search;	*/
 
 class BUILDSTRING{
 public:
@@ -404,42 +518,8 @@ public:
 	};
 	struct EXO8: public EXOCET{
 	};
-	struct R0SEARCH{  
-		struct R0S_LOT4{// a 3 rows or 3 colums base for cells
-			BF81 c81;
-			BF16 rcbm;
-			USHORT rc4[5],nrc4;  // keep it open for 5 rows or columns
-		}rclot[84+126][2];
-		PM_GO * parent;
-		BFSETS added_truths;
-		BF16 floors;
-		BF81 cellsf,cellspuref,cellstruth,cells_sets,cells_link,cells_base,
-			 subgrids[235][2];
-		USHORT unit_sets[27],ntruth,nlinks,rank,code_ret,opt,
-			   tu_sets[10],ntu_sets,tu_links[10],ntu_links,
-			   telims[100],nelims,r0count,r1count,debug,ntr1,do_elims,
-			   tcovers[50],ncovers,ntruths_cells;
-		int diag;
-		//BFCAND tr1elims[30],wr1elims;
-		PMBF telim_native[30],welim_native;
-		void Init(USHORT *tt,USHORT ntt);
-		int TryRowCol(USHORT * tu,USHORT ntu,USHORT dtruth);
-		int TryRowColBand(USHORT * tu,USHORT ntu,USHORT dtruth);
-		int CheckBand(USHORT * tu,USHORT ntu);
-		int CheckElims();
-		int CheckElims(BF16 ordigs,R0S_LOT4 & lr,R0S_LOT4 & lc);
-		int GoForRowCol(USHORT * tu,USHORT ntu);
-		int GoForX(USHORT row1,USHORT row2,USHORT col1,USHORT col2);
-		int GoForBox4();
-		void Add(BFSETS & ss,USHORT unit);
-		void GoForCellsPrepare();
-		int GoForCells();
-		int GoForCells63(); // option no given
-		int GoForCells(R0S_LOT4 & lr,R0S_LOT4 & lc);
-		void GoForCellsRC(R0S_LOT4 & lx,BF16 digpat,int moderc);
-		int TryUsingElims(BF16 floors,BF81 * elims_floors, BF81 & elims_cells);
 
-	}r0search;	
+
 */
 	//          start of PM_GO data and functions
 	EXPLAIN_BUFFER expbuf;// locate the source in a path
@@ -484,6 +564,7 @@ public:
 	XSTATUS xstatus[9];	STORE_XLC store_xlc[20]; int nstore_xlc;
 	YLSEARCH ylsearch, store_yl[20];	 int nstore_yl;
 	XYSEARCH xysearch;
+	R0SEARCH r0search;
 //============= data for symmetry of given processing
 // 0 D1  1 D2  2 stick  3 central  4 R90
 	USHORT sgiven_ok ,sgiven_paires[5][9],sgiven_singles[5][3];
@@ -507,7 +588,7 @@ public:
 	void SolveSerate110();
 	void SolveSerate111();
 	void Solve199test();
-
+	void Solve120_MultiAnalysis();
 	void Quickrate(int x) ;
 	void Status(const char * lib, int option);
 	int Rate10(); int Rate12();	int Rate15(); int Rate17(); 
