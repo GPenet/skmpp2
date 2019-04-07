@@ -284,5 +284,8 @@ extern USHORT  sym_tcor[3][9];
 // possible 2_templates 3_templates 4 templates 
 extern int floors_2d[36];
 extern int floors2d_2bands[36];
+extern int floors2d_band_stack_free[36];
+extern int floors2d_same_band_stack[9];
+extern int floors2d_same_band_stack_third[9];
 extern int floors_3d[84];
 extern int floors_4d[126];

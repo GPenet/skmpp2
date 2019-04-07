@@ -3118,12 +3118,132 @@ void TB_MULT_9P::Init(int p9) {// first multi row/col/box status
 	}
 
 }
+//==========================
+
+
+struct VLOOP {      // collecting the sk loop pattern for later action
+	struct VBOX {
+		int cellsr[2], cellsc[2], digsr, digsc, ncellsr, ncellsc;
+	}tvbox[5];// one more for loop
+	BF128 cmap, crows, ccols;
+	int box4 ,tbox[9], ntbox ;
+	int seq_digs[9], seq_ncells[9], seq_com[9],seq_sol[8];// one more for loops
+
+	USHORT mainbeltscleared, seen;       // 8 or 13 could be less if virus chain
+	int Locate_Loop();
+	int FirstAction();
+	int SecondAction(int do_it);
+	int SecondBilocations();
+	void GenNotValidEffect();
+}vloop;
+
+int VLOOP::Locate_Loop() {
+	// try 2 rows 2 columns as base set (2 bands 2 stacks)
+	BF128 cmap = zhou_solve.cells_unsolved;
+	for (int ir = 0; ir < 36; ir++) {
+		R0SEARCH & rs = pm_go.r0search;
+		if (!floors2d_2bands[ir]) continue;
+		for (int jc = 0; jc < 36; jc++) {
+			if (!floors2d_2bands[jc]) continue;
+			BF128 corners = rs.tb9p2[ir].rows&rs.tb9p2[jc].cols;
+			// separate analysis if corners are not empty
+			if ((corners & cmap).isNotEmpty()) continue;
+			crows = rs.tb9p2[ir].rows &cmap;
+			ccols = rs.tb9p2[jc].cols & cmap;
+			box4 = rs.fl2d_rboxes[ir] & rs.fl2d_cboxes[jc];
+			ntbox = 0;
+			BitsInTable32(tbox, ntbox, box4);
+			// exchange box 2;3 to have a "loop" order 1-2-3-4-1...
+			int temp = tbox[1];	tbox[1]= tbox[2]; tbox[2]=temp;
+			// collect cells in box, digits in bos check count dig= count cells
+			for (int ibox = 0; ibox < 4; ibox++) {
+				int box = tbox[ibox + 18];
+				BF128 bbf= cmap &units3xBM[box];
+				VBOX & vb=tvbox[ibox];
+				BF128 cboxr = crows & bbf,cboxc=ccols&bbf;
+				vb.ncellsr = cboxr.Table3X27(vb.cellsr);
+				vb.ncellsc = cboxc.Table3X27(vb.cellsc);
+				vb.digsr =vb.digsc = 0;
+				int * dc = zh_g2.dig_cells;
+				for (int i = 0; i < vb.ncellsr; i++)vb.digsr |= dc[vb.cellsr[i]];
+				for (int i = 0; i < vb.ncellsc; i++)vb.digsc |= dc[vb.cellsc[i]];
+				if (_popcnt32(vb.digsr > 4))goto exit_no;
+				if (_popcnt32(vb.digsc > 4))goto exit_no;
+			}
+			tvbox[4] = tvbox[0]; // to have always a +1 
+			for (int ibox = 0, iseq = 0; ibox < 4; ibox++) {
+				VBOX & vb = tvbox[ibox];
+				if (ibox & 1) {// row to col
+					seq_ncells[iseq] = vb.ncellsr;
+					seq_digs[iseq++] = vb.digsr;
+					seq_ncells[iseq] = vb.ncellsc;
+					seq_digs[iseq++] = vb.digsc;
+					
+				}
+				else {// col to row
+					seq_ncells[iseq] = vb.ncellsc;
+					seq_digs[iseq++] = vb.digsc;
+					seq_digs[iseq++] = vb.digsr;
+					seq_ncells[iseq] = vb.ncellsr;
+				}
+			}
+			seq_digs[8] = seq_digs[0];
+			seq_ncells[8] = seq_ncells[0];
+			// check now if eq_digs seq_cells can produce a loop
+			int iknown = -1;
+			for (int i = 0; i < 8; i++) {
+				if (iknown >= 0) {// loop check direct, common forced
+					int dcom = seq_digs[i] & ~seq_sol[i - 1];
+					if (dcom & ~seq_digs[i + 1]) goto exit_no;
+					seq_sol[i] = dcom;
+				}
+				else {
+					seq_sol[i] = 0;
+					int dcom = seq_digs[i] & seq_digs[i + 1],
+						cc = _popcnt32(dcom);
+					if (cc < 1) goto exit_no;
+					if (seq_ncells[i] == 2 && seq_ncells[i + 1] == 2) {//  usually
+						if (cc < 2)goto exit_no;
+						if (cc == 2) {// store and check if ok with past
+							seq_sol[i] = dcom;
+							iknown = i;
+						}
+					}
+					seq_com[i] = dcom;
+				}
+			}
+			if (iknown < 0) goto exit_no; // should never be ??
+			if (iknown > 0) {// must solve right to left 
+				for (int i = iknown - 1; i >= 0; i--) {
+					int dcom = seq_digs[i+1] & ~seq_sol[i + 1];
+					if (dcom & ~seq_digs[i]) goto exit_no;
+					seq_sol[i] = dcom;
+				}
+			}
+		exit_no:;
+		}
+	}
+	return 0;
+}
+
 //============================ R0Search
+
+// constructor building more tables
+
 R0SEARCH::R0SEARCH() {
 	for (int ifl = 0; ifl < 36; ifl++)		tb9p2[ifl].Init(floors_2d[ifl]);
 	for (int ifl = 0; ifl < 84; ifl++)		tb9p3[ifl].Init(floors_3d[ifl]);
 	for (int ifl = 0; ifl < 126; ifl++)		tb9p4[ifl].Init(floors_4d[ifl]);
 	for (int ifl = 0; ifl < 126; ifl++)		tb9p5[ifl].Init(0x1ff^floors_4d[ifl]);
+	// init row and columns bos hits 
+	for (int ifl = 0; ifl < 36; ifl++) {
+		register int r = floors_2d[ifl], dr = 0, dc = 0;
+		if (r & 7) { dr |= 7; dc |= 0111; }
+		if (r & 070) { dr |= 070; dc |= 0222; }
+		if (r & 0700) { dr |= 0700; dc |= 0444; }
+		fl2d_rboxes[ifl] = dr;
+		fl2d_cboxes[ifl] = dc;
+	}
 
 }
 void R0SEARCH::CollectPerms(int pr) {
@@ -3180,12 +3300,11 @@ void MULTISEARCH::GetDigitPm(int digit, BF128 & pmout, BF128 & pmsolved) {
 		return;
 	}
 }
-int R0SEARCH::IsElims(uint32_t floorse, PM3X & elims) {
+int R0SEARCH::IsElims(uint32_t floorse, int mode) {
 	floors = floorse;
-	cumsols.SetAll_0();
+	cumsols.SetAll_0();	elims.SetAll_0();
+	infield.SetAll_0();	outfield.SetAll_0();
 	BF128 uns= zhou_solve.cells_unsolved;
-	infield.SetAll_0();
-	outfield.SetAll_0();	
 	ntin = 0;
 	for (int i = 0; i < 9; i++) {
 		int bit = 1 << i;
@@ -3207,11 +3326,6 @@ int R0SEARCH::IsElims(uint32_t floorse, PM3X & elims) {
 	infield_and_sols = infield;
 	outfield &= infield;// infield with extra digits
 	in_no_out = infield - outfield;
-	if (0) {
-		DebugFloors();		char ws[82];
-		cout << outfield.String3X(ws) << " outfield " << endl;
-		cout << infield.String3X(ws) << " infield "  << endl;
-	}
 	Sort_uint32_t(&tin[0].u32, ntin);
 	// Build the first subtable
 	MULTISEARCH ms;
@@ -3237,7 +3351,6 @@ int R0SEARCH::IsElims(uint32_t floorse, PM3X & elims) {
 		char ws[82];
 		cout << infield_and_sols.String3X(ws) << " always in sol " << endl;
 	}
-	elims.SetAll_0();
 	for (int i = 0; i < 9; i++) {
 		int bit = 1 << i;
 		if (floors & bit) 
@@ -3251,7 +3364,9 @@ int R0SEARCH::IsElims(uint32_t floorse, PM3X & elims) {
 		cout << "elims" << endl;
 		elims.PrintCells();
 	}
-
+	if (!mode)return cc;
+	// try to find a clearing logic
+	if (cc)TryRank0Logic();
 	return cc;
 }
 int R0SEARCH::IsNext(MULTISEARCH & mso, int index) {
@@ -3432,6 +3547,12 @@ void R0SEARCH::BuildRelativetables() {
 				unit_sets_count[iu]++;
 		}
 	}
+	if (0) {
+		cout << " check units count" << endl;
+		for (int iu = 0; iu < 27; iu++)
+			cout << unit_sets_count[iu] << " ";
+		cout <<endl;
+	}
 }
 int R0SEARCH::CROSS::Build(R0SEARCH &r, int i) {
 	iu = i;
@@ -3448,161 +3569,171 @@ int R0SEARCH::CROSS::Build(R0SEARCH &r, int i) {
 		digs_cross |= r.dig_cells[tcross[i]];
 	for (int i = 0; i < ntmore; i++) {
 		if (r.dig_cells[tmore[i]] & ~digs_cross) continue;
-		tmore2[ntmore++] = tmore[i];
+		tmore2[ntmore2++] = tmore[i];
 	}
-	return 0;
+	min_links = nlsets - 2* ntmore2;// dummy links-sets
+	if (ntcross < min_links) min_links = ntcross;
+	return min_links;
+}
+
+void R0SEARCH::CROSS::BuildElims(R0SEARCH &r, PM3X & elims) {
+	BF128 linkcells;
+	if (min_links == nlsets - 2*ntmore2) {
+		BF128 w = cross - crosstruth;
+		if (ntmore2) {
+			for (int i = 0; i < ntmore2; i++)
+				w.Clear_c(tmore2[i]);
+		}
+		if(w.isNotEmpty())
+			for (uint32_t i = 0; i < r.ndigits; i++) {
+				int digit = r.tfloors[i];
+				elims.pmdig[digit] |= zhou_solve.FD[digit][0] & w;
+			}
+	}
+	if (min_links != ntcross) return;
+	BF128 w= crosstruth - r.in_no_out;
+	if (w.isEmpty()) return;
+	int cell;
+	while ((cell = w.getFirstCell()) >= 0) {
+		w.Clear_c(cell);
+		int digs = zh_g2.dig_cells[cell]& ~r.floors;
+		for (int i = 0, bit = 1; i < 9; i++, bit <<= 1)
+			if (digs & bit)
+				elims.pmdig[i].Set_c(cell);
+	}
+}
+void R0SEARCH::CROSS::PrintLinks(R0SEARCH &r) {
+	BF128 linkcells;
+	if (min_links == nlsets - 2 * ntmore2) {
+		BF128 w = cross;
+		if (ntmore2) {
+			for (int i = 0; i < ntmore2; i++)
+				w.Clear_c(tmore2[i]);
+		}
+		if (w.isNotEmpty()) {
+			for (uint32_t i = 0; i < r.ndigits; i++) {
+				int digit = r.tfloors[i];
+				if((w&r.pmfloors[i]).isNotEmpty())
+					cout << digit + 1;
+			}
+			if (iu > 8) 	cout << "C" << iu - 8 << " ";
+			else cout << "R" << iu + 1 << " ";
+		}
+	}
+	if (min_links != ntcross) return;
+	BF128 w = crosstruth ;
+	if (w.isEmpty()) return;
+	int cell;
+	while ((cell = w.getFirstCell()) >= 0) {
+		w.Clear_c(cell);
+		cout << cellsFixedData[cell].pt << " ";
+	}
+	
 }
 int R0SEARCH::Try_RC(TB_MULT_9P &t9p, int p9, int mode) {
+	cout << "entry rc mode " << mode << " perm 0" << oct << p9 << dec << endl;
+	
 	truths_basis_pm = infield;
 	truths_basis_pm &= (mode) ? t9p.cols : t9p.rows;
 	ntruth = nlinks = 0;// = ntu_links = ntu_sets = 0;
 	{	
 		int iu = (mode) ? 9 : 0, iuf = iu + 9;
 		for (int bit = 1; iu < iuf; iu++, bit <<= 1)
-			if (p9 & 1) ntruth += unit_sets_count[iu];
+			if (p9 & bit) ntruth += unit_sets_count[iu];
+	}
+
+	if (1) {
+		char ws[82];
+		cout << "ntruth=" << ntruth << endl;
+		cout << truths_basis_pm.String3X(ws) << " truths cells" << endl;
 	}
 	int iu = (mode) ? 0 : 9,iuf=iu+9; 
+	CROSS tcr[9];
+	int ntcr = 0;
 	for (; iu < iuf; iu++) {// crossing units
 		CROSS w;
 		int ir=w.Build(*this, iu);
 		if (ir) { // crossing unit active 
-
+			nlinks += ir;
+			tcr[ntcr++] = w;
 		}
 	}
+	if (nlinks > ntruth) return 0;
+	cout << "rank 0 logic expected dummy ntruth/nlinks " 
+		<< ntruth << "/" << nlinks << endl;
+	PM3X e; e.SetAll_0();
+	for (int itcr = 0; itcr < ntcr; itcr++)
+		tcr[itcr].BuildElims(*this, e);
+	if (e.IsEmpty()) return 0;
+	cout << "elim" << endl;
+	e.PrintCells();
+	cout << "truths links status" << endl;
+	cout << "truths={ ";
+	{ // standard truths
+		int iu = (mode) ? 9 : 0, iuf = iu + 9;
+		for (int bit = 1; iu < iuf; iu++, bit <<= 1)
+			if (p9 & bit) {
+				BF128 w = units3xBM[iu];
+				for (uint32_t id = 0; id < ndigits; id++) {
+					int dig = tfloors[id];
+					if ((w&pmfloors[id]).isNotEmpty())
+						cout << dig + 1;
+				}
+				if (mode) cout <<"C"<<iu-8<< " ";
+				else cout << "R" << iu+1  << " ";
+			}
+	}
+	{// added truths in linksets
+		for (int i = 0; i < ntcr; i++) if (tcr[i].ntmore2) {
+			for (int j = 0; j < tcr[i].ntmore2; j++)
+				cout << cellsFixedData[tcr[i].tmore2[j]].pt << " ";
+		}
+	}
+	cout << "}" << endl;
+	cout << "links={ ";
+	for (int i = 0; i < ntcr; i++)	tcr[i].PrintLinks(*this);
+	cout << "}" << endl;
+	return 1;
+}
+int R0SEARCH::TryRank0Logic() {
+	cout << "try rank 0 logic " << endl;
+	BuildRelativetables();
+	for (int i = 0; i < 84; i++) {// try 3 rows or 3 colums as base sets
+		int ir = Try_RC(tb9p3[i], floors_3d[i], 0);
+		if (ir) return 1;
+		ir = Try_RC(tb9p3[i], floors_3d[i], 1);
+		if (ir) return 1;
+	}
+	for (int i = 0; i < 126; i++) {// try 4 rows or 4 colums as base sets
+		if (floors_4d[i] != 0132)continue;
+		int ir = Try_RC(tb9p4[i], floors_4d[i], 0);
+		if (ir) return 1;
+		ir = Try_RC(tb9p4[i], floors_4d[i], 1);
+		if (ir) return 1;
+	}
+	// try 2 rows 2 columns as base set (2 bands 2 stacks)
+	for (int i = 0; i < 36; i++) {
+		if (!floors2d_2bands[i]) continue;
+		for (int j = 0; j < 36; j++) {
+			if (!floors2d_2bands[j]) continue;
+		}
+	}
+
+	for (int i = 0; i < 126; i++) {// try 5 rows or 5 colums as base sets
+		int ir = Try_RC(tb9p5[i],0x1ff^ floors_4d[i], 0);
+		if (ir) return 1;
+		ir = Try_RC(tb9p5[i], 0x1ff ^ floors_4d[i], 1);
+		if (ir) return 1;
+	}
+
 	return 0;
 }
 
-int R0SEARCH::TryRowCol(int * tu, int ntu, int dtruth) {
-	BFSETS r0_links, added_truths;
-	r0_links.SetAll_0();
-	PM3X link_candidates;
-	link_candidates.SetAll_0();
-	int dlink = 9 - dtruth;
-	ntruth = nlinks = ntu_links = ntu_sets = 0;
-	added_truths.SetAll_0();
 
-	return 0;
-}
 	/*
-struct TB_MULT_9P {// tables for a given 9 perm
-	BF128 rows, cols, boxes; // celss of the perm
-	void Init(int p9);// one out of floors tables
-};
 
-struct TB_DIG_CROSSINGS{
-	int floors,tfloors[5],ndigits,ntruths_rc,p9,dtruth;
-	BF128 dig_p1[5],cells_truths,cells_sets;
 
-};
-int TB_DIG_CROSSINGS::TryRowCol(int p2_9) {
 
-}
-
-int R0SEARCH::TryRowCol(int p9, int dtruth) {
-	cells_sets=
-	cells_sets.SetAll_0();
-	cellstruth=cells_link=cells_sets;
-	// build cellstruths
-	BF16 rcbm;
-	for(int i=0;i<ntu;i++){
-		rcbm.Set(tu[i]);
-		int itr=dtruth+tu[i],ntr=unit_sets[itr];
-		tu_sets[ntu_sets++]=itr;
-		if(!ntr) return 0; //no empty set
-		cellstruth |=cellsInHouseBM[itr];
-		ntruth+=ntr;
-	}
-	cellstruth &= cellsf;
-	if(ntruth<4) return 0;
-
-//	if((floors.bitCount()==2 && ntruth<4) || ntruth<6) return 0;
-	// now cross rows or columns
-	for(int i=0,il=dlink;i<9;i++,il++){
-		BF81 ww=cellsInHouseBM[il],wwp=ww;
-		BF16 digits,digitsp;
-		ww &= cellstruth;
-		wwp &= (cellspuref-ww);
-		USHORT tp[10],ntp=ww.String(tp),tpp[10],ntpp=wwp.String(tpp);
-		if(!ntp) continue;
-		for(int ip=0;ip<ntp;ip++)
-			digits |= myd.dig_cells[tp[ip]];
-		digits &=floors;
-		for(int ip=0;ip<ntpp;ip++)
-			digitsp |= myd.dig_cells[tpp[ip]];
-		digitsp &=floors;
-		digitsp |=digits; // can not be used without cross links
-		int nd=digits.bitCount(),ndp=digitsp.bitCount(),
-			nlinksp= ndp-ntpp,nlinksmin=(nd<= nlinksp)? nd:nlinksp;
-		if(debug){
-			EE.E(" unit cross= ");EE.E(il+1);
-			EE.E(" ntp= ");EE.E(ntp);
-			EE.E(" nlinksmin= ");EE.E(nlinksmin);
-			EE.E(" nlinksp= ");EE.Enl(nlinksp);
-		}
-		if(ntp<=nlinksmin){
-			nlinks+=ntp;
-			cells_link|=ww;
-		}
-		else{	// laod r0links link_candidates
-			nlinks+= nd;
-			tu_links[ntu_links++]=il;
-			BF16 digw=digits;
-			if(nlinksp<nd){
-				if(debug){
-					EE.E("add cells= "); 	parent->ImagePoints(wwp);
-					EE.E(" unit= ");EE.Enl(il+1);
-				}
-				ntruth+=ntpp;
-				cells_sets|=wwp;
-				digw=digitsp;
-				nlinks+=(ndp-nd);
-
-			}
-			for(int id=0;id<9;id++) if(digw.On(id)){
-				r0_links.SetRegion(id,il);
-				BF81 wset(cellsInHouseBM[il],parent->c[id]);
-				wset-= cellstruth;
-				link_candidates.bfc[id]|=wset;
-			}
-		}
-		if(nlinks>(ntruth+4))
-			break; // stop as soon as possible keep open adds
-	}
-	rank=nlinks-ntruth;
-	if(rank>4) return 0;
-	if(!ntu_links) return 0; // would end as locked sets
-	if(0){//debug){
-		EE.E("before add sets truths= ");EE.E(ntruth);
-		EE.E(" links= ");EE.E(nlinks);
-		EE.E(" rank= ");EE.Enl(rank);
-	}
-	// try to reduce the count adding sets
-	// first try to add sets with extra digits in the base rows columns
-	while(1){
-		if(cells_link.IsEmpty()) break;
-		if(0) break;
-		for(int i=0;i<ntu;i++){
-			int itr=dtruth+tu[i];
-			tu_sets[ntu_sets++]=itr;
-			BF81 ww(cellsInHouseBM[itr],cells_link);
-			USHORT tp[10],ntp=ww.String(tp);
-			if(ntp<2) continue; // minimum 2 to add a set
-			// collect extra digits
-			BF16 wed;
-			for(int ip=0;ip<ntp;ip++)	wed |= myd.dig_cells[tp[ip]];
-			wed-=floors; // we are looking for extra digits
-			if(!wed.f) continue;
-			for(int ie=0;ie<9;ie++) if(wed.On(ie)){
-				BF81 wwe (cellsInHouseBM[itr],parent->c[ie]);
-				if((wwe-ww).IsEmpty()) {// ok to add it as a set
-//			        EE.E(" added in  dig ");EE.E(ie+1); EE.E(" unit ");EE.Enl(itr+1);
-					added_truths.SetRegion(ie,itr);
-					ntruth++;
-				}
-			}
-		}
-		break;
-	}
 	// then try to add a set in extra rows when it is possible
 	// risk of overlapping rows col box
 	// no cell truth  in the set
@@ -3630,67 +3761,13 @@ int R0SEARCH::TryRowCol(int p9, int dtruth) {
 	return CheckElims();
 }
 */
-/*
 //============================== R0SEARCH
 
-*/
-/*
-int PM_GO::R0SEARCH::CheckBand(USHORT * tu,USHORT ntu){
-	BF16 ctlband;
-	for(int i=0;i<ntu;i++){
-		ctlband.Set(tu[i]);
-	}
-	if((ctlband.f & 0x7) == 0x7) return 1;
-	if((ctlband.f & 0x38) == 0x38) return 2;
-	if((ctlband.f & 0x1c0) == 0x1c0) return 3;
-	return 0;
-}
-*/
-/*
-int PM_GO::R0SEARCH::GoForRowCol(USHORT * tu,USHORT ntu){
-	// if CheckBand()) // see later for optimisation with box cover
-	int ir=0, ir1= TryRowCol(tu,ntu,0);
-	if(ir1) {
-		code_ret|=1;
-		if(!(opt  & 4)) return 1;
-	}
-	ir+=ir1;
-	ir1= TryRowCol(tu,ntu,9);
-	if(ir1) {
-		code_ret|=2;
-		if(!(opt & 4)) return 1;
-	}
-	ir+=ir1;
-	if(0) return ir; // skip the band search
-	if(!ir){
-		ir1= TryRowColBand(tu,ntu,0);
-		if(ir1) {
-			code_ret|=1;
-			if(!(opt  & 4)) return 1;
-		}
-	}
-	if(!ir){
-		ir1= TryRowColBand(tu,ntu,9);
-		if(ir1) {
-			code_ret|=2;
-			if(!(opt  & 4)) return 1;
-		}
-	}
-	return ir;
-}
-*/
 
 /*
 int PM_GO::R0SEARCH::TryRowColBand(USHORT * tu,USHORT ntu,USHORT dtruth){
 	PM_DATA & myd=parent->zpmd[0];
-	if(debug){
-		EE.E(" tu[0]= ");EE.E(tu[0]);
-		EE.E(" tu[1]= ");EE.E(tu[1]);
-		EE.E(" tu[2]= ");EE.E(tu[2]);
-		EE.E(" tu[3]= ");EE.E(tu[3]);
-		EE.E(" tu[4]= ");EE.E(tu[4]);
-		EE.E(" dtruth= ");EE.Enl(dtruth);
-	}
+
 	int dlink=9-dtruth,ib0=CheckBand(tu,ntu);
 	if(!ib0) return 0; else ib0--;
 	BF81 wband0=cellsInBandBM[(dtruth)? ib0+3 : ib0];
@@ -3778,324 +3855,97 @@ int PM_GO::R0SEARCH::TryRowColBand(USHORT * tu,USHORT ntu,USHORT dtruth){
 	// check for elims can be rank 0 or rank 1
 	return CheckElims();
 }
+*/
 
-
-int PM_GO::R0SEARCH::GoForX(USHORT row1,USHORT row2,USHORT col1,USHORT col2){
-
-	// if the crossing cell is not empty, use it as link
-	// maxs 2 cells in the calling process
-	PM_DATA & myd=parent->zpmd[0];
-	USHORT tu[4];  tu[0]=row1;tu[1]=row2;tu[2]=col1+9;tu[3]=col2+9;
-	ntruth=nlinks=ntu_links=ntu_sets=0;
-	cells_sets.SetAll_0();
-	cellstruth=cells_link=cells_sets;
-	// build cellstruths and detect crossings
-	for(int i=0;i<4;i++){
-		int itr=tu[i],ntr=unit_sets[itr];
-		tu_sets[ntu_sets++]=itr;
-		if(!ntr) return 0; //no empty set
-		BF81 x81=cellsInHouseBM[itr];
-		x81 &= cellsf;
-		BF81 xcross=x81 & cellstruth; // the new set crossing old sets
-		if((xcross).IsNotEmpty()){ // one or 2 crossings seen
-			cells_link|=xcross;
-			ntruth-=xcross.Count(); // to avoid double count just after
-		}
-		cellstruth |=x81;
-		ntruth+=ntr;
+int R0SEARCH::GoX(int pr, int pc) {
+	truths_basis_pm = infield;
+	truths_basis_pm &= (tb9p2[pc].cols | tb9p2[pr].rows);
+	BF128 corners = tb9p2[pc].cols&tb9p2[pr].rows;
+	// separate analysis if corners are not empty
+	if ((corners & truths_basis_pm).isNotEmpty()) return 0;
+	ntruth = nlinks = 0;// = ntu_links = ntu_sets = 0;
+	int vu = floors_2d[pr] | (floors_2d[pc]<<9);
+	for (int iu = 0, bit = 1; iu < 18; iu++, bit <<= 1)	if (vu & bit) {
+		if (!unit_sets_count[iu]) return 0;
+		ntruth += unit_sets_count[iu];
 	}
-	if( ntruth<4 ) return 0;
-//	if((floors.bitCount()==2 && ntruth<4) || ntruth<6) return 0;
-	//build a table with 10 units (4 boxes 3 rows 3 colums)
-	USHORT tunits[10],nunits=0;
-	for(int i=0;i<2;i++)for(int j=0;j<2;j++)
-		tunits[nunits++]=3*(tu[i]/3)+((tu[j+2]-9)/3)+18; // 4 boxes
-	for(int i=0;i<18;i++){
-		USHORT  band=i/3;
-		if( band==( tu[0]/3) || band==( tu[1]/3)   ||
-			band==( tu[2]/3) || band==( tu[3]/3)  ) continue;
-		tunits[nunits++]=i;
-	}
-	if(nunits-10) return 0; // safety code should never be
-	// now  find optimum cover for each unit
-	// if you have a minicol of pure change the priority row column ??
-	// can miss some possible rank 0
-	int aigminicol=0;
-	for(int i=9;i<18;i++){// check each column
-		BF81 c81=cellsInHouseBM[i];
-		c81 &= cellspuref;
-		if(c81.Count()<3) continue;
-		for(int j=18;j<27;j++){
-			BF81 b81=cellsInHouseBM[j];
-			b81 &= c81;
-			if(b81.Count()<3) continue;
-			aigminicol=1;
-			break;
-		}
-		if(aigminicol) break;
-	}
-	if(aigminicol){// change extra rows and extra cols
-		for(int i=0;i<3;i++){
-			USHORT w=tunits[i+4];
-			tunits[i+4]=tunits[i+7];
-			tunits[i+7]=w;
+	int crossing_rows = 0x1ff ^ fl2d_rboxes[pr];
+	int crossing_cols = 0x1ff ^ fl2d_rboxes[pc];// here in 0-8 mode
+	// now 4 boxes, 3 rows, 3 cols for linksets
+	int icross_band= floors2d_band_stack_free[pr],
+		icross_stack=3+ floors2d_band_stack_free[pc];
+	BF128 cross_band = infield & band3xBM[icross_band],
+		cross_stack = infield & band3xBM[icross_stack],
+		cross2 = cross_band & cross_stack;
+	// cross2 potential eliminations rank 1
+	if ((cross2&in_no_out).isNotEmpty()) return 0;// not here,triple points
+	// now all potential cells to add are in areas with no double cover.
+	int cross_u_bf = crossing_rows | (crossing_cols << 9)
+		| ((fl2d_rboxes[pr] & fl2d_cboxes[pc])<<18);
+	CROSS tcr[10];
+	int ntcr = 0;
+	for (int iu = 0, bit = 1; iu < 27; iu++, bit <<= 1) {
+		if (!cross_u_bf&bit)continue;
+		CROSS w;
+		int ir = w.Build(*this, iu);
+		if (ir) { // crossing unit active
+			nlinks += ir;
+			tcr[ntcr++] = w;
 		}
 	}
-	// may be still a small window for a "miss"
-	BF81 wpure=cellspuref; // to guaranty only one use
-	for(int iu=0;iu<10;iu++){
-		int il=tunits[iu]; // same code as row col
-		BF81 ww=cellsInHouseBM[il],wwp=ww;
-		BF16 digits,digitsp;
-		ww &= cellstruth;
-		wwp &= (wpure-ww);
-		USHORT tp[10],ntp=ww.String(tp),tpp[10],ntpp=wwp.String(tpp);
-		if(!ntp) continue;
-		for(int ip=0;ip<ntp;ip++)
-			digits |= myd.dig_cells[tp[ip]];
-		digits &=floors;
-		for(int ip=0;ip<ntpp;ip++)
-			digitsp |= myd.dig_cells[tpp[ip]];
-		digitsp &=floors;
-		digitsp |=digits; // can not be used without cross links
-		int nd=digits.bitCount(),ndp=digitsp.bitCount(),
-			nlinksp= ndp-ntpp,nlinksmin=(nd<= nlinksp)? nd:nlinksp;
-		if(ntp<=nlinksmin){
-			nlinks+=ntp;
-			cells_link|=ww;
-		}
-		else{
-			nlinks+= nd;
-			tu_links[ntu_links++]=il;
-			if(nlinksp<nd){
-				nlinks+=(ndp-nd);
-				ntruth+=ntpp;
-				cells_sets|=wwp;
-				wpure -=wwp; // don't re use
+	int rank = nlinks - ntruth;
+	if (rank > 1) return 0;
+	if (rank == 1) {
+		if (cross2.isEmpty())return 1;
+	}
+	cout << "rank 0 logic expected dummy ntruth/nlinks "
+		<< ntruth << "/" << nlinks << endl;
+	PM3X e; e.SetAll_0();
+	for (int itcr = 0; itcr < ntcr; itcr++)
+		tcr[itcr].BuildElims(*this, e);
+	if (rank == 1) {
+		for (int idig = 0; idig < 9; idig++)
+			e.pmdig[idig] &= cross2;
+	}
+	if (e.IsEmpty()) return 0;
+	cout << "elim" << endl;
+	e.PrintCells();
+	cout << "truths links status" << endl;
+	cout << "truths={ ";
+	{ // standard truths
+		for (int iu = 0, bit = 1; iu < 18; iu++, bit <<= 1)	if (vu & bit) {
+			BF128 w = units3xBM[iu];
+			for (uint32_t id = 0; id < ndigits; id++) {
+				int dig = tfloors[id];
+				if ((w&pmfloors[id]).isNotEmpty())
+					cout << dig + 1;
 			}
+			if (iu>8) cout << "C" << iu - 8 << " ";
+			else cout << "R" << iu + 1 << " ";
+		}
+		
+	}
+
+	{// added truths in linksets
+		for (int i = 0; i < ntcr; i++) if (tcr[i].ntmore2) {
+			for (int j = 0; j < tcr[i].ntmore2; j++)
+				cout << cellsFixedData[tcr[i].tmore2[j]].pt << " ";
 		}
 	}
-	rank=nlinks-ntruth;
-	if(debug){
-		EE.E("truths= ");EE.E(ntruth);
-		EE.E(" links= ");EE.E(nlinks);
-		EE.E(" rank= ");EE.Enl(rank);
-	}
-	if(rank>1) return 0;
-	if(rank<1 && (opt & 2)) return 0;
-	if(rank>0 && (opt & 1)) return 0;
-	// check for elims can be rank 0 or rank 1
-	int ir=CheckElims();
-	if(ir) code_ret |= 4;
-	return code_ret;
+	cout << "}" << endl;
+	cout << "links={ ";
+	for (int i = 0; i < ntcr; i++)	tcr[i].PrintLinks(*this);
+	cout << "}" << endl;
+
+
+	return 0;
 }
-
-int PM_GO::R0SEARCH::CheckElims(){
-	if(rank>0  && ntruth <10) return 0;
-	if(0){
-		EE.E("entry check truths="); EE.E(ntruth);
-		EE.E(" nlinkss="); EE.Enl(nlinks);
-		EE.E(" nadded_truths="); EE.Enl(added_truths.Count());
-		char output[200];
-		EE.E(" added_truths ");added_truths.XsudoPrint(0, output);EE.Enl(output);
-	}
-	// create a table of elims in candidate form and create sets for print
-	PM_DATA & myd=parent->zpmd[0];
-	PMBF added_candidates;
-	added_candidates.SetAll_0();
-	if(!added_truths.IsEmpty()){
-		USHORT tp[100],ntp =added_truths.String(tp);
-		for(int ia=0;ia<ntp;ia++){
-			USHORT v=tp[ia];
-			if(v<81) continue ; // should never be a cell
-			else v-=96;
-			USHORT dig=v>>5,unit=v&31;		//if(On(81+27*ich+9*itype+j))
-//			EE.E(tp[ia]);EE.E(" addedckeck dig ");EE.E(dig+1); EE.E(" unit ");EE.Enl(unit+1);
-			added_candidates.bfc[dig] |= myd.dig_reg81[dig][unit];
-		}
-	}
-	nelims=0;
-	BFSETS r0_sets=added_truths,r0_links;
-	r0_links.SetAll_0();
-	USHORT tp[100],ntp = cells_sets.String(tp);
-	for(int i=0;i<ntp;i++)			r0_sets.SetCell(tp[i]);
-
-	ntp=cells_link.String(tp);
-	for(int i=0;i<ntp;i++){
-		r0_links.SetCell(tp[i]);
-		BF16 dig=myd.dig_cells[tp[i]] - floors;
-		for(int j=0;j<9;j++) if(dig.On(j)){
-			if(added_candidates.On(j,tp[i])) continue;
-			telims[nelims++]=(j<<8)+tp[i];
-		}
-	}
-	for(int i=0;i<ntu_sets;i++)			Add(r0_sets,tu_sets[i]);
+/* 
 
 
-	//  now for each row/column link, find sets and eliminations
-	// have to repeat the calling process
-	BF81 outcells,incells,outtruths;
-	for(int il=0;il<ntu_links;il++){
-		int unit=tu_links[il];
-		incells=outcells=outtruths = cellsInHouseBM[unit];
-		incells &= cellstruth;
-		outtruths &= cells_sets;
-		outcells &= cellsf;
-		incells |= outtruths;
-		USHORT tpx[100],ntpx=incells.String(tpx);
-		BF16 digin;
-		for(int i=0;i<ntpx;i++)
-			digin|= myd.dig_cells[tpx[i]];
-		digin &= floors;
-		if(debug){
-			char ws[10];
-			EE.E("check unit= ");EE.E(unit+1);
-			EE.E(" cells ntpx= ");parent->ImagePoints(incells);
-			EE.E(" digits= ");EE.Enl(digin.String(ws));
-			char output[200];
-			r0_links.XsudoPrint(1, output);
-			EE.Enl(output);
-		}
-		for(int i=0;i<9;i++) if(digin.On(i))
-			r0_links.SetRegion(i , unit);
-		if(debug){
-			char output[200];
-			r0_links.XsudoPrint(1, output);
-			EE.Enl(output);
-		}
-		outcells -= incells; // where eliminations can be
-		for(int i=0;i<9;i++) if(digin.On(i)){
-			BF81 wwd=outcells & parent->c[i];
-			USHORT tp[100],ntp=wwd.String(tp);
-			for(int j=0;j<ntp;j++){
-				if(added_candidates.On(i,tp[j])) continue;
-				telims[nelims++]= (i<<8)+tp[j];
-			}
-		}
-
-	}
-
-	if(!nelims) return 0;
-	if(rank>0  && nelims<5) return 0; //(usually false signal)
-	if(options.print){
-		char output[200];
-		EE.E("floors "); EE.E(floors.String(output));
-		EE.E(" added sets ");added_truths.XsudoPrint(0, output);EE.Enl(output);
-		EE.E("SLG rank "); EE.Enl(rank);
-		r0_sets.XsudoPrint(0, output);
-		EE.Enl(output);
-		r0_links.XsudoPrint(1, output);
-		EE.Enl(output);
-		EE.E(nelims);EE.E (" elims ");
-		for(int i=0;i<nelims;i++){
-		EE.E((telims[i]>>8) +1);EE.E(cellsFixedData[telims[i]&255].pt );
-		EE.Esp();
-		}
-		EE.Enl();
-	}
-	if(rank>0  && nelims<16) return 0; //(stop at first >=16)
-
-	if((opt&8) && (opt&2) && (opt&4)&& ntr1<30){
-		// this a call in the solving process for Rank1 logic
-		// storing temporary  doubled the final will be telim_native
-		welim_native.SetAll_0();
-		for(int i=0;i<nelims;i++)
-			welim_native.Set(telims[i]>>8,telims[i]&255);
-		int aigok=1;
-		for(int i=0;i<ntr1;i++){
-			if(welim_native == telim_native[i]){// wr1elims==tr1elims[i] ){
-				aigok=0;
-				break;
-			}
-		}
-		if(aigok)
-			telim_native[ntr1++]=welim_native;
-	}
-	if(do_elims){
-		for(int i=0;i<nelims;i++){
-			game[0].StdClean(telims[i]>>8,telims[i]&255);
-			EE.E((telims[i]>>8) +1);EE.E(cellsFixedData[telims[i]&255].pt );
-			EE.Esp();
-		}
-		EE.Enl();
-
-	}
-	return nelims;
-}
 
 
-int PM_GO::R0SEARCH::CheckElims(BF16 ordigs,R0S_LOT4 & lr,R0S_LOT4 & lc){
-	// create a table of elims in candidate form and create sets for print
-	PM_DATA & myd=parent->zpmd[0];
-	nelims=0;
-	BFSETS r0_sets,r0_links;
-	r0_sets.SetAll_0();
-	r0_links=r0_sets;
-	USHORT tp[100],ntp = cells_base.String(tp);
-	for(int i=0;i<ntp;i++)			r0_sets.SetCell(tp[i]);
 
-	welim_native.SetAll_0(); // store all links substract base candidates
-
-	for(int i=0;i<ncovers;i++){
-		USHORT dig=tcovers[i]>>7,unit=tcovers[i]&0x3f;
-		r0_links.SetRegion(dig,unit);
-		welim_native.bfc[dig]|= myd.dig_reg81[dig][unit];
-	}
-	for(int i=0;i<9;i++) if(ordigs.On(i))
-		welim_native.bfc[i] -= (cells_base & parent->c[i]);
-
-	nelims=welim_native.String(telims);
-	if(!nelims) return 0;
-
-	if(options.print){
-		EE.E("rows ");
-		for(int i=0;i<lr.nrc4;i++){
-			EE.E(lr.rc4[i]+1); EE.Esp();
-		}
-		EE.E(" columns ");
-		for(int i=0;i<lc.nrc4;i++){
-			EE.E(lc.rc4[i]+1); EE.Esp();
-		}
-		EE.E(" SLG rank "); EE.Enl(rank);
-		char output[200];
-		r0_sets.XsudoPrint(0, output);
-		EE.Enl(output);
-		r0_links.XsudoPrint(1, output);
-		EE.Enl(output);
-		EE.E(nelims);EE.E (" elims ");
-		for(int i=0;i<nelims;i++){
-		EE.E((telims[i]>>7) +1);EE.E(cellsFixedData[telims[i]&0x7f].pt );
-		EE.Esp();
-		}
-		EE.Enl();
-	}
-	if((opt&8) && (opt&2) && (opt&4)&& ntr1<30){
-		// this a call in the solving process for Rank1 logic
-		// storing temporary  doubled the final will be telim_native
-		welim_native.SetAll_0();
-		for(int i=0;i<nelims;i++)
-			welim_native.Set(telims[i]>>7,telims[i]&0x7f);
-		int aigok=1;
-		for(int i=0;i<ntr1;i++){
-			if(welim_native == telim_native[i]){// wr1elims==tr1elims[i] ){
-				aigok=0;
-				break;
-			}
-		}
-		if(aigok)
-			telim_native[ntr1++]=welim_native;
-	}
-	if(do_elims){
-		for(int i=0;i<nelims;i++){
-			game[0].StdClean(telims[i]);
-			EE.E((telims[i]>>7) +1);EE.E(cellsFixedData[telims[i]&0x7f].pt );
-			EE.Esp();
-		}
-
-
-	}
-	return nelims;
-}
 
 
 void PM_GO::R0SEARCH::Add(BFSETS & ss,USHORT unit){
@@ -4163,7 +4013,8 @@ void PM_GO::R0SEARCH::GoForCellsPrepare(){
 	myd.PrepareSubGrids();
 
 }
-
+*/
+/*
 int PM_GO::R0SEARCH::GoForCells63(){
 	PM_DATA & myd=parent->zpmd[0];
 	GoForCellsPrepare();
@@ -4246,7 +4097,8 @@ int PM_GO::R0SEARCH::GoForCells63(){
 	}
 	return 0;
 }
-
+*/
+/*
 int PM_GO::R0SEARCH::GoForCells(){
 	PM_DATA & myd=parent->zpmd[0];
 	GoForCellsPrepare();
@@ -4455,69 +4307,9 @@ new process  "8"
    une ligne et une colonne par bande trois connus
 */
 
+
+
 //=========================  PM_GO  processing a file
-//=======================================================
-/*
-int PM_GO::R0SEARCH::TryUsingElims(BF16 floors, BF81 * elims_floors, BF81 & elims_cells) {
-
-	// try first the standard RCX for that 
-	// if nothing try the cells base
-	// create a standard PMBF for elims in floors
-
-
-	return 0;
-}
-*/
-/*
-2: r8c9 7: r1c68r6c8r8c6    row or col
-8: r13c9 9: r1c68r3c6r8c26r9c28
-cells having extra digits r1c357r24c5r7c13
-
-X     X     89+   |X     789+  79+   |789+  79+   8+
-X     89+   X     |2789  2789+ 79+   |X     79+   8+
-89+   X     89+   |89+   89+   9+    |89+   X     8+
-
-X     89+   2789  |X     279+  79+   |X     7+    28+
-2789  89+   X     |X     X     79+   |278   7+    28+
-27+   X     27+   |27+   27+   X     |27+   7+    X
-
-2789+ 89+   2789+ |X     X     79+   |X     9+    2+
-279+  9+    279+  |79+   79+   79+   |29+   X     2+
-9+    9+    9+    |89+   89+   X     |9+    9+    X
-
-
-3: r5c29  6: r4c3r6c8 8: r1c8  exocet
-cells having extra digitsr12c7r4c2r7c1
-
-X     X     678   |678+  X     67+   |678+  68+   7+
-X     3678+ 3678  |678+  8+    X     |3678+ X     37+
-3678+ 3678+ X     |X     8+    67+   |X     68+   37+
-
-X     3678+ 3678+ |X     8+    7+    |X     6+    3+
-38+   38+   38+   |8+    X     X     |3+    X     3+
-67+   67+   67+   |7+    X     X     |6+    6+    X
-
-3678+ X     3678+ |36+   X     6+    |X     8+    7+
-68+   68+   X     |6+    X     6+    |8+    X     X
-37+   37+   37+   |3+    X     X     |7+    X     X
-
-4: r5c19 6: r5c37 9: r5c19
-cells  r2c6r4c8r5c28r6c2r8c6
-X     9+    X     |49+   49+   49+   |X     4+    X
-9+    X     6+    |2469  X     2469+ |2+    X     4+
-X     6+    X     |26+   6+    26+   |X     2+    X
-
-49+   X     26+   |X     469   X     |26+   2469+ 49+
-49+   469+  6+    |X     X     469   |6+    469+  49+
-49+   2469+ 26+   |X     469   X     |26+   X     49+
-
-X     2+    X     |26+   6+    26+   |X     6+    X
-4+    X     2+    |2469  X     2469+ |6+    X     9+
-X     4+    X     |49+   49+   49+   |X     9+    X
-
-*/
-
-
 
 //==========================================================================PM_GO::HINT
 //               0  1  2  3   4   5   6   7   8   9   10
@@ -4647,119 +4439,304 @@ void PM_GO::Quickrate(int x) {// used in serate mode
 void PM_GO::Solve120_MultiAnalysis() {
 	cout << "entry 120" << endl;
 	if (Solved_xx(44)) return;
+	SetupActiveDigits();
 	if (zh_g2.active_floor) {// done in Solved_xx
 		cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
-		return;
+		for(int idig=0;idig<9;idig++)
+			if (zh_g2.elim_floor[idig].isNotEmpty()) {
+				char ws[82];
+				cout << zh_g2.elim_floor[idig].String3X(ws)
+					<< " elim for digit " << idig + 1 << endl;
+				zhou_solve.FD[idig][0] -= zh_g2.elim_floor[idig];
+			}
+		zh_g2.Pm_Status(&zhou_solve);
 	}
 	int aigstop = 0;
 	zhou_solve.ImageCandidats();
 	r0search.CollectPerms(1);// build the perms for unsolved digits
-	PM3X elims;
-	//if (r0search.IsElims(017, elims)) 		cout << "elims found" << endl;
-	//if (1) return;
-	for (int ifl = 0; ifl < 36; ifl++) {// floors 2d
-		if (r0search.IsElims(floors_2d[ifl], elims)) {
-			cout << "elims found" << endl;
-			aigstop = 1;
-		}
-
-	}
+	for (int ifl = 0; ifl < 36; ifl++)
+		aigstop += r0search.IsElims(floors_2d[ifl], 0);
 	if (aigstop) return;
-	for (int ifl = 0; ifl < 84; ifl++) {// floors 3d
-		if (r0search.IsElims(floors_3d[ifl], elims)) {
-			cout << "elims found" << endl;
-			aigstop = 1;
-		}
-
-	}
+	for (int ifl = 0; ifl < 84; ifl++) 
+		aigstop += r0search.IsElims(floors_3d[ifl], 1);
 	if (aigstop) return;
-	for (int ifl = 0; ifl < 126; ifl++) {// floors 4d
-		if (r0search.IsElims(floors_4d[ifl], elims)) {
-			cout << "elims found" << endl;
-			aigstop = 1;
-		}
-
-	}
+	for (int ifl = 0; ifl < 126; ifl++) 
+		aigstop += r0search.IsElims(floors_4d[ifl], 1);
 	if (1 ||aigstop) return;
-	for (int ifl = 0; ifl < 126; ifl++) {// floors 5d 
-		if (r0search.IsElims(0x1ff^floors_4d[ifl], elims)) {
-			cout << "elims found" << endl;
-			aigstop = 1;
-		}
-
+	for (int ifl = 0; ifl < 126; ifl++) 
+		aigstop += r0search.IsElims(0x1ff ^ floors_4d[ifl], 1);
+}
+void PM_GO::Solve125_Find_Vloop() {
+	cout << "entry 125" << endl;
+	if (Solved_xx(44)) return;
+	if (vloop.Locate_Loop()) {
 	}
-	if (aigstop) return;
-
-
 }
 
-/*
-extern int floors_2d[36];
-extern int floors_3d[84];
-extern int floors_4d[126];void PM_GO::Traite_Find_Multi_Fish() {
-	PM_DATA & myd=zpmd[0];
-	// explore 3 to 5 (see options??)
-	if(options.v1<3) options.v1=3;
-	BF16 range;
-	range.f=(1<<3)+(1<<4);  // explore 3;4
-	if(mybits[5]=='1') range.f |=1<<5; // add 5 on option
-	COMBINE combi;
-	USHORT taf[9],ntaf=0,taf_s[9];
-	BF16 maxelims_digits;
-	USHORT maxelims=0;
-	ntr0logic=r0logictype=0;
-	for(int i=8;i>=0;i--) // store active floors
-		if(c[i].IsNotEmpty())
-			taf[ntaf++]=i;
-	for(int nf=2;nf<6;nf++) if(range.On(nf)){
-		if(nf>ntaf)break;
-		combi.First(ntaf,nf,taf,taf_s);
-		while(1 ) {
-			mfloors.f=0;
-			for(int i=ntaf-nf;i<ntaf;i++)
-				mfloors.Set(taf_s[i]);
-			int welims=game[1].Go_Multi(mfloors.f);
-			if(welims>3 ){
-				//EE.E(" go check elims welims=");EE.Enl(  welims );
-				if(welims>maxelims){
-					maxelims=welims;
-					maxelims_digits=mfloors;
-				}
-				if(options.print){
-					char ws[20];
-					EE.E("digits"); EE.E(mfloors.String(ws));
-					EE.E(" welims=");EE.Enl(  welims );
-					for(int i=0;i<9;i++){
-						BF81 & ww=GAME::glb.elims.bfc[i];
-						if(ww.IsNotEmpty()){
-							EE.E(i+1);EE.E(": ");
-							ImagePoints(ww);
-							EE.Enl();
+
+struct EXOCET { // what is collected in the first step
+	BF128 base, target,crossing_area,exocet,tabi_threat[9];
+	int permbase, iu_base, cells_base[2], bs_base,bs_cross, bs_cross0, 
+		digs,tdigs[4],ndigs,boxes[3],ntarget,mode,locked_digit,
+		cross1,tabi[4],i2rc,abibf;
+	int isExocet(BF128 b, int emode, int prc, int cross_rc);
+	void SetAbiLoops();
+
+};
+
+int EXOCET::isExocet(BF128 b, int emode, int ei2prc, int cross_rc) {
+	R0SEARCH & rs = pm_go.r0search;
+	BF128 cmap = zhou_solve.cells_unsolved;
+	// must be 3/4 digits
+	cells_base[0] = b.getFirstCell();
+	cells_base[1] = b.getLastCell();
+	digs = zh_g2.dig_cells[cells_base[0]] | zh_g2.dig_cells[cells_base[1]];
+	ndigs = _popcnt32(digs);
+	if (ndigs < 3 || ndigs>4) return 0;
+	base = b;
+	i2rc = ei2prc;
+	if (0) {
+		cout << "try " << cellsFixedData[cells_base[0]].pt
+			<< " " << cellsFixedData[cells_base[1]].pt 
+			<<" digs 0"<<oct<<digs<<dec<< endl;
+	}
+	mode = emode;
+	bs_cross0 = i2rc / 3;// to use in the perm loop
+	bs_cross = bs_cross0 + 3* (1-mode);
+	iu_base = cross_rc + 9 * mode;
+	bs_base = iu_base / 3 ;
+	cross1= floors2d_same_band_stack_third[i2rc]+9*(1-mode);
+	crossing_area = cmap & band3xBM[bs_base];
+	crossing_area -= units3xBM[iu_base];
+	boxes[0] = cellsFixedData[cells_base[0]].ebu;
+	if (mode) {// find 0ther boxes
+		int b0 = cellsFixedData[cells_base[0]].pl / 3,n=1;
+		for (int i = b0; i < 9; i += 3) 	if (i != boxes[0]-18) 
+			boxes[n++] = i+18;
+	}
+	else  {
+		int b0 = 3*(cellsFixedData[cells_base[0]].el / 3) , n = 1;
+		for (int i = b0; i < b0+3; i ++) 	if (i != boxes[0]-18)
+			boxes[n++] = i+18;
+	}
+
+
+	for (int ipcross = 0; ipcross < 36; ipcross++) {
+		if (floors2d_band_stack_free[ipcross] != bs_cross0)continue;
+		//================ this is a crossing to test
+		if (mode) target = rs.tb9p2[ipcross].rows;
+		else target = rs.tb9p2[ipcross].cols;
+		target &= crossing_area & cmap;// can be 2;3 or 4 cells best is 2
+		ntarget = target.Count();
+		if (ntarget < 2) continue;
+		if (0) {
+			char ws[82];
+			cout << target.String3X(ws) << " try target" << endl;
+		}
+		// all digit perms hitting base must hit target to have an exocet
+		int nd = 0;
+		for (int idig = 0; idig < 9; idig++) {
+			if (!(digs&(1 << idig))) continue; // not a base digit
+			//cout << "digit " << idig + 1 << " nperms= "<< rs.nperms[idig] << endl;
+			tdigs[nd++] = idig;
+			BF128 *tpw = rs.tperms_digits[idig];
+			BF128 andperm = maskffff;
+			for (uint32_t itp = 0; itp < rs.nperms[idig]; itp++) {
+				BF128 w = tpw[itp];
+				if ((w&base).isEmpty())continue;
+				if ((w&target).isEmpty())goto next_ipcross;
+				andperm &= w & target;
+			}
+			//cout << "exit digit ok" << endl;
+			if (andperm == target) goto next_ipcross; // target forced by one digit
+		}// end digit exocet granted ?? yes if ntarget=2 see if  more 
+		exocet = base | target;
+		if ((target&units3xBM[boxes[1]]).isEmpty()) goto next_ipcross;
+		if ((target&units3xBM[boxes[2]]).isEmpty()) goto next_ipcross;
+		if(1) {
+			cout  << cellsFixedData[cells_base[0]].pt
+				<< " " << cellsFixedData[cells_base[1]].pt
+				<< " digs 0" << oct << digs << dec << endl;
+			char ws[82];
+			cout <<exocet.String3X(ws)<< "this is a valid exocet likely a JExocet" << endl;
+			cout << "bs_base=" << bs_base << " iu_base=" << iu_base
+				<< " bs_cross=" << bs_cross << "cross1=" << cross1 << endl;
+			cout << " boxes " << boxes[0] << " " << boxes[1] << " " << boxes[2] << endl;
+			cout << crossing_area.String3X(ws) << " crossing area" << endl;
+			if (ntarget > 2) {// check locked digits (one digit lockked)
+				cout << "check locked digit" << endl;
+				locked_digit = 0;
+				for (int ibox = 1; ibox < 3; ibox++) {
+					int box = boxes[ibox];
+					BF128 w = zhou_solve.cells_unsolved & units3xBM[box];
+					if ((target&w).Count() != 2) continue;
+					cout << "check locked digit box "<<box << endl;
+					for (int idig = 0; idig < 9; idig++) {
+						if (digs&(1 << idig)) continue;
+						// use zhou_solve to have assigned
+						BF128 fd_box= zhou_solve.FD[idig][0] & w;
+						if ((fd_box-target).isEmpty()){
+							locked_digit |= 1 << ibox;
+							cout << "locked digit seen" << endl;
+							break;
 						}
 					}
 				}
-				if(options.cop4 && welims>10){
-					 output1 << "  print for analysis "<<endl;
-					 for(int i=0;i<9;i++){
-						 if(mfloors.Off(i)) continue;
-						 myd.ImageUn_myd(i);
-					 }
-					myd.ImageFloors_myd(mfloors);
-			   }
-				if(options.cop3==4){ // look for r0 logic
-// a revoir					r0search.TryUsingElims(mfloors,GAME::glb.elims,m_and);
-				}
 			}
-			if (maxelims>10 )break;
-			if(!combi.Next()) break;
-		}// end number of floors
-		if (maxelims>10)	break;
+			SetAbiLoops();
+		}
+
+	next_ipcross:;
 	}
-	if (maxelims<options.v1) return;
-	char ws[10];
-	EE.Enl("exit output2");
-	output2 << gr.pg<< ';'<<maxelims<<';'<<maxelims_digits.String(ws)
-			<< ';'<<& finput.ze[82]<<endl;
+	return 0; 
+}
+
+void EXOCET::SetAbiLoops() {
+	R0SEARCH & rs = pm_go.r0search;
+	memset(tabi, 0, sizeof tabi);
+	memset(tabi_threat, 0, sizeof tabi_threat);
+	abibf = 0;
+	int p36 = floors2d_same_band_stack[i2rc]; // corresponding 36 perms
+	BF128 threat_area= rs.tb9p2[p36].cols;
+	int ibase = bs_base - 3 * mode, di = 9 * mode;
+	if (mode) threat_area = rs.tb9p2[p36].rows;	
+	threat_area &= zhou_solve.cells_unsolved;
+	for (int ib=0,i = 0; ib < 3; ib++) {
+		if (ib == ibase) {	i += 3; continue;	}
+		for (int ir = 0; ir < 3; ir++, i++) {
+			BF128 w = threat_area & units3xBM[i+di];
+			if (w.Count() != 2) continue;
+			tabi_threat[i] = w;
+			abibf |= 1 << i;
+		}
+	}
+	if (0) {
+		char ws[82];
+		cout << "threat map" << endl;
+		for (int i = 0; i < 9; i++)
+			cout << tabi_threat[i].String3X(ws) << " i=" << i << endl;
+	}
+
+	for (int i = 0; i < ndigs - 1; i++)for (int j = i + 1; j < ndigs; j++) {
+		int dig1 = tdigs[i], dig2 = tdigs[j];// process the digits pair 
+		cout << "try pair " << dig1 + 1 << dig2 + 1 << " for abi exclusion" << endl;
+		//___________________________ loop in perms stop at first valid no UR
+		BF128 *tpw1 = rs.tperms_digits[dig1];
+		for (uint32_t itp1 = 0; itp1 < rs.nperms[dig1]; itp1++) {
+			BF128 w1= tpw1[itp1];// use perm hitting the base
+			if ((w1&base).isEmpty())continue;
+			BF128 *tpw2 = rs.tperms_digits[dig2];
+			for (uint32_t itp2 = 0; itp2 < rs.nperms[dig2]; itp2++) {
+				BF128 w2 = tpw2[itp2];// use perm hitting the base
+				if ((w2&base).isEmpty())continue;
+				if((w1&w2).isNotEmpty()) continue; // must be disjoint perms
+				// note : not yet implementted
+				// if 3 target cells and a locked digit (platinum blonde), 
+				// can not be more than 2 assigned digits in the target
+				BF128 pp = w1 | w2, ppt=pp&target;
+				if ((ppt&units3xBM[boxes[1]]).isEmpty()) continue;
+				if ((ppt&units3xBM[boxes[2]]).isEmpty()) continue;
+				if (ppt.Count() > 2) {// check for locked digit(s)
+					if(ntarget == 3 && locked_digit)continue;
+				}
+				for (int i = 0, bit = 1; i < 9; i++, bit <<= 1) {// check each UR threat
+					if (!(abibf&bit)) continue;
+					BF128 th = pp & tabi_threat[i];
+					if (th.Count() == 2) goto exit_ur; // ignore perm with UR
+				}// no ur found not an abi loop exclusion
+				if (1) {
+					char ws[82];
+					cout << pp.String3X(ws) << " perm valide" << endl;
+					cout << ppt.String3X(ws) << " target view" << endl;
+				}
+				tabi[i ]|= 1 << j;
+				tabi[j] |= 1 << i;
+				goto next_idig2;
+			exit_ur:;
+			}
+		}
+	next_idig2:;
+	}
+	if (1) {
+		for (int i = 0; i < ndigs; i++) {
+			if (tabi[i]) continue;
+			cout << "digit " << tdigs[i] + 1 << " excluded through abi loop" << endl;
+		}
+	}
+}
+
+void PM_GO::Solve130_Find_JExocet() {
+	cout << "entry 130" << endl;
+	if (Solved_xx(44)) return;
+	zhou_solve.ImageCandidats();
+	//zh_g2.Pm_Status(&zhou_solve);
+	BF128 cmap = zhou_solve.cells_unsolved,csmap=cmap^maskffff;
+	R0SEARCH & rs = pm_go.r0search;
+	rs.CollectPerms(1);// build the perms for unsolved digits
+	// check all starts as 2 rows/cols in band/stack + col/row
+	EXOCET we;
+	for (int i2rc = 0; i2rc < 9; i2rc++) {// 9 pairs of row or columns
+		int p36 = floors2d_same_band_stack[i2rc]; // corresponding 36 perms
+		BF128 p36rbf = rs.tb9p2[p36].rows, p36cbf = rs.tb9p2[p36].cols;
+		for (int icross_rc = 0; icross_rc < 9; icross_rc++) {
+			BF128 w= p36rbf& units3xBM[icross_rc+9];// 2 rows 1 column
+			w &= cmap;
+			if (w.Count()==2) {
+				if(we.isExocet(w, 1, i2rc, icross_rc)) return;
+			}
+			w= p36cbf & units3xBM[icross_rc];// 2 cols 1 row
+			w &= cmap;
+			if (w.Count() == 2) {
+				if (we.isExocet(w, 0, i2rc, icross_rc)) return;
+			}
+		}
+	}
+}
+/*
+
+int PM_GO::Is_VLoop() { // solver mode
+	if(bits_tasks_done.On(bit_skl_done) )return 0;
+	bits_tasks_done.Set(bit_skl_done);
+	if(!Locate_VLoop()) return 0;
+	// sk loop found, print it and clean it
+	EE.Enl("SK Loop");
+	PM_DATA & myd=zpmd[0];
+	for(int i=0;i<vloop.units_number;i++){
+		ImagePoints(vloop.cells[i]); EE.Esp();
+	}
+	EE.Enl();
+	USHORT * mydigits=vloop.digits[vloop.units_number-1];
+	EE.E(mydigits[0]+1); EE.E(mydigits[1]+1);EE.E("   ");
+	for(int i=0;i<vloop.units_number;i++){
+		mydigits=vloop.digits[i];
+		EE.E(mydigits[0]+1); EE.E(mydigits[1]+1);EE.E("    ");
+	}
+	EE.Enl();
+
+	int ir=0;
+	for(int i=0;i<vloop.units_number;i++){
+		int unit=vloop.units[i];
+		if(unit<9) {EE.E("R");EE.E(unit+1);}
+		else if(unit<18) {EE.E("C");EE.E(unit-8);}
+		else {EE.E("B");EE.E(unit-17);}
+		EE.Esp();
+		USHORT * digits=vloop.digits[i];
+		BF81 w(cellsInHouseBM[unit]);
+		w-=vloop.cells[i];
+		w-=vloop.cells[i+1];
+		for(int j=0;j<2;j++){
+			int dig=digits[j];
+			BF81 wd=w & c[dig];
+			if(wd.IsEmpty()) continue;
+			ir=1;
+			myd.Clean(dig,wd);
+			EE.E(dig+1);ImagePoints(wd);EE.Esp();
+		}
+		EE.Enl();
+	}
+	return ir;
+}
+
 }
 
 int PM_GO::FindMultiFish2(){

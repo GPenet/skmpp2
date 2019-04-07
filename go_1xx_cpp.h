@@ -103,3 +103,31 @@ void Go_c199(){// test on demand
 		if (sgo.vx[1] && npuz >= sgo.vx[1]) break;
 	}
 }
+void Go_c1xx(int subcase) {// test on demand
+	if (!sgo.finput_name) return;
+	cout << "Go_1xx entry  subcase "<< subcase
+		<<" input "<< sgo.finput_name   << endl;
+	finput.open(sgo.finput_name);
+	if (!finput.is_open()) {
+		cerr << "error open file " << sgo.finput_name << endl;
+		return;
+	}
+	char ze[200]; ze[81] = 0;
+	uint32_t npuz = 0;
+	while (finput.GetPuzzle(ze)) {
+		npuz++;
+		if (npuz < sgo.vx[0]) continue;
+		//cout << finput.ze << "to process npuz=" << npuz << endl;
+		zh_g2.npuz = npuz;
+		if (zh_g.Go_InitSolve(ze)) {
+			cout << finput.ze << "invalid or multiple solutions npuz=" << npuz << endl;
+			continue;
+		}
+		switch (subcase) {
+		case 120:pm_go.Solve120_MultiAnalysis(); break;
+		case 125:pm_go.Solve125_Find_Vloop(); break;
+		case 130:pm_go.Solve130_Find_JExocet(); break;
+		}
+		if (sgo.vx[1] && npuz >= sgo.vx[1]) break;
+	}
+}

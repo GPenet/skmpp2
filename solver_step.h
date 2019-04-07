@@ -262,16 +262,23 @@ struct R0SEARCH {
 		BF128 cross, crosstruth, cross_more;
 		int iu, ncrosstruth, nlsets, digs_cross;
 		int tcross[10], ntcross, tmore[10], ntmore,
-			tmore2[10], ntmore2;
+			tmore2[10], ntmore2,min_links;
 		int Build(R0SEARCH &r, int i);
+		void BuildElims(R0SEARCH &r, PM3X & elims);
+		void PrintLinks(R0SEARCH &r);
 	};
-	TB_MULT_9P tb9p2[36], tb9p3[84], tb9p4[126], tb9p5[126];
-	PM3X cumsols;
+	PM3X cumsols,elims;
 	BF128 tperms_digits[9][300];
 	BF128 infield, outfield, in_no_out,
 		infield_and_sols,
 		pmfloors[6],truths_basis_pm;
+
+	// see constructor for initial values 
+	TB_MULT_9P tb9p2[36], tb9p3[84], tb9p4[126], tb9p5[126];
+	int fl2d_rboxes[36], fl2d_cboxes[36];
+
 	uint32_t floors,nperms[9],ndigits,lastindex;
+
 	GINT tin[9]; // mapping in floors
 	uint32_t ntin ,tfloors[6],// number of active digits
 		unit_sets_count[27]; // number of unsolved sets per unit
@@ -282,16 +289,16 @@ struct R0SEARCH {
 	
 	R0SEARCH();
 	void CollectPerms(int pr=0);
-	int IsElims(uint32_t floors, PM3X & elims);
+	int IsElims(uint32_t floors, int mode);
 	int IsNext(MULTISEARCH & mso,int index);
 	int IsNextLast(MULTISEARCH & mso, int index);
 	void DebugFloors();
 	void DebugFloors2(MULTISEARCH & ms);
 	//_____ rank0 search
+	int TryRank0Logic();
 	void BuildRelativetables();
 	int Try_RC(TB_MULT_9P &t9p, int p9, int mode);
-	int TryRowCol(int * tu, int ntu, int dtruth);
-
+	int GoX(int pr, int pc);
 };
 /*
 	struct R0SEARCH{
@@ -306,14 +313,11 @@ struct R0SEARCH {
 			   telims[100],nelims,r0count,r1count,debug,ntr1,do_elims,
 			   tcovers[50],ncovers,ntruths_cells;
 		int diag;
-		//BFCAND tr1elims[30],wr1elims;
 		PMBF telim_native[30],welim_native;
 		int TryRowColBand(USHORT * tu,USHORT ntu,USHORT dtruth);
 		int CheckBand(USHORT * tu,USHORT ntu);
 		int CheckElims();
 		int CheckElims(BF16 ordigs,R0S_LOT4 & lr,R0S_LOT4 & lc);
-		int GoForRowCol(USHORT * tu,USHORT ntu);
-		int GoForX(USHORT row1,USHORT row2,USHORT col1,USHORT col2);
 		int GoForBox4();
 		void Add(BFSETS & ss,USHORT unit);
 		void GoForCellsPrepare();
@@ -322,7 +326,6 @@ struct R0SEARCH {
 		int GoForCells(R0S_LOT4 & lr,R0S_LOT4 & lc);
 		void GoForCellsRC(R0S_LOT4 & lx,BF16 digpat,int moderc);
 		int TryUsingElims(BF16 floors,BF81 * elims_floors, BF81 & elims_cells);
-
 	}r0search;	*/
 
 class BUILDSTRING{
@@ -426,45 +429,6 @@ public:
 		void XYexpandDynamicWhile();
 		int DynBackSkfr(UCAND x,USHORT * tret){return DynBackSkfrCom(x, tret,pmddyncycle);}
 	}nested;
-	struct SCEN_VIRUS{// store a scenario for SK loop or virus chain
-//		STEP_STATUS ss;
-//		BFCAND cands;
-		PMBFONOFF pof;
-		USHORT pairs[8] , scen[8];
-		void UcandAdd(UCAND cd,BF81 * c);
-		void PairAdd(int dig,USHORT * tcells,BF8 cellspat,PM_GO * parent);
-
-		inline void PairAdd(int d1,int d2,USHORT * tcells,BF8 cellspat,PM_GO * parent){
-			PairAdd(d1,tcells,cellspat,parent); PairAdd(d2,tcells,cellspat, parent); 
-		}
-	};
-	struct AAHS_AC2{ // 2 cells four digits 
-		USHORT cell1,cell2,row_col,tdigits[4];
-		// canonical form
-		BF8 pdigits[4], //  pattern  01 10 11 exlusively
-			pairvalid,scen1valid,scen2valid;//pairs order is given in bf_fix.tp6
-		PM_GO * parent;
-		void ClearPair(int i);
-		void Load( PM_GO * parent, BF81 & cells,USHORT * digits,USHORT unit);
-		void ChainVirus(AAHS_AC2 *taahs,int naahs,int iaahs,SCEN_VIRUS & scvold);
-//		void AddBelt(GO_SOLVER * gsv,STEP_STATUS *ssw);
-		void AddPair(SCEN_VIRUS &scw,int pair);
-		void AddOne(SCEN_VIRUS &scw,int pair,int dig);
-		int IsBilocal(int pair);
-	};
-	struct VLOOP{      // collecting the sk loop pattern for later action
-		PM_GO * parent;
-		BF81 cells[13];      //  8 or 12 pairs of cells
-		USHORT digits[13][2]; // linking digits(0;8) start unlinked first
-		USHORT mainbeltscleared,seen,
-			   units[13],        // and corresponding units
-			   units_number;       // 8 or 13 could be less if virus chain
-		AAHS_AC2 aahs[12];
-		int FirstAction();
-		int SecondAction(int do_it);
-		int SecondBilocations();
-		void GenNotValidEffect();
-	}vloop;
 	struct TWO_CELLS{  // store 2 cells mini row mini col 3 or 4 digits
 		USHORT cell1,cell2,rel_box,row_col,tdigits[4],ndigits;
 		BF16 digits16;
@@ -588,7 +552,12 @@ public:
 	void SolveSerate110();
 	void SolveSerate111();
 	void Solve199test();
+
 	void Solve120_MultiAnalysis();
+	void Solve121_Rank0_no_MultiAnalysis();
+	void Solve125_Find_Vloop();
+	void Solve130_Find_JExocet();
+
 	void Quickrate(int x) ;
 	void Status(const char * lib, int option);
 	int Rate10(); int Rate12();	int Rate15(); int Rate17(); 
