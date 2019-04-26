@@ -74,7 +74,7 @@ int main(int narg, char *argv[]) {
 	if (0) {
 		ASMtest(); return 0;
 	}
-	long tdeb=GetTimeMillis();
+	sgo.tdeb=GetTimeMillis();
 	char * finput_name=0,*foutput_name=0,* ww;
 	char * s_strings[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };//optionnal 10 strings
 
@@ -134,8 +134,8 @@ int main(int narg, char *argv[]) {
 	cerr << " print cout time "  << endl;
 
 	long tfin=GetTimeMillis();
-    PrintTimeCout(tdeb,tfin);
-	PrintTime(tdeb, tfin);
+    PrintTimeCout(sgo.tdeb,tfin);
+	PrintTime(sgo.tdeb, tfin);
 	return 0;
 }
 

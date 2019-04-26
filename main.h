@@ -13,7 +13,7 @@ struct SGO{
 		*items[50];
 
 	int tparse[8], nparse,nitems;
-
+	long tdeb;
 	void ParseInt(char * ze, int  delimiter);
 	int atoi_nodot(char * o);
 	void Parse_zin();

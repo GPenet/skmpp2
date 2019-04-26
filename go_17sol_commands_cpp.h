@@ -33,6 +33,8 @@ void Go_c17_00( ) {// p2 process
 	cout << sgo.vx[0] << " -v0- band 0_415" << endl;
 	cout << sgo.vx[2] << " -v2- skip first nnn restart after batch failure" << endl;
 	cout << sgo.vx[3] << " -v3- last entry number for this batch must be > vx[2]" << endl;
+	cout << sgo.vx[4] << " -v4- 0 if p2a 1 if p2b" << endl;
+
 	int it16_start = sgo.vx[0];
 	g17b.debug17 = 0;
 	g17b.diag = sgo.vx[6];
@@ -62,6 +64,7 @@ void Go_c17_00( ) {// p2 process
 		cout << p_cpt2g[i] << "\t\t" << libs_c17_00_cpt2g[i] << endl;
 	}
 }
+
 //========================= known s17 file 10/19
 void Go_c17_10( ) {
 	zh_g.modevalid = 1;
@@ -227,7 +230,7 @@ void Go_c17_80() {// enumeration test
 	cout << sgo.vx[0] << " -v0- first id 0_415" << endl;
 	cout << sgo.vx[1] << " -v1- second id 0_415" << endl;
 	cout << sgo.vx[2] << " -v2- if 1 printout asked" << endl;
-	cout << sgo.vx[3] << " -v3- 0 mode p2a 1 mode p2b 2 mode p1" << endl;
+	cout << sgo.vx[4] << " -v4- 0 mode p2a 1 mode p2b 2 mode p1" << endl;
 	int it16_start = sgo.vx[0], it16_end = sgo.vx[1];
 	genb12.skip = 0;
 	genb12.last = 100000;

@@ -677,7 +677,7 @@ next:// erase previous fill and look for next
 		ib2check=i2t16 = t416_to_n6[it16_2];
 		if (i2t16 < i1t16)goto next;// not canonical
 		//if (i2t16 == i1t16)if (it16_2 < it16)goto next;// not canonical
-		if(sgo.vx[3]==1)memcpy(&gcheck[54], zs0, 27 * sizeof gcheck[0]);
+		if(sgo.vx[4]==1)memcpy(&gcheck[54], zs0, 27 * sizeof gcheck[0]);
 		else {
 			memcpy(&gcheck[27], zs0, 27 * sizeof gcheck[0]);			
 			if ( Band2Check())goto next;// do nothing if p2b
@@ -713,7 +713,10 @@ int GEN_BANDES_12::ValidBand2() {
 		{// print a restart point every 64 bands 1+2 seen
 			uint64_t w = genb12.nb12, w1 = w >> 6;
 			w &= 63;
-			if (w == 0)cout << "next skip value to use=\t" << w1 << endl;
+			if (w == 0) {
+				long tfin = GetTimeMillis();
+				cout << "next skip value to use=\t" << w1 <<"\t"<<(tfin-sgo.tdeb)/1000<< endl;
+			}
 		}
 		if ((nb12 >> 6) >= last)return 1;
 		return 0;
@@ -789,13 +792,13 @@ next:// erase previous fill and look for next
 		int it16_3 = pband3.i416;
 		ib3check=i3t16 = t416_to_n6[it16_3];
 		if (i3t16 < i1t16)goto next;// not canonical
-		if (sgo.vx[3] != 1) {
+		if (sgo.vx[4] != 1) {
 			if (i3t16 < i2t16)goto next;// not canonical (must be in this case
 		}
 		else if (i3t16 > i2t16)goto next;// not canonical (must be in this case
 		//==============================  b1=b2=b3 use minlex check (simplest code, not common)
-		if (sgo.vx[3] < 2) {// do nothing in p1
-			if (sgo.vx[3] < 1) {// p2a
+		if (sgo.vx[4] < 2) {// do nothing in p1
+			if (sgo.vx[4] < 1) {// p2a
 				pcheck3 = pband3;
 				memcpy(&gcheck[54], zs0, 27 * sizeof gcheck[0]);
 				if ( Band3Check())goto next;

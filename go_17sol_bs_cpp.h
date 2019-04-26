@@ -72,7 +72,6 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 }
 
 void G17B::Go(){// search process external loop 2X2Y
-	int no_3y = sgo.vx[5];
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
@@ -104,55 +103,45 @@ void G17B::Go(){// search process external loop 2X2Y
 			indexstep.ShrinkGuas();
 			uint64_t n56 = indexstep.n51*indexstep.n62,
 				n65 = indexstep.n52*indexstep.n61;
-			if (0) {
-
-				cout << "first shrinkua i1,i2 " << i1 << " " << i2
-					<<" n56="<<n56<<" n65= "<<n65 << endl;
-
-			}
-			if (no_3y) {
-				if (indexstep.n51)	indexstep.Do56();
-				if (g17xy.go_back) return;
-				if (indexstep.n52) {
-					indexstep.ShrinkUas();
-					indexstep.Do65();
-				}
+			if (sgo.vx[4]) {// mode p2b only 656
+				if (!indexstep.n52)continue;
+				if (n65 < LIM3Y)  	indexstep.Do65();
+				else indexstep.Do65_3y();
 				if (g17xy.go_back) return;
 			}
-			else
-			if (n65 < LIM3Y ) {
-				if (indexstep.n52) 	indexstep.Do65();
-				if (g17xy.go_back) return;
-				if (n56 < LIM3Y ) {
-					if (indexstep.n51) {
-						//cout << "second shrinkua i1,i2 " << i1 << " " << i2 << endl;
-						indexstep.ShrinkUas();
-						indexstep.Do56();
+			else {// p2a both 566 and 656
+				if (n65 < LIM3Y) {
+					if (indexstep.n52) 	indexstep.Do65();
+					if (g17xy.go_back) return;
+					if (n56 < LIM3Y) {
+						if (indexstep.n51) {
+							indexstep.ShrinkUas();
+							indexstep.Do56();
+						}
+						if (g17xy.go_back) return;
 					}
-					if (g17xy.go_back) return;
-				}
-				else{
-					indexstep.Do56_3y();
-					if (g17xy.go_back) return;
-				}
-			}
-			else {
-				if (n56 < LIM3Y ) {// do 56 first
-					if (n56) {
-						indexstep.Do56();
+					else {
+						indexstep.Do56_3y();
 						if (g17xy.go_back) return;
 					}
 				}
-				else {// both in 3y mode
-					indexstep.Do56_3y();
+				else {
+					if (n56 < LIM3Y) {// do 56 first
+						if (n56) {
+							indexstep.Do56();
+							if (g17xy.go_back) return;
+						}
+					}
+					else {// both in 3y mode
+						indexstep.Do56_3y();
+						if (g17xy.go_back) return;
+					}
+					indexstep.Do65_3y();
 					if (g17xy.go_back) return;
 				}
-				indexstep.Do65_3y();
-				if (g17xy.go_back) return;
 			}
 		}
 	}
-
 }
 void G17INDEXSTEP::Init(int i1, int i2) {
 	g17chunk.i1 = i1; g17chunk.i2 = i2;
