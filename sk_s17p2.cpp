@@ -99,6 +99,7 @@ void Go_0() {
 	cerr << "running command " << sgo.command << endl;
 	switch (sgo.command) {
 	case 0: Go_c17_00(); break; // search one band1
+	case 9: Go_c17_09(); break; // search one band1 locate b2 b3
 	case 10: Go_c17_10(); break; // search known 17s 
 	case 11: Go_c17_11(); break; // split knwon 17s p2
 

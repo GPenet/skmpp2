@@ -704,11 +704,20 @@ int GEN_BANDES_12::ValidBand2() {
 	myband2.InitBand2_3(it16_2, &zsol[27], pband2);
 	//_______________________ std process
 	if (modeb12 < 10) {
+		nband3 = 0;
 		if(sgo.vx[5])
 		if (p_cpt2g[0]> sgo.vx[5]-1)return 1;//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
 		if ((nb12 >> 6) < skip) return 0;// here restart value, kept untouched if no band 3 found
 		ValidInitGang();// also called from existing 17 in test
-		Find_band3B();
+		if (sgo.vx[6]) {
+			if (sgo.vx[6] == i2t16) {
+				for (int i = 0; i < 54; i++)fout1 << grid0[i] + 1;
+				fout1 << "grid0 nb12="<<nb12 << endl;
+				Find_band3B(0);
+			}
+		}
+		else //if(nb12== 4521719)
+			Find_band3B();
 		if (0) cout << "band12=" << nb12 << "\tnband3=" << nband3 << endl;
 		{// print a restart point every 64 bands 1+2 seen
 			uint64_t w = genb12.nb12, w1 = w >> 6;
@@ -791,6 +800,7 @@ next:// erase previous fill and look for next
 		}
 		int it16_3 = pband3.i416;
 		ib3check=i3t16 = t416_to_n6[it16_3];
+		if (sgo.vx[7] && i3t16 != sgo.vx[7]) goto next;
 		if (i3t16 < i1t16)goto next;// not canonical
 		if (sgo.vx[4] != 1) {
 			if (i3t16 < i2t16)goto next;// not canonical (must be in this case
@@ -814,6 +824,7 @@ next:// erase previous fill and look for next
 			}
 		}
 		bands3[nband3++].InitBand3(it16_3, &zs[54], pband3);
+		if (sgo.vx[7])fout1 << zs << endl;
 		goto next;
 	}
 back:

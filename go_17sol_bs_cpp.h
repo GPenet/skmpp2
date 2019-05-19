@@ -8,8 +8,10 @@
 #define LIM3Y 2000000
 //#define DEBUGLEVEL 10
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
-	const char * diagband = "241578693378691245596243178";
-	uint64_t diagval = 657035;
+	const char * diagband = "265738914348591267791264538";
+	const char * diagpuz = ".23.........18...6..9............9.4......2..7...6.......9.2.7.8.4...........3...";
+	//diag = 2; p17diag.SetAll_0();
+	uint64_t diagval = 795388;
 	p_cpt2g[0] ++;
 	p_cpt2g[7] +=genb12.nband3;
 	if (diag) {
@@ -19,6 +21,11 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 			cout << "entry m10 nb12=" << genb12.nb12 << endl;
 			//if (strcmp(diagband, myband2.band)) return;
 			cout << "this is the band in diag" << endl;
+			if (diag == 2) {
+				cout << diagpuz << " puz known" << endl;
+				for (int i = 0; i < 81; i++) if (diagpuz[i] != '.')
+					p17diag.Set_c(i);
+			}
 		}
 		else return;
 	}
@@ -47,7 +54,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	if (diag) {
 		myband1.DebugIndex2();
 		myband2.DebugIndex2();
-		return;
+		//return;
 	}
 
 	//=========================== collect UAs (still room for improvement)
@@ -55,13 +62,12 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	if(genuasb12.Initgen()) return;
 	if (diag) {
 		genuasb12.DebugUas();
-		return;
+		cout << diagpuz << " puz known" << endl;
+		//return;
 	}
 	genb12.BuildGang9x3();
 	zh1b_g.modegua = 1;//must be to kill  filter in GUAs 6_7 more
 	genb12.SecondSockets2Setup();// collect GUA2s 
-	//if (1) return;
-	//if (1) return;
 	genb12.SecondSockets3Setup();// collect GUA3s 
 	p_cpt2g[18] += genuasb12.nua;
 	p_cpt2g[19] += genb12.ntua2;
@@ -75,8 +81,7 @@ void G17B::Go(){// search process external loop 2X2Y
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
-	//if (0 && debug17 )
-	//	GodebugInit(1);//  1 base 2 all UAs 
+	if (diag == 2)	GodebugInit(1);//  1 base 2 all UAs 
 	for (int i1 = 0; i1 < n1; i1++) {
 		if (g17b.debug17) {
 			int * t1= myband1.index2[i1];
@@ -85,6 +90,15 @@ void G17B::Go(){// search process external loop 2X2Y
 				<< "this is the right i1" << endl;
 			}
 			else continue;
+		}
+		if (diag == 2) {
+				int * t1 = myband1.index2[i1];
+				if ((t1[0] & p17diag.bf.u32[0]) == t1[0]) {
+					cout << Char27out(t1[0]) << " step 1  BF i1=" << i1
+						<< "this is the right i1" << endl;
+				}
+				else continue;
+
 		}
 		for (int i2 = 0; i2 < n2; i2++) {
 			//if (i2) continue;//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -96,6 +110,15 @@ void G17B::Go(){// search process external loop 2X2Y
 				int * t2 = myband2.index2[i2];
 				if ((t2[0] & band2_17) == t2[0]) {
 					indexstep.IndexStepDebugKnown17(i1, i2);
+				}
+				else continue;
+			}
+			if (diag == 2) {
+				int * t2 = myband2.index2[i2];
+				if ((t2[0] & p17diag.bf.u32[1]) == t2[0]) {
+					cout << Char27out(t2[0]) << " step 1  BF i2=" << i2
+						<< "this is a right i2" << endl;
+					//			indexstep.IndexStepDebugKnown17(i1, i2);
 				}
 				else continue;
 			}
@@ -712,6 +735,7 @@ void G17CHUNK::GoChunk() {// elementary 'X' x 'Y' ychunk is 256x256
 }
 
 void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
+	indexstep.diag_on = 0;
 	p_cpt2g[3] ++;
 	Init();
 	if (g17b.debug17){
@@ -719,6 +743,7 @@ void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 		if (((cellsbf >> 32) &g17b.band2_17) != g17b.band2_17) return;
 		cout << Char2Xout(cellsbf) << " expected XY" << endl;
 	}
+
 	if (indexstep.diag_on) {
 		indexstep.diag_on = 1;
 		if ((cellsbf&g17b.band1_17) == g17b.band1_17) 
@@ -727,6 +752,13 @@ void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 				indexstep.diag_on = 2;
 		}
 
+	}
+	if ( g17b.diag == 2) {
+		//if (cellsbf != g17b.p17diag.bf.u64[0]) return;
+		if (cellsbf == g17b.p17diag.bf.u64[0]) {
+			cout << Char2Xout(cellsbf) << " expected XY" << endl;
+			indexstep.diag_on = 2;
+		}
 	}
 
 	stacksxy.u64 = xxe.stacks.u64 + yye.stacks.u64;
@@ -827,6 +859,7 @@ void G17XY::Go_Guas_collect(){//
 int G17XY::FirstCheckActiveBands() {// quick check of critical situations
 	//if (genb12.nband3 > 10) return 0;// small chances to exit false<<<<<<<<<<<<<<<<<<<<<<
 	// consider critical stack 
+	ibfirst = 0;
 	int maxcount = 0, stack;
 	for (int i = 0; i < 3; i++) {
 		int st_count = stacksxy.u16[i];
@@ -912,7 +945,7 @@ int G17XY::CheckValidBand12(){
 
 void G17XY::BuildActiveBands() {
 	ntb3 = 0;
-	if (ibfirst)ibfirst--;// to check later why not done
+	//if (ibfirst)ibfirst--;// to check later why not done
 	if (indexstep.diag_on > 1)cout << "BuildActiveBands()  start ibfirst=" <<ibfirst<< endl;
 	for (int ib3 = ibfirst; ib3 < genb12.nband3; ib3++) {
 		if (indexstep.diag_on > 1)cout << "ib3=" << ib3 << endl;

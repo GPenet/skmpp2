@@ -272,6 +272,7 @@ struct G17INDEXSTEP{ // one pair 2 clues band1 2 clues band2
 };
 
 struct G17B{// hosting the search in 6 6 5 mode combining bands solutions
+	BF128 p17diag;
 	int debug17,diag, 
 		band1_17,band2_17,band3_17,
 		npuz, a_17_found_here;

@@ -20,9 +20,13 @@ void Go_sol_1xx(){
 	cout << "command 1xx command=" << sgo.command << endl;
 	pm_go.opprint =sgo.bfx[9];
 	pm_go.opprint2 = sgo.bfx[8];
+	if (sgo.command >= 120 && sgo.command < 140) {
+		Go_c1xx(sgo.command); return;
+	}
 	switch (sgo.command){
 	case 110: Go_c110(); break;// template solve serate mode
 	case 111: Go_c111(); break;// solve/split quick serate mode
+	case 118: Go_c118(); break;// study a sub grid
 	case 199: Go_c199(); break;// current test 
 	}
 	cerr << "back go-sol_1xx" << endl;

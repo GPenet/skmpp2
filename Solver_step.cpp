@@ -664,7 +664,7 @@ int XSTATUS::XCycle(int fast){
 		xce2 = zu.getFirst128();
 		int npas = R65Xexpand(xce1, xce2, 1, tback,txstarts[ist]);
 		if (!npas)continue;
-		if (pm_go.opprint2 & 2){
+		if (pm_go.opprint & 2){
 			cout << "loop back npas=" << npas << endl;
 			for (int i = 0; i <= npas; i++){
 				int xcell = tback[i], cell = From_128_To_81[xcell];
@@ -699,7 +699,7 @@ int XSTATUS::XCycle(int fast){
 			memcpy(ss.t, tback, (npas + 1) * 4);
 			ss.nt = npas;
 			ss.rating = pm_go.hint.ChainLengthAdjusted(65, npas);
-			if (pm_go.opprint2 & 2)cout << "store it rating = " << ss.rating << "pm_go.nstore_xlc=" << pm_go.nstore_xlc << endl;
+			if (pm_go.opprint & 2)cout << "store it rating = " << ss.rating << "pm_go.nstore_xlc=" << pm_go.nstore_xlc << endl;
 		}
 	skip_it:;
 	}
@@ -757,7 +757,7 @@ int XSTATUS::XChain(int fast){
 				pm_go.nstore_xlc = store_start;// clean file of store xchain
 				maxpas = npas;
 			}
-			if (pm_go.opprint2 & 4){
+			if (pm_go.opprint & 4){
 				cout << "chain back npas=" << npas << endl;
 				for (int i = 0; i <= npas; i++){
 					int xcell = tback[i], cell = From_128_To_81[xcell];
@@ -1123,7 +1123,7 @@ int XSTATUS::Nishio2(){// must also consider bi value multi chains seen as x->~a
 int YLSEARCH::Search(int fast ){// search using zh_g.digit_sol as compulsory 
 	//cout << "ylsearch start" << endl;
 	locdiag = 0;
-	//if (pm_go.opprint2 & 4) locdiag = 1;
+	if (pm_go.opprint & 2) locdiag = 1;
 	BF128 lastloop; lastloop.SetAll_0();
 	pm_go.nstore_yl = 0;
 	maxpas = 15;
@@ -1361,7 +1361,7 @@ int YLSEARCH::SearchOut(int fast){// search using zh_g.digit_sol as compulsory
 	//cout << "ylsearchout start" << endl;
 	maxpas = 12;
 	locdiag = 0;
-	if (pm_go.opprint2&2) locdiag |= 4+8;
+	if (pm_go.opprint & 2) locdiag |= 1;// 4 + 8;
 	if (zh_g.pairs.Count() < 7) return 0;// minimm with no XY wing
 	//maxpas = 20;// don't do that would delete ylsearch stored
 	mode = 1;
@@ -1679,7 +1679,7 @@ int XYSEARCH::CleanXYChain(){
 			}
 		}
 	}
-	if (pm_go.opprint2 & 2)cout << "CleanXYChain() return ="<<iret << endl;
+	if (pm_go.opprint & 2)cout << "CleanXYChain() return ="<<iret << endl;
 	return iret;
 }
 
@@ -1768,7 +1768,7 @@ void  XYSEARCH::PrintBackCom(const char * lib, GINT64 * ptback, int nback, int p
 		GINT64 w = ptback[i];
 		int sign = w.u16[3];
 		switch (pmode){// 0 base ;1 dyn; 2 dynplus
-		case 0:sign ^= 1;// start with a off status
+		case 0:if(!(i&1))sign ^= 1;// start with a off status
 		case 1:
 			if (sign & 1)cout << "~";
 			break; 
@@ -1886,7 +1886,7 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	GINT wstore[50];// chain to store or back
 	BF128 wsloop, tsloop[20];
 	int ntsloop = 0;
-	locdiag = 0;	if (pm_go.opprint2 & 2) locdiag = 1;
+	locdiag = 0;	if (pm_go.opprint & 2) locdiag = 1;
 	if (locdiag) {
 		cout << "xysearch start fast =" << fast << endl;
 	}
@@ -1940,7 +1940,7 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 		nextxc1:;
 		}
 	}
-	if (locdiag)cout << " exit search iret=" << iret<<endl<<endl;
+	if (locdiag>1)cout << " exit search iret=" << iret<<endl<<endl;
 	if (iret){
 		pm_go.hint.rating_done = (USHORT)maxrating;
 		return 1;
@@ -1959,13 +1959,13 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	}
 	pm_go.hint.rating_done = (USHORT)maxrating;
 	if (iret){
-		if (locdiag)cout << "exit final rating=" << maxrating << endl;
+		if (locdiag>1)cout << "exit final rating=" << maxrating << endl;
 	}
 	return iret;
 }
 
 int XYSEARCH::SearchMulti(int fast){
-	opprint = pm_go.opprint2 & 8;
+	opprint = pm_go.opprint & 2;
 	//if (opprint)zhou_solve.ImageCandidats();
 	SearchInit(fast);
 	int cell, iret = 0;;
@@ -3123,12 +3123,13 @@ void TB_MULT_9P::Init(int p9) {// first multi row/col/box status
 
 struct VLOOP {      // collecting the sk loop pattern for later action
 	struct VBOX {
-		int cellsr[2], cellsc[2], digsr, digsc, ncellsr, ncellsc;
+		int cellsr[2], cellsc[2], digsr, digsc, ndigsr, ndigsc;
+		void Debug(int i);
 	}tvbox[5];// one more for loop
 	BF128 cmap, crows, ccols;
-	int box4 ,tbox[9], ntbox ;
-	int seq_digs[9], seq_ncells[9], seq_com[9],seq_sol[8];// one more for loops
-
+	int box4 ,tbox[9], ntbox ,rows[2],columns[2];
+	int seq_digs[9], seq_ndigs[9], seq_com[9],seq_sol[8];// one more for loops
+	int dig_cells[81];
 	USHORT mainbeltscleared, seen;       // 8 or 13 could be less if virus chain
 	int Locate_Loop();
 	int FirstAction();
@@ -3137,7 +3138,19 @@ struct VLOOP {      // collecting the sk loop pattern for later action
 	void GenNotValidEffect();
 }vloop;
 
+void VLOOP::VBOX::Debug(int i) {
+	cout << i << " boxdebug ncdigs=" << ndigsr << "," << ndigsc 
+	 << oct << " digsr 0" << digsr << " disgc 0" << digsc << dec << endl;
+}
 int VLOOP::Locate_Loop() {
+	// build a full dig_cells 
+	memset(dig_cells, 0, sizeof dig_cells);
+	for (int idig = 0,bit=1; idig < 9; idig++,bit<<=1) {
+		BF128 w = zhou_solve.FD[idig][0];
+		w.bf.u32[3] = 0;
+		int tc[80], ntc = w.Table3X27(tc);
+		for (int i = 0; i < ntc; i++) dig_cells[tc[i]] |= bit;
+	}
 	// try 2 rows 2 columns as base set (2 bands 2 stacks)
 	BF128 cmap = zhou_solve.cells_unsolved;
 	for (int ir = 0; ir < 36; ir++) {
@@ -3148,61 +3161,77 @@ int VLOOP::Locate_Loop() {
 			BF128 corners = rs.tb9p2[ir].rows&rs.tb9p2[jc].cols;
 			// separate analysis if corners are not empty
 			if ((corners & cmap).isNotEmpty()) continue;
-			crows = rs.tb9p2[ir].rows &cmap;
-			ccols = rs.tb9p2[jc].cols & cmap;
+
+			crows = rs.tb9p2[ir].rows -corners;
+			ccols = rs.tb9p2[jc].cols -corners;
 			box4 = rs.fl2d_rboxes[ir] & rs.fl2d_cboxes[jc];
 			ntbox = 0;
 			BitsInTable32(tbox, ntbox, box4);
-			// exchange box 2;3 to have a "loop" order 1-2-3-4-1...
-			int temp = tbox[1];	tbox[1]= tbox[2]; tbox[2]=temp;
+			// exchange box index 2;3 to have a "loop" order 1-2-3-4-1...
+			int temp = tbox[2];	tbox[2]= tbox[3]; tbox[3]=temp;
+			if (sgo.vx[2]) {
+				char ws[82];
+				cout << corners.String3X(ws) << " empty corners boxes " 
+					<<	tbox[0] << tbox[1] << tbox[2] << tbox[3] << endl;
+			}
 			// collect cells in box, digits in bos check count dig= count cells
 			for (int ibox = 0; ibox < 4; ibox++) {
-				int box = tbox[ibox + 18];
-				BF128 bbf= cmap &units3xBM[box];
+				int box = tbox[ibox] + 18;
+				BF128 bbf= units3xBM[box];
 				VBOX & vb=tvbox[ibox];
 				BF128 cboxr = crows & bbf,cboxc=ccols&bbf;
-				vb.ncellsr = cboxr.Table3X27(vb.cellsr);
-				vb.ncellsc = cboxc.Table3X27(vb.cellsc);
+				if((cboxr&cmap).isEmpty())goto exit_no;// maxi one given
+				if ((cboxc&cmap).isEmpty())goto exit_no;// maxi one given
+				cboxr.Table3X27(vb.cellsr);
+				cboxc.Table3X27(vb.cellsc);
 				vb.digsr =vb.digsc = 0;
-				int * dc = zh_g2.dig_cells;
-				for (int i = 0; i < vb.ncellsr; i++)vb.digsr |= dc[vb.cellsr[i]];
-				for (int i = 0; i < vb.ncellsc; i++)vb.digsc |= dc[vb.cellsc[i]];
-				if (_popcnt32(vb.digsr > 4))goto exit_no;
-				if (_popcnt32(vb.digsc > 4))goto exit_no;
+				int * dc = dig_cells;// use cells inclufing givrn/assigned
+				for (int i = 0; i < 2; i++)vb.digsr |= dc[vb.cellsr[i]];
+				for (int i = 0; i < 2; i++)vb.digsc |= dc[vb.cellsc[i]];
+				vb.ndigsr = _popcnt32(vb.digsr); if (vb.ndigsr > 4)goto exit_no;
+				vb.ndigsc = _popcnt32(vb.digsc); if (vb.ndigsc > 4)goto exit_no;
 			}
+			if (sgo.vx[2])
+				for (int i = 0; i < 4; i++) tvbox[i].Debug(i);		
+
 			tvbox[4] = tvbox[0]; // to have always a +1 
 			for (int ibox = 0, iseq = 0; ibox < 4; ibox++) {
 				VBOX & vb = tvbox[ibox];
 				if (ibox & 1) {// row to col
-					seq_ncells[iseq] = vb.ncellsr;
-					seq_digs[iseq++] = vb.digsr;
-					seq_ncells[iseq] = vb.ncellsc;
-					seq_digs[iseq++] = vb.digsc;
-					
+					seq_ndigs[iseq] = vb.ndigsr; seq_digs[iseq++] = vb.digsr;
+					seq_ndigs[iseq] = vb.ndigsc; seq_digs[iseq++] = vb.digsc;
 				}
 				else {// col to row
-					seq_ncells[iseq] = vb.ncellsc;
-					seq_digs[iseq++] = vb.digsc;
-					seq_digs[iseq++] = vb.digsr;
-					seq_ncells[iseq] = vb.ncellsr;
+					seq_ndigs[iseq] = vb.ndigsc; seq_digs[iseq++] = vb.digsc;
+					seq_ndigs[iseq] = vb.ndigsr; seq_digs[iseq++] = vb.digsr;
 				}
 			}
+			if (sgo.vx[2]) {
+				cout << " digs sequence ";
+				for (int i = 0; i < 8; i++)
+					cout << oct <<" 0"<< seq_digs[i];
+				cout << endl;
+			}
 			seq_digs[8] = seq_digs[0];
-			seq_ncells[8] = seq_ncells[0];
 			// check now if eq_digs seq_cells can produce a loop
 			int iknown = -1;
 			for (int i = 0; i < 8; i++) {
 				if (iknown >= 0) {// loop check direct, common forced
 					int dcom = seq_digs[i] & ~seq_sol[i - 1];
-					if (dcom & ~seq_digs[i + 1]) goto exit_no;
+					if (seq_ndigs[i + 1] == 3) {
+						dcom &= seq_digs[i + 1];
+						if(!dcom)goto exit_no;
+					}
+					else if (dcom & ~seq_digs[i + 1]) goto exit_no;
 					seq_sol[i] = dcom;
+					seq_com[i] = dcom;
 				}
 				else {
 					seq_sol[i] = 0;
 					int dcom = seq_digs[i] & seq_digs[i + 1],
 						cc = _popcnt32(dcom);
 					if (cc < 1) goto exit_no;
-					if (seq_ncells[i] == 2 && seq_ncells[i + 1] == 2) {//  usually
+					if (seq_ndigs[i] == 4 && seq_ndigs[i + 1] == 4) {
 						if (cc < 2)goto exit_no;
 						if (cc == 2) {// store and check if ok with past
 							seq_sol[i] = dcom;
@@ -3213,13 +3242,40 @@ int VLOOP::Locate_Loop() {
 				}
 			}
 			if (iknown < 0) goto exit_no; // should never be ??
+			if (sgo.vx[2]) {
+				cout << "end comdirect iknown=" << iknown << " com sequence";
+				for (int i = 0; i < 8; i++)
+					cout << oct << " 0" << seq_com[i]<<dec;
+				cout << endl;
+				cout << "end direct sol  sequence";
+				for (int i = 0; i < 8; i++)
+					cout << oct << " 0" << seq_sol[i]<<dec;
+				cout << endl;
+			}
 			if (iknown > 0) {// must solve right to left 
 				for (int i = iknown - 1; i >= 0; i--) {
 					int dcom = seq_digs[i+1] & ~seq_sol[i + 1];
-					if (dcom & ~seq_digs[i]) goto exit_no;
+					if (seq_ndigs[i ] == 3) {
+						dcom &= seq_digs[i];
+						if (!dcom)goto exit_no;
+					}
+					else 	if (dcom & ~seq_digs[i]) goto exit_no;
 					seq_sol[i] = dcom;
 				}
 			}
+			if (sgo.vx[2]) {
+				cout << "final sol  sequence ";
+				for (int i = 0; i < 8; i++)
+					cout << oct << " 0" << seq_sol[i]<<dec;
+				cout << endl;
+			}
+			int nr = 0, nc = 0,pr= floors_2d[ir],pc= floors_2d[jc];
+			for (int i = 0,bit=1; i < 9; i++,bit<<=1) {
+				if (pr&bit)rows[nr++] = i;
+				if (pc&bit)columns[nc++] = i;
+			}
+			// store rows cols
+			return 1; // stop at first vloop
 		exit_no:;
 		}
 	}
@@ -4389,7 +4445,7 @@ PM_GO::PM_GO(){
 	gintbuf.Set(gintbuffer, GINTBUFSIZE1);
 	for (int i = 0; i<17; i++) ratfound[i] = 0;// used in low ratings compressed
 	sgiven_ok = 0; // initial symmetry of given to nothing
-
+	is_valid_puzzle = 1; // usually a valid puzzle processed 
 }
 int PM_GO::CleanOr(int d1, int c1, int d2, int c2){
 	if (opprint2 & 2)cout << "pm_go cleanor " << d1 + 1 << cellsFixedData[c1].pt << " "
@@ -4424,6 +4480,7 @@ int PM_GO::CleanOr(int d1, int c1, int d2, int c2){
 	}
 }
 void PM_GO::Quickrate(int x) {// used in serate mode
+	ratecycle = x;
 	if (cycle == 1){
 		//if (rat_ed<x)
 		rat_ed = rat_ep = rat_er = x;
@@ -4467,9 +4524,12 @@ void PM_GO::Solve120_MultiAnalysis() {
 		aigstop += r0search.IsElims(0x1ff ^ floors_4d[ifl], 1);
 }
 void PM_GO::Solve125_Find_Vloop() {
-	cout << "entry 125" << endl;
+	if (sgo.vx[2])cout << "entry 125" << endl;
 	if (Solved_xx(44)) return;
+	if (sgo.vx[2])zhou_solve.ImageCandidats();
 	if (vloop.Locate_Loop()) {
+		fout1 << zh_g2.puz << ";vloop R/C;" << vloop.rows[0]+1 << vloop.rows[1]+1
+			<<" "<< vloop.columns[0]+1 << vloop.columns[1]+1 << endl;
 	}
 }
 
@@ -4495,7 +4555,7 @@ int EXOCET::isExocet(BF128 b, int emode, int ei2prc, int cross_rc) {
 	if (ndigs < 3 || ndigs>4) return 0;
 	base = b;
 	i2rc = ei2prc;
-	if (0) {
+	if (sgo.vx[2]) {
 		cout << "try " << cellsFixedData[cells_base[0]].pt
 			<< " " << cellsFixedData[cells_base[1]].pt 
 			<<" digs 0"<<oct<<digs<<dec<< endl;
@@ -4529,7 +4589,7 @@ int EXOCET::isExocet(BF128 b, int emode, int ei2prc, int cross_rc) {
 		target &= crossing_area & cmap;// can be 2;3 or 4 cells best is 2
 		ntarget = target.Count();
 		if (ntarget < 2) continue;
-		if (0) {
+		if (sgo.vx[2]) {
 			char ws[82];
 			cout << target.String3X(ws) << " try target" << endl;
 		}
@@ -4553,7 +4613,7 @@ int EXOCET::isExocet(BF128 b, int emode, int ei2prc, int cross_rc) {
 		exocet = base | target;
 		if ((target&units3xBM[boxes[1]]).isEmpty()) goto next_ipcross;
 		if ((target&units3xBM[boxes[2]]).isEmpty()) goto next_ipcross;
-		if(1) {
+		if (sgo.vx[2]) {
 			cout  << cellsFixedData[cells_base[0]].pt
 				<< " " << cellsFixedData[cells_base[1]].pt
 				<< " digs 0" << oct << digs << dec << endl;
@@ -4563,28 +4623,31 @@ int EXOCET::isExocet(BF128 b, int emode, int ei2prc, int cross_rc) {
 				<< " bs_cross=" << bs_cross << "cross1=" << cross1 << endl;
 			cout << " boxes " << boxes[0] << " " << boxes[1] << " " << boxes[2] << endl;
 			cout << crossing_area.String3X(ws) << " crossing area" << endl;
-			if (ntarget > 2) {// check locked digits (one digit lockked)
-				cout << "check locked digit" << endl;
-				locked_digit = 0;
-				for (int ibox = 1; ibox < 3; ibox++) {
-					int box = boxes[ibox];
-					BF128 w = zhou_solve.cells_unsolved & units3xBM[box];
-					if ((target&w).Count() != 2) continue;
-					cout << "check locked digit box "<<box << endl;
-					for (int idig = 0; idig < 9; idig++) {
-						if (digs&(1 << idig)) continue;
-						// use zhou_solve to have assigned
-						BF128 fd_box= zhou_solve.FD[idig][0] & w;
-						if ((fd_box-target).isEmpty()){
-							locked_digit |= 1 << ibox;
-							cout << "locked digit seen" << endl;
-							break;
-						}
+		}
+		
+		if (ntarget > 2) {// check locked digits (one digit lockked)
+			//cout << "check locked digit" << endl;
+			locked_digit = 0;
+			for (int ibox = 1; ibox < 3; ibox++) {
+				int box = boxes[ibox];
+				BF128 w = zhou_solve.cells_unsolved & units3xBM[box];
+				if ((target&w).Count() != 2) continue;
+				//cout << "check locked digit box " << box << endl;
+				for (int idig = 0; idig < 9; idig++) {
+					if (digs&(1 << idig)) continue;
+					// use zhou_solve to have assigned
+					BF128 fd_box = zhou_solve.FD[idig][0] & w;
+					if ((fd_box - target).isEmpty()) {
+						locked_digit |= 1 << ibox;
+						//cout << "locked digit seen" << endl;
+						break;
 					}
 				}
 			}
-			SetAbiLoops();
 		}
+		SetAbiLoops();
+		fout1 << zh_g2.puz << ";" << cellsFixedData[cells_base[0]].pt
+			<< ";" << " " << cellsFixedData[cells_base[1]].pt << endl;
 
 	next_ipcross:;
 	}
@@ -4610,7 +4673,7 @@ void EXOCET::SetAbiLoops() {
 			abibf |= 1 << i;
 		}
 	}
-	if (0) {
+	if (sgo.vx[2]>1) {
 		char ws[82];
 		cout << "threat map" << endl;
 		for (int i = 0; i < 9; i++)
@@ -4619,7 +4682,7 @@ void EXOCET::SetAbiLoops() {
 
 	for (int i = 0; i < ndigs - 1; i++)for (int j = i + 1; j < ndigs; j++) {
 		int dig1 = tdigs[i], dig2 = tdigs[j];// process the digits pair 
-		cout << "try pair " << dig1 + 1 << dig2 + 1 << " for abi exclusion" << endl;
+		if (sgo.vx[2] > 1)cout << "try pair " << dig1 + 1 << dig2 + 1 << " for abi exclusion" << endl;
 		//___________________________ loop in perms stop at first valid no UR
 		BF128 *tpw1 = rs.tperms_digits[dig1];
 		for (uint32_t itp1 = 0; itp1 < rs.nperms[dig1]; itp1++) {
@@ -4644,7 +4707,7 @@ void EXOCET::SetAbiLoops() {
 					BF128 th = pp & tabi_threat[i];
 					if (th.Count() == 2) goto exit_ur; // ignore perm with UR
 				}// no ur found not an abi loop exclusion
-				if (1) {
+				if (sgo.vx[2] > 1) {
 					char ws[82];
 					cout << pp.String3X(ws) << " perm valide" << endl;
 					cout << ppt.String3X(ws) << " target view" << endl;
@@ -4657,7 +4720,7 @@ void EXOCET::SetAbiLoops() {
 		}
 	next_idig2:;
 	}
-	if (1) {
+	if (sgo.vx[2] > 1) {
 		for (int i = 0; i < ndigs; i++) {
 			if (tabi[i]) continue;
 			cout << "digit " << tdigs[i] + 1 << " excluded through abi loop" << endl;
@@ -4666,13 +4729,13 @@ void EXOCET::SetAbiLoops() {
 }
 
 void PM_GO::Solve130_Find_JExocet() {
-	cout << "entry 130" << endl;
+	if (sgo.vx[2] )cout << "entry 130" << endl;
 	if (Solved_xx(44)) return;
-	zhou_solve.ImageCandidats();
+	if (sgo.vx[2] )zhou_solve.ImageCandidats();
 	//zh_g2.Pm_Status(&zhou_solve);
 	BF128 cmap = zhou_solve.cells_unsolved,csmap=cmap^maskffff;
 	R0SEARCH & rs = pm_go.r0search;
-	rs.CollectPerms(1);// build the perms for unsolved digits
+	rs.CollectPerms(sgo.vx[2]);// build the perms for unsolved digits
 	// check all starts as 2 rows/cols in band/stack + col/row
 	EXOCET we;
 	for (int i2rc = 0; i2rc < 9; i2rc++) {// 9 pairs of row or columns
@@ -4834,7 +4897,7 @@ int PM_GO::Solved_xx(int lim) {
 	//===========================================================
 	zh_g.diag = opprint = opprint2 = stop_rating = cycle = assigned = rat_er = rat_ep = rat_ed = 0;
 	zh_g.nsol = 0; zh_g.lim = 1;	ur_serate_mode = 1;
-	if (sgo.vx[9])opprint = 1;
+	if (sgo.vx[9])opprint = opprint2 = sgo.vx[9];
 	while (cycle++ < 150) {
 		if (cycle > 148 || stop_rating) return 0;
 		if (zhou_solve.cells_unsolved.isEmpty())return 1; // solved 
@@ -4884,29 +4947,92 @@ int PM_GO::Solved_xx(int lim) {
 }
 
 
-
-void PM_GO::SolveSerate110() {
+int PM_GO::SolveDet(int lim,int printopt,int mode) {
 	//===========================================================
-	zh_g.diag = sgo.vx[9];	opprint = sgo.bfx[8];	opprint2 = sgo.bfx[8];
-	if (opprint2)cout << zh_g2.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
+	zh_g.diag = 0;	opprint = printopt; opprint2 = 0;
 	stop_rating = cycle = assigned = 0;
-	rat_er = rat_ep = rat_ed = 0;
+	rat_er = rat_ep = rat_ed = ratecycle = 0;
 	zh_g.nsol = 0; zh_g.lim = 1;
 	ur_serate_mode = 1;
-	if (!sgo.vx[2])sgo.vx[2] = 200;
-	while (cycle++ < 150) {//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  enough in test up to 150 later
+	if (!lim)lim = 200;
+	while (cycle++ < 150) {
 		if (cycle > 148) { stop_rating = 7;	break; }
 		if (stop_rating) 	break;
-		if (zhou_solve.cells_unsolved.isEmpty()){
-			if (opprint2)cout << "solved ER=" << rat_er << "/"
+		if (zhou_solve.cells_unsolved.isEmpty()) {
+			if (opprint)cout << "solved ER=" << rat_er << "/"
 				<< rat_ep << "/" << rat_ed << endl;
-			break;
+			return 1;
 		}
-		if (pm_go.opprint2 & 2){
+		if (pm_go.opprint & 2) {
 			cout << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<next cycle=" << cycle
 				<< " rating=" << rat_er
 				<< " unsolved=" << zhou_solve.cells_unsolved.Count() << " assigned=" << assigned << endl;
 			zhou_solve.ImageCandidats();
+			if (is_valid_puzzle && zhou_solve.CheckStatus()) {
+				return 2;
+			}
+		}
+		zh_g2.Init_Assign();
+		ratecycle = 0;
+		//if (rat_er < 28) { if (Next10_28()) continue; }
+		//else 
+			if (Next28()) continue;
+		if (Next30_44()) continue;
+		if (lim <= 44) return 0;
+		//to test Rate45_52_Fast () smal additional risk with multi URs ULs
+		if (Rate45_52()) continue;
+		if (Rate52())continue;
+		if (Rate54())continue;
+		if (Rate56())continue;
+		if (lim <= 61) return 0;
+		if (Rate62())continue;
+		SetupActiveDigits();
+		if (pm_go.opprint & 2) cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
+		XStatusPrepare();
+		if (Rate65Xcycle(0)) continue;
+		if (lim <= 65) return 0;
+		if (Rate6xXcycle(66)) continue;
+		if (Rate66Xchain(0)) continue;
+		if (rat_er < 75)// skip Y loop if XY chain can be applied
+			if (ylsearch.Search()) { Quickrate(66); continue; }
+		if (Rate67_70()) continue;
+		if (Rate70_75(0)) continue;// no fast mode here
+		if (Rate75())continue;
+		if (Rate76Nishio(0)) continue;//no fast mode  
+		if (lim <= 81) return 0;
+		if (Rate80Multi(0))continue;//no fast mode 
+		if (lim <= 85) return 0;
+		if (Rate85Dynamic(0))continue;//no fast mode 
+		if (lim <= 90) return 0;
+		if (1) return 0;
+		if (Rate90DynamicPlus(1))continue;
+		break;
+		//next_cycle:;
+	}
+	return 0;
+}
+
+
+void PM_GO::SolveSerate110() {
+	//===========================================================
+	zh_g.diag = sgo.vx[9];	opprint = sgo.vx[8];	opprint2 = sgo.bfx[8];
+	if (opprint)cout << zh_g2.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
+	stop_rating = cycle = assigned = 0;
+	rat_er = rat_ep = rat_ed = ratecycle = 0;
+	zh_g.nsol = 0; zh_g.lim = 1;
+	ur_serate_mode = 1;
+	if (!sgo.vx[2])sgo.vx[2] = 200;// limit for searched rating
+	while (cycle++ < 150) {//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  enough in test up to 150 later
+		if (cycle > 148) { stop_rating = 7;	break; }
+		if (stop_rating) 	break;
+		if (zhou_solve.cells_unsolved.isEmpty()){
+			if (opprint)cout << "solved ER=" << rat_er << "/"<< rat_ep << "/" << rat_ed << endl<<"___________________________" << endl;
+			break;
+		}
+		if (pm_go.opprint & 2) {
+			char zi[82];  zhou_solve.SetKnown(zi);
+			cout << zi << "	cycle=" << cycle << " unsolved=" << zhou_solve.cells_unsolved.Count() << endl;
+			if (!((cycle - 1) & 15)) 		zhou_solve.ImageCandidats();
 			if (zhou_solve.CheckStatus()) {
 				cerr << "fatal error" << endl;
 				cout << "fatal error" << endl;
@@ -4914,6 +5040,7 @@ void PM_GO::SolveSerate110() {
 			}
 		}
 		zh_g2.Init_Assign();
+		ratecycle = 0;
 		if (rat_er < 28) { if (Next10_28()) continue; }
 		else if (Next28()) continue;
 		if (Next30_44()) continue;
@@ -4925,9 +5052,9 @@ void PM_GO::SolveSerate110() {
 		if (sgo.vx[2] <= 61) goto exit_limit;
 		if (Rate62())continue;
 		SetupActiveDigits();
-		if (pm_go.opprint2 & 2){
-			//Status("start 65", 2);
+		if (pm_go.opprint & 2){
 			cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
+			if ((cycle - 1) & 15)	zhou_solve.ImageCandidats();
 		}
 
 		XStatusPrepare();
@@ -5056,6 +5183,12 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 
 }
 
+
+
+void PM_GO::Solve118_subgrid() {
+
+}
+
 void PM_GO::Solve199test() {
 	//===========================================================
 	if (!Solved_xx(96))
@@ -5082,7 +5215,6 @@ int PM_GO::Next10_28(){
 }
 int PM_GO::Next28(){
 	BF128 ru = zhou_solve.cells_unsolved;
-	//zhou_solve.Debug(1);
 	if (zhou_solve.FullUpdate() == 2) return 1;// solved in full update
 	if (zhou_solve.Rate15_SingleColumn()){
 		assigned = 1;
@@ -5115,7 +5247,7 @@ int PM_GO::Next30_44(){
 int PM_GO::Rate10(){
 	if (zhou_solve.Rate10_LastInUnit()){
 		//if(opprint2 & 1)cout << "seen rating 10 last in unit" << endl;
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 2);
 		assigned = 1;
 		Quickrate(10);
 		return 1;
@@ -5124,7 +5256,7 @@ int PM_GO::Rate10(){
 }
 int PM_GO::Rate12(){
 	if (zhou_solve.Rate12_SingleBox()){
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 2);
 		assigned = 1;
 		Quickrate(12);
 		return 1;
@@ -5133,13 +5265,13 @@ int PM_GO::Rate12(){
 }
 int PM_GO::Rate15(){
 	if (zhou_solve.Rate15_SingleRow()){
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 2);
 		assigned = 1;
 		Quickrate(15);
 		return 1;
 	}
 	if (zhou_solve.Rate15_SingleColumn()){
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 2);
 		assigned = 1;
 		Quickrate(15);
 		return 1;
@@ -5149,7 +5281,7 @@ int PM_GO::Rate15(){
 int PM_GO::Rate17(){
 	if (zhou_solve.Rate17_lockedBox_Assign()){
 		if (opprint2 & 1)cout << "seen rating 17" << endl;
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 1);
 		assigned = 1;
 		Quickrate(17);
 		return 1;
@@ -5159,7 +5291,7 @@ int PM_GO::Rate17(){
 int PM_GO::Rate20(){
 	if (zhou_solve.Rate20_HiddenPair_Assign()){
 		if (opprint2 & 1)cout << "seen rating 20 br" << endl;
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 1);
 		assigned = 1;
 		Quickrate(20);
 		return 1;
@@ -5169,7 +5301,7 @@ int PM_GO::Rate20(){
 int PM_GO::Rate23(){
 	if (zhou_solve.Rate23_SingleInCell_Assign()){
 		if (opprint2 & 1)cout << "seen rating 23 single in cell" << endl;
-		zhou_solve.AssignSolver(opprint2 & 1);
+		zhou_solve.AssignSolver(opprint & 1);
 		assigned = 1;
 		Quickrate(23);
 		return 1;
@@ -5178,8 +5310,8 @@ int PM_GO::Rate23(){
 }
 int PM_GO::Rate25(){
 	if (zhou_solve.Rate25_HiddenTriplet_Assign()){
-		if (opprint2 & 1)cout << "seen rating 25_HiddenTripletBox_Assign" << endl;
-		zhou_solve.AssignSolver(opprint2 & 1);
+		if (opprint & 1)cout << "seen rating 25_HiddenTripletBox_Assign" << endl;
+		zhou_solve.AssignSolver(opprint & 1);
 		assigned = 1;
 		Quickrate(25);
 		return 1;
@@ -5188,7 +5320,7 @@ int PM_GO::Rate25(){
 }
 int PM_GO::Rate26(){
 	if (zhou_solve.Rate26_lockedBox()){
-		if (opprint2 & 1)cout << "seen rating 26_lockedBox" << endl;
+		if (opprint & 1)cout << "seen rating 26_lockedBox" << endl;
 		Quickrate(26);
 		return 1;
 	}
@@ -5196,7 +5328,7 @@ int PM_GO::Rate26(){
 }
 int PM_GO::Rate28(){
 	if (zhou_solve.Rate28_lockedRowCol()){
-		if (opprint2 & 1)cout << "seen rating 28_lockedRowCol" << endl;
+		if (opprint & 1)cout << "seen rating 28_lockedRowCol" << endl;
 		Quickrate(28);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5205,7 +5337,7 @@ int PM_GO::Rate28(){
 }
 int PM_GO::Rate30(){
 	if (zhou_solve.Rate30_NakedPair()){
-		if (opprint2 & 2)cout << "seen rating 30_NakedPair" << endl;
+		if (opprint & 2)cout << "seen rating 30_NakedPair" << endl;
 		Quickrate(30);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5214,7 +5346,7 @@ int PM_GO::Rate30(){
 }
 int PM_GO::Rate32(){
 	if (zhou_solve.Rate32_XWing()){
-		if (opprint2 & 2)cout << "seen rating 32_XWing" << endl;
+		if (opprint & 2)cout << "seen rating 32_XWing" << endl;
 		Quickrate(32);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5223,7 +5355,7 @@ int PM_GO::Rate32(){
 }
 int PM_GO::Rate34(){
 	if (zhou_solve.Rate34_HiddenPair()){
-		if (opprint2 & 2)cout << "seen Rate34_HiddenPair" << endl;
+		if (opprint & 2)cout << "seen Rate34_HiddenPair" << endl;
 		Quickrate(34);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5232,7 +5364,7 @@ int PM_GO::Rate34(){
 }
 int PM_GO::Rate36(){
 	if (zhou_solve.Rate36_NakedTriplet()){
-		if (opprint2 & 2)cout << "seen Rate36_NakedTriplet" << endl;
+		if (opprint & 2)cout << "seen Rate36_NakedTriplet" << endl;
 		Quickrate(36);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5241,7 +5373,7 @@ int PM_GO::Rate36(){
 }
 int PM_GO::Rate38(){
 	if (zhou_solve.Rate38_SwordFish()){
-		if (opprint2 & 2)cout << "seen Rate38_SwordFish" << endl;
+		if (opprint & 2)cout << "seen Rate38_SwordFish" << endl;
 		Quickrate(38);
 		return 1;
 	}
@@ -5249,7 +5381,7 @@ int PM_GO::Rate38(){
 }
 int PM_GO::Rate40(){
 	if (zhou_solve.Rate40_HiddenTriplet()){
-		if (opprint2 & 2)cout << "Rate40_HiddenTriplet" << endl;
+		if (opprint & 2)cout << "Rate40_HiddenTriplet" << endl;
 		Quickrate(40);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5258,7 +5390,7 @@ int PM_GO::Rate40(){
 }
 int PM_GO::Rate42(){
 	if (zhou_solve.Rate42_XYWing()){
-		if (opprint2 & 2)cout << "Rate42_XYWing" << endl;
+		if (opprint & 2)cout << "Rate42_XYWing" << endl;
 		Quickrate(42);
 		return 1;
 	}
@@ -5266,7 +5398,7 @@ int PM_GO::Rate42(){
 }
 int PM_GO::Rate44(){
 	if (zhou_solve.Rate44_XYZWing()){
-		if (opprint2 & 2)cout << "Rate44_XYZWing" << endl;
+		if (opprint & 2)cout << "Rate44_XYZWing" << endl;
 		Quickrate(44);
 		//if (1)zhou_solve.ImageCandidats();
 		return 1;
@@ -5275,16 +5407,14 @@ int PM_GO::Rate44(){
 }
 int  PM_GO::Rate45_52(){//
 	if (Rate45_URs(tur, ntur)){
-		if (opprint2 & 2)cout << "Rate45_URs" << endl;
+		if (opprint & 2)cout << "Rate45_URs" << endl;
 		Quickrate(45);
-		//if (1)zhou_solve.ImageCandidats();
 		return 1;
 	}
-	if (opprint2 & 2)cout << "exit UR pending URs " << ntur << endl;
+	if (opprint & 2)cout << "exit UR pending URs " << ntur << endl;
 	if (Rate45_2cells(tur, ntur)){// clean twin digit and clear if no UR digit in the plus cells
 		//if (opprint2 & 2)cout << "Rate45_URs twin digit" << endl;
 		Quickrate(45);
-		//if (1)zhou_solve.ImageCandidats();
 		return 1;
 	}
 	ntul = 0;
@@ -5343,7 +5473,7 @@ int  PM_GO::Rate45_52_Fast(){//
 }
 int PM_GO::Rate52(){
 	if (zhou_solve.Rate52_JellyFish()){
-		if (opprint2 & 2)cout << "seen Rate52_JellyFish" << endl;
+		if (opprint & 2)cout << "seen Rate52_JellyFish" << endl;
 		Quickrate(52);
 		return 1;
 	}
@@ -5351,7 +5481,7 @@ int PM_GO::Rate52(){
 }
 int PM_GO::Rate54(){
 	if (zhou_solve.Rate54_HiddenQuad()){
-		if (opprint2 & 4)cout << "seen Rate54_HiddenQuad" << endl;
+		if (opprint & 2)cout << "seen Rate54_HiddenQuad" << endl;
 		Quickrate(54);
 		return 1;
 	}
@@ -5359,7 +5489,7 @@ int PM_GO::Rate54(){
 }
 int PM_GO::Rate56() {
 	if (Rate56BUG()){
-		if (opprint2 & 2)cout << "Rate56 ... done rating " << hint.rating_done << endl;
+		if (opprint & 2)cout << "Rate56 ... done rating " << hint.rating_done << endl;
 		Quickrate(hint.rating_done);
 		return 1;
 	}

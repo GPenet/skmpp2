@@ -171,14 +171,14 @@ struct ZHOU{// size 32 bytes
 
 	int PartialInitSudoku(GINT16 * t, int n);
 	int EndInitSudoku( GINT16 * t, int n);
-	int EndInitNextUa(ZHOU & o, int bf);// 17 search check know small uas in bloc
+	//int EndInitNextUa(ZHOU & o, int bf);// 17 search check know small uas in bloc
 
 	int IsMinimale(GINT16 * t, int n);
 	int IsMinimale(char * ze);
-	void PatFinal();
+	//void PatFinal();
 	int GetFreeDigits_c(int cell){ return GetFreeDigits(C_To128[cell]); }
 	int GetFreeDigits(int xcell);
-	int GetSolvedDigitForCell(int cell);
+	//int GetSolvedDigitForCell(int cell);
 
 	// inline small functions
 	inline int IsOffCandidate_c(int dig, int cell){return FD[dig][0].Off_c(cell); }
@@ -262,7 +262,7 @@ struct ZHOU{// size 32 bytes
 	int Rate52_JellyFish();
 	int Rate54_HiddenQuad();
 
-	void AssignSolver(int print = 0);
+	void AssignSolver(int printrating);
 	void XW_template(int idig);
 	void Naked_Pairs_Seen();
 	void StartFloor(int digit);

@@ -510,9 +510,10 @@ public:
 	int opprint, opprint2, stop_rating,
 		ntr0logic,r0logictype,logictype,
 		rank0_min, rank0_max,//usually  2/5, can be adjusted
-		assigned,cycle,
+		assigned,cycle,ratecycle,
 	   ur_serate_mode,quick_mode,ratlim,
 	   find_common_known, // limit of known before start of the search
+		is_valid_puzzle,
 		rat_er,rat_ep,rat_ed,
 		nexocet,npof_store;
 	BF32	bits_tasks_done;
@@ -549,8 +550,10 @@ public:
 	//int Solve();
 	int Solved_xx(int lim);// internal call valid puzzle 
 	int SolveGetLow44(int pack=0,int diag=0);// internal call valid puzzle 
+	int SolveDet(int liml, int printopt, int mode);
 	void SolveSerate110();
 	void SolveSerate111();
+	void Solve118_subgrid();
 	void Solve199test();
 
 	void Solve120_MultiAnalysis();

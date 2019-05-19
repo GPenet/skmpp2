@@ -65,6 +65,36 @@ void Go_c17_00( ) {// p2 process
 	}
 }
 
+void Go_c17_09() {// p2 process locate 
+	cout << "Go_c17_09 search locate batch 17 clues 656 566 " << endl;
+	cout << sgo.vx[0] << " -v0- band 0_415" << endl;
+	cout << sgo.vx[2] << " -v2- skip first nnn restart after batch failure" << endl;
+	cout << sgo.vx[3] << " -v3- last entry number for this batch must be > vx[2]" << endl;
+	cout << sgo.vx[4] << " -v4- 0 if p2a 1 if p2b" << endl;
+	if (!sgo.vx[6] || !sgo.vx[7]) sgo.vx[6] = sgo.vx[7] = 0;
+	cout << sgo.vx[6] << " -v6- band2 searched" << endl;
+	cout << sgo.vx[7] << " -v7- band3 searched" << endl;
+	if (!sgo.vx[6] || !sgo.vx[7]) sgo.vx[6] = sgo.vx[7] = 0;
+	int it16_start = sgo.vx[0];
+	g17b.debug17 = 0;
+	g17b.diag = sgo.vx[6];
+	genb12.skip = sgo.vx[2];
+	genb12.last = sgo.vx[3];
+	if (sgo.vx[2] < 0) {
+		cerr << "invalid value for skip" << endl;
+		return;
+	}
+	if (sgo.vx[3] < sgo.vx[2]) {
+		cerr << "invalid value for last to process" << endl;
+		return;
+	}
+	zh_g.modevalid = 1;
+	zh_g2.grid0 = genb12.grid0;
+	zh_g2.zsol = zh_g2.stdfirstsol;
+	memset(p_cpt2g, 0, sizeof p_cpt2g);// used in debugging sequences only
+	genb12.Start(0);
+	genb12.NewBand1(sgo.vx[0]);
+}
 //========================= known s17 file 10/19
 void Go_c17_10( ) {
 	zh_g.modevalid = 1;
@@ -386,9 +416,45 @@ void Go_c17_15() {
 	}
 }
 
+void Msp_ReorderBand(char * ze,char * zep=0)
+{
+	char temp[9];
+	if (ze[0] > ze[9]) {
+		memmove(temp, ze, sizeof temp);
+		memmove(ze, &ze[9], sizeof temp);
+		memmove(&ze[9], temp,sizeof temp);
+		if (zep) {
+			memmove(temp, zep, sizeof temp);
+			memmove(zep, &zep[9], sizeof temp);
+			memmove(&zep[9], temp, sizeof temp);
+
+		}
+	}
+	if (ze[0] > ze[18]) {
+		memmove(temp, ze, sizeof temp);
+		memmove(ze, &ze[18], sizeof temp);
+		memmove(&ze[18], temp, sizeof temp);
+		if (zep) {
+			memmove(temp, zep, sizeof temp);
+			memmove(zep, &zep[18], sizeof temp);
+			memmove(&zep[18], temp, sizeof temp);
+		}
+	}
+	if (ze[9] > ze[18]) {
+		memmove(temp, &ze[9], sizeof temp);
+		memmove(&ze[9], &ze[18], sizeof temp);
+		memmove(&ze[18], temp, sizeof temp);
+		if (zep) {
+			memmove(temp, &zep[9], sizeof temp);
+			memmove(&zep[9], &zep[18], sizeof temp);
+			memmove(&zep[18], temp, sizeof temp);
+		}
+	}
+}
+
 void Go_c17_16() {
-	char * ze = finput.ze,zout[82],zdiag[82];
-	zout[81] = 0;
+	char * ze = finput.ze,zout[82],zdiag[82],zew[82],zes[82], zesf[82];
+	zout[81] = zdiag[81] = zes[81] = 0;
 	zh_g2.zsol = zout;
 	while (finput.GetLigne()) {
 		if (zhou[0].CheckValidityQuick(ze) == 1) {
@@ -442,32 +508,111 @@ void Go_c17_16() {
 			if (indexmin > indexr[5])indexmin = indexr[5];
 			// sort and keep track of the count or split the file
 
+
+			if (sgo.vx[6] && indexmin != sgo.vx[6]) continue;
 			uint32_t tx[3], tdx[3], temp;
 			tx[0] = (indexr[0] << 8) | count[0];
-			tx[1] = (indexr[1] << 8) | count[1];
-			tx[2] = (indexr[2] << 8) | count[2];
+			tx[1] = (indexr[1] << 8) | count[1]|010;
+			tx[2] = (indexr[2] << 8) | count[2]|020;
 			tdx[0] = (indexr[3] << 8) | count[3];
-			tdx[1] = (indexr[4] << 8) | count[4];
-			tdx[2] = (indexr[5] << 8) | count[5];
+			tdx[1] = (indexr[4] << 8) | count[4]|010;
+			tdx[2] = (indexr[5] << 8) | count[5]|020;
 			if (tx[0] > tx[1]) { temp = tx[0]; tx[0] = tx[1]; tx[1] = temp; }
+			if (tx[0] > tx[2]) { temp = tx[0]; tx[0] = tx[2]; tx[2] = temp; }
 			if (tx[1] > tx[2]) { temp = tx[1]; tx[1] = tx[2]; tx[2] = temp; }
-			if (tx[0] > tx[1]) { temp = tx[0]; tx[0] = tx[1]; tx[1] = temp; }
 			if (tdx[0] > tdx[1]) { temp = tdx[0]; tdx[0] = tdx[1]; tdx[1] = temp; }
+			if (tdx[0] > tdx[2]) { temp = tdx[0]; tdx[0] = tdx[2]; tdx[2] = temp; }
 			if (tdx[1] > tdx[2]) { temp = tdx[1]; tdx[1] = tdx[2]; tdx[2] = temp; }
-			if (tdx[0] > tdx[1]) { temp = tdx[0]; tdx[0] = tdx[1]; tdx[1] = temp; }
 			BF64 va, vb; va.bf.u64 = vb.bf.u64 = 0;
 			va.bf.u16[2] = tx[0] >> 8; va.bf.u16[1] = tx[1] >> 8; va.bf.u16[0] = tx[2] >> 8;
 			vb.bf.u16[2] = tdx[0] >> 8; vb.bf.u16[1] = tdx[1] >> 8; vb.bf.u16[0] = tdx[2] >> 8;
-			if (va.bf.u64 < vb.bf.u64) {
-				fout1 << ze << ";" << indexmin	<< ";" << va.bf.u16[1] << ";"
-					<< va.bf.u16[0] <<";"<<(tx[2]&0xff)	<<";va" << endl;
+			if (sgo.vx[6]) {// check bands 2 3 for test
+				cout << "va1=" << va.bf.u16[2] << " va2=" << va.bf.u16[1]
+					<< " va3=" << va.bf.u16[0] << "\tvb1=" << vb.bf.u16[2] << " vb2=" << vb.bf.u16[1]
+					<< " vb3=" << vb.bf.u16[0];
+				if (va.bf.u64 <= vb.bf.u64)			cout << "\tdirect"<<endl;
+				else {
+					cout << "\tdiag"<<endl;
+				}
 			}
-			else {
-				fout1 << ze << ";" << indexmin	 << ";" << vb.bf.u16[1] << ";"
-					<< vb.bf.u16[0] <<";" << (tdx[2] & 0xff) << ";vb"
-					 << endl;
+			strcpy(zew, ze);// to morph the expected 17 puzzle
+			if (va.bf.u64 > vb.bf.u64)	{
+				va = vb;
+				memcpy(tx, tdx, sizeof tx);
+				strcpy(zout, zdiag);
+				for (int i = 0; i < 81; i++)zew[C_transpose_d[i]] = ze[i];
+			}
+			if (sgo.vx[6]) {// check bands 2 3 for test
+				if (va.bf.u16[2] != sgo.vx[6]) continue;
+				if (va.bf.u16[1] != sgo.vx[7]) continue;
+			}
+			char zs[82], zsa[82]; zsa[81] = zs[81] = 0;
+			int i1 = (tx[0] & 070) >> 3, i2 = (tx[1] & 070) >> 3, i3 = (tx[2] & 070) >> 3;
+			memcpy(zsa, &zout[27 * i1], 27);
+			memcpy(&zsa[27], &zout[27 * i2], 27);
+			memcpy(&zsa[54], &zout[27 * i3], 27);
+			memcpy(zes, &zew[27 * i1], 27);
+			memcpy(&zes[27], &zew[27 * i2], 27);
+			memcpy(&zes[54], &zew[27 * i3], 27);
+			int zs0[81];
+			// redo id to build tables
+			int ib1, ib1a, ib2, ib2a, ib3, ib3a;
+			for (int i = 0; i < 81; i++)zs0[i] = zsa[i] - '1';
+			BANDMINLEX::PERM pb1, prw;
+			bandminlex.Getmin(zs0, &pb1);
+			ib1 = pb1.i416;
+			ib1a = t416_to_n6[ib1];
+			//myband1.InitBand2_3(ib1, zsa, perm_ret, 0);
+			bandminlex.Getmin(&zs0[27], &prw);
+			ib2 = prw.i416;
+			ib2a = t416_to_n6[ib2];
+			//myband2.InitBand2_3(ib2, &zsa[27], perm_ret, 1);
+			bandminlex.Getmin(&zs0[54], &prw);
+			ib3 = prw.i416;
+			ib3a = t416_to_n6[ib3];
+			strcpy(zs, "12345678945");
+			strncpy(&zs[11], t416[ib1], 16);
+			strcpy(zesf, empty_puzzle);
+			// relabel all
+			for (int i = 3, ij = 27; i < 9; i++)
+				for (int j = 0; j < 9; j++, ij++) {
+					int is = 9 * i + pb1.cols[j];
+					int c = zsa[is] - '1';
+					zs[ij] = pb1.map[c] + '1';
+					if (zes[is] != '.')zesf[ij] = zs[ij];
+				}
+			if (sgo.vx[6]) {
+				cout << "\ti1,2,3 " << i1 << i2 << i3 << endl;
+				cout << ze << " ze" << endl;
+				cout << zes << " zes" << endl;
+
+				cout << zout << endl;
+				cout << zsa << endl;
+				//genb12.bands3[0].InitBand3(ib3, &zsa[54], perm_ret);
+				
+			}
+			Msp_ReorderBand(&zs[27], &zesf[27]);
+			Msp_ReorderBand(&zs[54], &zesf[54]);
+
+			// reorder band1 p17
+			for (int i = 0, ij = 0; i < 3; i++)
+				for (int j = 0; j < 9; j++, ij++) {
+					int is = 9 * pb1.rows[i] + pb1.cols[j],
+						c = zes[is];
+					if (c != '.')zesf[ij] = zs[ij];
+				}
+			if (sgo.vx[6]) {
+				cout << "ib1a=" << ib1a << " ib2a=" << ib2a << " ib3a=" << ib3a << endl;
+				cout << zs << "zsa morphed relabeled" << endl;
+				cout << zs << "zsa reordered" << endl;
+				cout << zesf << "zes reordered relabelled" << endl;
 
 			}
+			fout1 << zs << ";" << zesf << ";" << indexmin << ";";
+			fout1  << va.bf.u16[1] << ";"
+				<< va.bf.u16[0] << ";" << (tx[2] & 07)  << endl;
+
+
 		}
 		else cout << ze << "non resolu" << endl;
 	}
