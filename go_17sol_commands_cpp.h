@@ -27,6 +27,8 @@ const char * libs_c17_00_cpt2g[40] = {
 	"20 n gua3s at start  ",//20
 	"21 n sockets2",//21
 	"22 n sockets1",//22
+	"23 max bands 3",//23
+	"23 max bands 3 go",//24
 };
 void Go_c17_00( ) {// p2 process
 	cout << "Go_c17_00 search batch 17 clues 656 566 " << endl;

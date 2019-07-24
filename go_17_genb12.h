@@ -60,15 +60,15 @@ struct GEN_BANDES_12{// encapsulating global data
 	int nband3;
 	int tactive2[81], nactive2, tactive3[81], nactive3;
 	int   tcolok[2], ncolok;
-	BF128 bands_pairs, tbands_pairs[256];// 81 bits in 3x27 mode
-	BF128 tbands_UA4_6s[256];// 81 bits in 3x27 mode
-	int tbands_UA4_6s_pat[256][81];
-	BF128 bands_triplets, tbands_triplets[256];// 81 bits in 3x27 mode
-	GINT64 tipairs[256][96];
-	int tindexUA4s[256][96];// pair id_81 (3x27) to bit 0_8 in the band
-	int tindextriplets[256][96];// triplet id_81 (3x27) to bit 0_8 in the band
-	int pairs_cols_digits[81][4];
-	int triplets_mini_digits[81][4];
+	//BF128 bands_pairs, tbands_pairs[256];// 81 bits in 3x27 mode
+	//BF128 tbands_UA4_6s[256];// 81 bits in 3x27 mode
+	//int tbands_UA4_6s_pat[256][81];
+	//BF128 bands_triplets, tbands_triplets[256];// 81 bits in 3x27 mode
+	//GINT64 tipairs[256][96];
+	//int tindexUA4s[256][96];// pair id_81 (3x27) to bit 0_8 in the band
+	//int tindextriplets[256][96];// triplet id_81 (3x27) to bit 0_8 in the band
+	//int pairs_cols_digits[81][4];
+	//int triplets_mini_digits[81][4];
 	int ngua6_7, c1, c2, band,floors,digp,i81;
 	uint64_t wua0,ua;// partial gua ua to check
 	uint64_t tuacheck[100],tua_for_check[500];

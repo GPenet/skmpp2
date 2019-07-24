@@ -65,6 +65,7 @@ struct ZH_GLOBAL2 {
 	uint64_t cpt[10], cptg[10], npuz;
 	GINT16 tgiven[81];
 	int ngiven, digitsbf;// digitsbf to check minimum 8 digits
+	int s17_b3_mini;// 17 search mode, 1 if minirows b3 not tested
 	int * grid0; // using a process with known solution grid
 	char * zsol,
 		stdfirstsol[82],
@@ -185,7 +186,7 @@ struct ZHOU{// size 32 bytes
 	inline int IsOnCandidate_c(int dig, int cell){ return FD[dig][0].On_c(cell); }
 	inline void ClearCandidate_x(int dig, int xcell){ FD[dig][0].clearBit(xcell); }
 	inline void ClearCandidate_c(int dig, int cell){ FD[dig][0].clearBit(C_To128[cell]); }
-	void CleanCellForDigits(int cell, int digits);
+	int CleanCellForDigits(int cell, int digits);
 	int CleanCellsForDigits(BF128 &  cells, int digits);
 	int Clean(PM3X &elims);
 	int Isvalid();

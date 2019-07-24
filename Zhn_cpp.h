@@ -569,8 +569,8 @@ int ZHOU::PartialInitSearch17(uint32_t * t, int n) {
 	memcpy(this, zhoustart, sizeof zhoustart);
 	for (int icell = 0; icell < n; icell++) {
 		int cell = t[icell], digit = zh_g2.grid0[cell];
-		zh_g2.digitsbf |= 1 << digit;
 		int xcell = C_To128[cell]; // the cell value in 3x32 of a 128 bits map
+		zh_g2.digitsbf |= 1 << digit;
 		if (FD[digit][0].Off(xcell))  return 1;// check not valid entry
 		Assign(digit, cell, xcell);
 		zh_g2.Digit_cell_Assigned[digit].Set(xcell);

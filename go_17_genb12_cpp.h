@@ -711,20 +711,20 @@ int GEN_BANDES_12::ValidBand2() {
 		ValidInitGang();// also called from existing 17 in test
 		if (sgo.vx[6]) {
 			if (sgo.vx[6] == i2t16) {
-				for (int i = 0; i < 54; i++)fout1 << grid0[i] + 1;
-				fout1 << "grid0 nb12="<<nb12 << endl;
+				//for (int i = 0; i < 54; i++)fout1 << grid0[i] + 1;
+				//fout1 << "grid0 nb12="<<nb12 << endl;
 				Find_band3B(0);
 			}
 		}
 		else //if(nb12== 4521719)
 			Find_band3B();
-		if (0) cout << "band12=" << nb12 << "\tnband3=" << nband3 << endl;
+		if (1) cout << "band12=" << nb12 << "\tnband3=" << nband3 << endl;
 		{// print a restart point every 64 bands 1+2 seen
 			uint64_t w = genb12.nb12, w1 = w >> 6;
 			w &= 63;
 			if (w == 0) {
 				long tfin = GetTimeMillis();
-				cout << "next skip value to use=\t" << w1 <<"\t"<<(tfin-sgo.tdeb)/1000<< endl;
+				cout << "next skip value to use=\t" << w1 <<"\t"<<(tfin-sgo.tdeb)/1000<<"\t"<< p_cpt2g[0]<< endl;
 			}
 		}
 		if ((nb12 >> 6) >= last)return 1;
@@ -824,7 +824,10 @@ next:// erase previous fill and look for next
 			}
 		}
 		bands3[nband3++].InitBand3(it16_3, &zs[54], pband3);
-		if (sgo.vx[7])fout1 << zs << endl;
+		if (sgo.vx[7]) {
+			//fout1 << zs << endl;
+			fout1 << zs << ";" << nb12 << endl;
+		}
 		goto next;
 	}
 back:

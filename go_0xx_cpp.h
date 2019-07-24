@@ -430,10 +430,15 @@ int ZH_GLOBAL::Go_InitSolve(GINT16 * td, int nc) {
 	return 0;
 }
 
-void ZHOU::CleanCellForDigits(int cell, int digits) {
+int ZHOU::CleanCellForDigits(int cell, int digits) {
+	int iret = 0;
 	for (int i = 0, bit = 1; i < 9; i++, bit <<= 1) {
-		if (bit & digits)ClearCandidate_c(i, cell);
+		if ((bit & digits)&& FD[i][0].On_c(cell)) {
+			ClearCandidate_c(i, cell);
+			iret = 1;
+		}
 	}
+	return iret;
 }
 int ZHOU::CleanCellsForDigits(BF128 &  cells, int digits) {
 	int iret = 0;
@@ -469,6 +474,7 @@ void ZHOU::AssignSolver(int rating){
 	if (!zh_g2.nsingles) return;
 	for (int i = 0; i < zh_g2.nsingles; i++){
 		int cell = zh_g2.tsingles[i], digs , digit;
+		if (cells_unsolved.Off_c(cell)) continue;// can be chaining all cases
 		if (pm_go.is_valid_puzzle)digit = zh_g2.zerobased_sol[zh_g2.tsingles[i]]; 
 		else {
 			digs = GetAllDigits(cell);
@@ -1012,8 +1018,6 @@ int ZHOU::Rate20_HiddenPair_Assign(){
 	if (CollectHiddenPairsCol(tp, np, 3))	RateSingleCol(tp, np);
 	return zh_g2.nsingles;
 }
-
-
 int ZHOU::Rate23_SingleInCell_Assign(){
 	if (zh_g.diag)	cout << "rating 23 single in cell" << endl;
 	BF128 R1 = FD[0][0] & cells_unsolved,
@@ -1038,7 +1042,6 @@ int ZHOU::Rate23_SingleInCell_Assign(){
 	//cout << "zh_g.nsingles= "<< zh_g.nsingles << endl;
 	return 	zh_g2.nsingles;
 }
-
 int ZHOU::CollectHiddenTripletsBox(GINT64* tp, int & np){
 	np = 0;
 	BF128 wfree = cells_unsolved - zh_g2.locked_nacked_brc_done[0];
@@ -1111,7 +1114,7 @@ int ZHOU::CollectHiddenTripletsRow(GINT64* tp, int & np){
 						tp[np].u32[1] = R3;
 						tp[np].u16[0] = iband;
 						tp[np++].u16[1] = (1 << digtrip[i]) | (1 << digtrip[j]) | (1 << digtrip[k]);
-						if (pm_go.opprint & 2)cout << Char27out(R3) << " HP assing band=" << iband + 1
+						if (pm_go.opprint & 2)cout << Char27out(R3) << " Hx assign band=" << iband + 1
 							<< " digs 0" << oct << tp[np - 1].u16[1]<<dec << endl;
 					}
 				}
@@ -1162,8 +1165,6 @@ int ZHOU::CollectHiddenTripletsCol(GINT64* tp, int & np){
 	//cout << "col np=" << np << endl;
 	return np;
 }
-
-
 int ZHOU::Rate25_HiddenTriplet_Assign(){
 	if (pm_go.opprint & 1)		cout << "search rate 25_Hiddentriplet_Assign" << endl;
 	GINT64 tp[100];
@@ -1173,7 +1174,6 @@ int ZHOU::Rate25_HiddenTriplet_Assign(){
 	if (CollectHiddenTripletsCol(tp, np))	RateSingleCol(tp, np);
 	return zh_g2.nsingles;
 }
-
 int ZHOU::Rate26_lockedBox(){
 	int iret = 0;
 	for (int idig = 0; idig < 9; idig++){
@@ -1213,11 +1213,10 @@ int ZHOU::Rate26_lockedBox(){
 						int jband = p[j];
 						int jclean = FD[idig][0].bf.u32[jband] & to_clean;
 						if (jclean){
-							//if (pm_go.opprint2 & 1){
-							//	cout <<Char27out(jclean)<< "clean 26 col digit=" << idig + 1 << " box=" << ibox + 1
-							//		<< " jband=" << jband + 1 << endl;
-							//	cout << hex << "bande=0x" << band << dec << endl;
-							//}
+							if (pm_go.opprint & 2){
+								cout <<Char27out(jclean)<< "clean 26 col digit=" << idig + 1 << " box=" << ibox + 1
+									<< " jband=" << jband + 1 << endl;
+							}
 							iret = 1;
 							FD[idig][0].bf.u32[jband] &= ~jclean;
 						}
@@ -1279,7 +1278,6 @@ int ZHOU::Rate28_lockedRowCol(){// 26 (box) done
 	}
 	return iret;
 }
-
 int ZHOU::CleanNake(int & naked, int unit, int iband, int modebr){
 	int iret = 0;
 	while (naked){
@@ -1305,9 +1303,14 @@ int ZHOU::CleanNake(int & naked, int unit, int iband, int modebr){
 			int clean = w&zclean;
 			if (clean){
 				//cout << Char27out(clean) << " br pair clean digit=" << idig+1 << endl;
-				iret = 1;
+				iret = go_clean = 1;
 				w &= ~clean;
 			}
+		}
+		if (go_clean && (pm_go.opprint & 2)) {
+			cout << "band " << iband + 1 << " naked size " << nd<<" digits " ;
+			for (int i = 0; i < nd; i++) cout << digits[i]+1;
+			cout <<endl;
 		}
 		zh_g2.locked_nacked_brc_done[modebr].bf.u32[iband] |= nakp;
 	}
@@ -1340,8 +1343,13 @@ int ZHOU::CleanNakeColumn(int & naked, int unit, int iband){
 			if (clean){// clean the source 
 				//cout << Char27out(clean) << " col clean digit=" << idig + 1 << endl;
 				FD[idig][0].ClearDiag(clean, iband);
-				iret = 1;
+				iret = go_clean = 1;
 			}
+		}
+		if (go_clean && (pm_go.opprint & 2)) {
+			cout << "stack " << iband + 1 << " naked size " << nd << " digits ";
+			for (int i = 0; i < nd; i++) cout << digits[i] + 1;
+			cout << endl;
 		}
 		zh_g2.locked_nacked_brc_done[2].bf.u32[iband] |= nakp;
     }
@@ -1362,9 +1370,6 @@ int ZHOU::Rate30_NakedPair(){
 				if (_popcnt32(box) >= 2){// one or more naked pair in the box
 					if (CleanNake(box, tband_box[ibox], iband, 0)) {
 						iret = 1;
-						if (pm_go.opprint & 2) {
-							cout << Char27out(box) << " box naked pair band=" << iband + 1 << endl;
-						}
 					}
 				}
 			}
@@ -1375,9 +1380,6 @@ int ZHOU::Rate30_NakedPair(){
 				int row = rowband & tband_row[irow];
 				if (_popcnt32(row) >= 2){// one or more naked pair in the row
 					if (CleanNake(row, tband_row[irow], iband, 1)) {
-						if (pm_go.opprint & 2) {
-							cout << Char27out(row) << " row naked pair band=" << iband + 1 << endl;
-						}
 						iret = 1;
 					}
 				}
@@ -1390,18 +1392,13 @@ int ZHOU::Rate30_NakedPair(){
 				if (_popcnt32(row) >= 2){// one or more naked pair in the row
 					if (CleanNakeColumn(row, tband_row[icol], iband)) {
 						iret = 1;
-						if (pm_go.opprint & 2) {
-							cout << Char27out(row) << " col naked pair stack=" << iband + 1 << endl;
-						}
 					}
 				}
 			}
 		}
 	}
-	//ImageCandidats();
     return iret;
 }
-
 int ZHOU::Rate32_XWing(){
 	int iret = 0;
 	for (int idig = 0; idig < 9; idig++){
@@ -1476,25 +1473,24 @@ int ZHOU::Rate32_XWing(){
 	}
 	return iret;
 }
-
 int ZHOU::ApplyHidden(GINT64 * t, int nt,int mode){
 	if (!nt) return 0;
 	int iret = 0;
 	for (int i = 0; i < nt; i++){
 		GINT64 w = t[i];
 		register int R = w.u32[1]; // cells pattern of the locked set
-		int iband = w.u16[0], digs = w.u16[1];
+		int iband = w.u16[0], digs = w.u16[1], go_clean = 0;
 		for (int idig = 0, dig = 1; idig < 9; dig <<= 1, idig++){
 			if(dig &digs)continue;// skip digs of the hidden set
 			uint32_t  & band = FD[idig][0].bf.u32[iband] ,
 				clean=band & R;
 			if (clean){
-				if (pm_go.opprint & 2) {
-					cout << "apply hidden rowsdigs 0"<<digs<< " band " <<iband<< endl;
-				}
-				iret = 1;
+				iret = go_clean = 1;
 				band &= ~clean;
 			}
+		}
+		if(go_clean && (pm_go.opprint & 2)) {
+			cout << " hidden   digs 0" <<oct<< digs <<dec << " band " << iband +1<< endl;
 		}
 		zh_g2.locked_nacked_brc_done[mode].bf.u32[iband] |= R;
 	}
@@ -1506,18 +1502,18 @@ int ZHOU::ApplyHiddenColumn(GINT64 * t, int nt){
 	for (int i = 0; i < nt; i++){
 		GINT64 w = t[i];
 		register int R = w.u32[1]; // cells pattern of the locked set
-		int iband = w.u16[0], digs = w.u16[1];
+		int iband = w.u16[0], digs = w.u16[1],go_clean=0;
 		for (int idig = 0, dig = 1; idig < 9; dig <<= 1, idig++){
 			if (dig &digs)continue;// skip digs of the hidden set
 			int   band = zh_g2.pmdiag.pmdig[idig].bf.u32[iband],
 				clean = band & R;
 			if (clean){
-				if (pm_go.opprint & 2) {
-					cout << "apply hidden columns digs 0"<<digs <<" stack "<<iband<< endl;
-				}
-				iret = 1;
+				iret = go_clean = 1;
 				FD[idig][0].ClearDiag(clean, iband);
 			}
+		}
+		if (go_clean && (pm_go.opprint & 2)) {
+			cout << " hidden   digs 0" << oct << digs << dec << " stack " << iband + 1 << endl;
 		}
 		zh_g2.locked_nacked_brc_done[2].bf.u32[iband] |= R;
 	}
@@ -1526,12 +1522,11 @@ int ZHOU::ApplyHiddenColumn(GINT64 * t, int nt){
 int ZHOU::Rate34_HiddenPair(){
 	GINT64 tp[50];
 	int np,iret=0;
+	if (CollectHiddenPairsCol(tp, np, 3))iret += ApplyHiddenColumn(tp, np);
 	if (CollectHiddenPairsBox(tp, np, 3))iret += ApplyHidden(tp, np,0);
 	if (CollectHiddenPairsRow(tp, np, 3))iret += ApplyHidden(tp, np,1);
-	if (CollectHiddenPairsCol(tp, np, 3))iret += ApplyHiddenColumn(tp, np);
 	return iret;
 }
-
 int ZHOU::Rate36_FindClean_NakedTriplet(int unit_triplet_cells, int unit, int iband, int mode){
 	int iret = 0, t3[10], t3b[10], n3 = 0;
 	BitsInTable32(t3, n3, unit_triplet_cells);
@@ -1551,18 +1546,19 @@ int ZHOU::Rate36_FindClean_NakedTriplet(int unit_triplet_cells, int unit, int ib
 				// this is a naked triplet 
 				int btrip = t3b[i1] | t3b[i2] | t3b[i3];
 				zh_g2.locked_nacked_brc_done[mode].bf.u32[iband] |= btrip;
-				int zclean = unit & ~btrip;
+				int zclean = unit & ~btrip,go_clean=0;
 				for (int idig = 0; idig < 9; idig++) {// box or row
 					register uint32_t & w = FD[idig][0].bf.u32[iband];
 					if (!(w&btrip)) continue;
 					int clean = w&zclean;
 					if (clean){
-						if (pm_go.opprint & 2) {
-							cout << Char27out(btrip) << " triplet   voir band=" << iband + 1 << " mode=" << mode << endl;
-						}
-						iret = 1;
+						iret = go_clean = 1;
 						w &= ~clean;
 					}
+				}
+				if (go_clean &&pm_go.opprint & 2) {
+					cout << Char27out(btrip) << " triplet  band=" << iband + 1 
+						<<" digs 0"<<oct<<digs3<<dec<< " mode=" << mode << endl;
 				}
 				if (iret) return 1;// nearly no chance to have more see later
 				unit_triplet_cells ^= btrip; // loop if room for another triplet
@@ -1573,7 +1569,6 @@ int ZHOU::Rate36_FindClean_NakedTriplet(int unit_triplet_cells, int unit, int ib
 	}
 	return iret;
 }
-
 int ZHOU::Rate36_FindClean_NakedTripletCol(int unit_triplet_cells, int unit, int iband){
 	int iret = 0, t3[10], t3b[10], n3 = 0;
 	BitsInTable32(t3, n3, unit_triplet_cells);
@@ -1595,15 +1590,19 @@ int ZHOU::Rate36_FindClean_NakedTripletCol(int unit_triplet_cells, int unit, int
 				int btrip = t3b[i1] | t3b[i2] | t3b[i3];
 				//cout << Char27out(btrip) << "col  triplet � voir band=" << iband + 1  << endl;
 				zh_g2.locked_nacked_brc_done[2].bf.u32[iband] |= btrip;
-				int zclean = unit & ~btrip;
+				int zclean = unit & ~btrip, go_clean = 0;;
 				for (int idig = 0; idig < 9; idig++){// box or row
 					register uint32_t & w = zh_g2.pmdiag.pmdig[idig].bf.u32[iband];
 					if (!(w&btrip)) continue;
 					int clean = w&zclean;
 					if (clean){
-						iret = 1;
+						iret = go_clean = 1;
 						FD[idig][0].ClearDiag(clean, iband);
 					}
+				}
+				if (go_clean &&pm_go.opprint & 2) {
+					cout << Char27out(btrip) << " triplet   stack=" << iband + 1
+						<< " digs 0" << oct << digs3 << dec  << endl;
 				}
 				if (iret) return 1;// nearly no chance to have more see later
 				unit_triplet_cells ^= btrip; // loop if room for another triplet
@@ -1670,8 +1669,6 @@ int ZHOU::Rate36_NakedTriplet(){
 	//ImageCandidats();
 	return iret;
 }
-
-
 int ZHOU::Rate38_SwordFish(){
 	int iret = 0;
 	for (int idig = 0; idig < 9; idig++){
@@ -1724,7 +1721,7 @@ int ZHOU::Rate38_SwordFish(){
 					int clean1 = cols[c1] & ~mask, clean2 = cols[c2] & ~mask, clean3 = cols[c3] & ~mask;
 					if (clean1 | clean2 | clean3){//some cleaning appears
 						iret = 1;
-						if (pm_go.opprint2 & 2)cout << "swordfish row digit=" << idig + 1 << " " << r1 + 1 << r2 + 1 << r3 + 1
+						if (pm_go.opprint & 2)cout << "swordfish row digit=" << idig + 1 << " " << r1 + 1 << r2 + 1 << r3 + 1
 							<< " " << c1 + 1 << c2 + 1 << c3 + 1 << endl;
 						if (clean1)FD[idig][0].ClearCol(clean1, c1);
 						if (clean2)FD[idig][0].ClearCol(clean2, c2);
@@ -1762,7 +1759,7 @@ int ZHOU::Rate38_SwordFish(){
 					int clean1 = rows[r1] & ~mask, clean2 = rows[r2] & ~mask, clean3 = rows[r3] & ~mask;
 					if (clean1 | clean2 | clean3){//some cleaning appears
 						iret = 1;
-						if (pm_go.opprint2 & 2)cout << "swordfish col digit=" << idig + 1 << " " << c1 + 1 << c2 + 1 << c3 + 1
+						if (pm_go.opprint & 2)cout << "swordfish col digit=" << idig + 1 << " " << c1 + 1 << c2 + 1 << c3 + 1
 							<< " " << r1 + 1 << r2 + 1 << r3 + 1 << endl;
 						if (clean1)FD[idig][0].ClearRow(clean1, r1);
 						if (clean2)FD[idig][0].ClearRow(clean2, r2);
@@ -1779,9 +1776,9 @@ int ZHOU::Rate38_SwordFish(){
 int ZHOU::Rate40_HiddenTriplet(){
 	GINT64 tp[50];
 	int np, iret = 0;
+	if (CollectHiddenTripletsCol(tp, np))	iret += ApplyHiddenColumn(tp, np);
 	if (CollectHiddenTripletsBox(tp, np))	iret += ApplyHidden(tp, np, 0);
 	if (CollectHiddenTripletsRow(tp, np))	iret += ApplyHidden(tp, np, 1);
-	if (CollectHiddenTripletsCol(tp, np))	iret += ApplyHiddenColumn(tp, np);
 	return iret;
 }
 
@@ -1820,6 +1817,10 @@ int ZHOU::Rate42_XYWing(){
 				if (clean.isNotEmpty()){                    
 					FD[d3][0]-= clean;
 					iret = 1;
+					if (pm_go.opprint & 2)
+						cout << "XYWing " << cellsFixedData[cell].pt << " "
+						<< cellsFixedData[cell1].pt << " "
+						<< cellsFixedData[cell2].pt << endl;
 				}
 			}
 		}
@@ -1861,6 +1862,10 @@ int ZHOU::Rate44_XYZWing(){
 						if (pm_go.opprint2 & 2)cout << "XYZWing " << cell << " " << cell1 << " " << cell2 << endl;
 						FD[dx[ind]][0] -= clean;
 						iret = 1;
+						if (pm_go.opprint & 2)
+							cout << "XYZWing " << cellsFixedData[cell].pt << " "
+							<< cellsFixedData[cell1].pt << " "
+							<< cellsFixedData[cell2].pt << endl;
 					}
 				}
 			}
@@ -1898,7 +1903,7 @@ int ZHOU::Rate50_NakedQuad(){// pair/triplets done
 					int dig3 = tdigs[i3] | dig2;
 					if (_popcnt32(dig3) > 4)continue;
 					for (int i4 = i3 + 1; i4 < ncells; i4++){
-						int dig4 = tdigs[i4] | dig3;
+						int dig4 = tdigs[i4] | dig3,go_clean=0;
 						if (_popcnt32(dig4) != 4)continue;
 						//cout << "seen a nacked quas" << endl;
 						ww = wu; ww.Clear_c(tcells[i1]); ww.Clear_c(tcells[i2]);
@@ -1907,9 +1912,12 @@ int ZHOU::Rate50_NakedQuad(){// pair/triplets done
 							BF128 clean = FD[idig][0]&ww;
 							if (clean.isNotEmpty()){
 								FD[idig][0] -= clean;
-								iret = 1;
+								iret = go_clean = 1;
 							}
 						}
+						if (go_clean &&pm_go.opprint & 2)  
+							cout <<  " nake quad  unit=" << iu << endl;
+						 
 					}
 				}
 			}
@@ -1919,7 +1927,7 @@ int ZHOU::Rate50_NakedQuad(){// pair/triplets done
 	return iret;
 }
 int ZHOU::Rate52_JellyFish(){
-	if (pm_go.opprint2 & 2) cout << "look for Jelly fish rating 52" << endl;
+	if (pm_go.opprint & 1) cout << "look for Jelly fish rating 52" << endl;
 	int iret = 0;
 	for (int idig = 0; idig < 9; idig++){
 		int & rx2 = zh_g2.row_col_x2[idig][0],
@@ -1964,8 +1972,8 @@ int ZHOU::Rate52_JellyFish(){
 							clean3 = cols[c3] & ~mask, clean4 = cols[c4] & ~mask;
 						if (clean1 | clean2 | clean3 | clean4){//some cleaning appears
 							iret = 1;
-							//if (pm_go.opprint2 & 2)cout << "Jellyfish row digit=" << idig + 1 << " rows " << r1 + 1 << r2 + 1 << r3 + 1 << r4 + 1
-							//	<< " cols " << c1 + 1 << c3 + 1 << c4 + 1 << c2 + 1 << endl;
+							if (pm_go.opprint & 2)cout << "Jellyfish row digit=" << idig + 1 << " rows " << r1 + 1 << r2 + 1 << r3 + 1 << r4 + 1
+								<< " cols " << c1 + 1 << c3 + 1 << c4 + 1 << c2 + 1 << endl;
 							if (clean1)FD[idig][0].ClearCol(clean1, c1);
 							if (clean2)FD[idig][0].ClearCol(clean2, c2);
 							if (clean3)FD[idig][0].ClearCol(clean3, c3);
@@ -2013,8 +2021,8 @@ int ZHOU::Rate52_JellyFish(){
 							clean3 = rows[r3] & ~mask, clean4 = rows[r4] & ~mask;
 						if (clean1 | clean2 | clean3 | clean4){//some cleaning appears
 							iret = 1;
-							//if (pm_go.opprint2 & 2)cout << "swordfish col digit=" << idig + 1 << " cols " << c1 + 1 << c2 + 1 << c3 + 1 << c4 + 1
-							//	<< " rows " << r1 + 1 << r3 + 1 << r4 + 1 << r2 + 1 << endl;
+							if (pm_go.opprint & 2)cout << "jellyfish col digit=" << idig + 1 << " cols " << c1 + 1 << c2 + 1 << c3 + 1 << c4 + 1
+								<< " rows " << r1 + 1 << r3 + 1 << r4 + 1 << r2 + 1 << endl;
 							if (clean1)FD[idig][0].ClearRow(clean1, r1);
 							if (clean2)FD[idig][0].ClearRow(clean2, r2);
 							if (clean3)FD[idig][0].ClearRow(clean3, r3);
@@ -2031,7 +2039,7 @@ int ZHOU::Rate52_JellyFish(){
 }
 int ZHOU::Rate54_HiddenQuad(){// no naked quad in fact coded as naked 5
 	int iret = 0;
-	if (pm_go.opprint2 & 2){
+	if (pm_go.opprint & 1){
 		cout << "look for hidden quad rating 54 ( in fact naked 5)" << endl;
 	}
 
@@ -2051,7 +2059,9 @@ int ZHOU::Rate54_HiddenQuad(){// no naked quad in fact coded as naked 5
 						int c4 = cig[i4], dig4 = zh_g2.dig_cells[c4]  | dig3;
 						if (_popcnt32(dig4) > 5)continue;
 						for (int i5 = i4 + 1; i5 <9; i5++){
-							int c5 = cig[i5], dig5 = zh_g2.dig_cells[c5] | dig4;
+							int c5 = cig[i5],
+								dig5 = zh_g2.dig_cells[c5] | dig4,
+								go_clean = 0;;
 							if (_popcnt32(dig5) != 5)continue;
 							BF128 ww = wu; ww.Clear_c(c1); ww.Clear_c(c2);
 							ww.Clear_c(c3); ww.Clear_c(c4); ww.Clear_c(c5);
@@ -2059,9 +2069,11 @@ int ZHOU::Rate54_HiddenQuad(){// no naked quad in fact coded as naked 5
 								BF128 clean = FD[idig][0] & ww;
 								if (clean.isNotEmpty()){
 									FD[idig][0] -= clean;
-									iret = 1;
+									iret = go_clean = 1;
 								}
 							}
+							if (go_clean &&pm_go.opprint & 2)
+								cout << " nake 5  unit=" << iu << endl;
 							goto nextiu;// nothing more in this iu
 						}
 					}

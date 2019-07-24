@@ -151,6 +151,7 @@ extern void Sort_uint32_t(uint32_t * t, uint32_t nt);
 //extern char * CoutGint64Puzzle(GINT * t, int n);
 // general correspondance row column box band pattern 
 extern int AddUA64(uint64_t * t, uint32_t & nt, uint64_t ua);
+extern int AddUA32(uint32_t * t, uint32_t & nt, uint32_t ua);
 extern int TblMult3[9];  // 3*i
 extern int TblMult9[9];  // 9*i
 extern int C_minirow[81];
@@ -289,3 +290,4 @@ extern int floors2d_same_band_stack[9];
 extern int floors2d_same_band_stack_third[9];
 extern int floors_3d[84];
 extern int floors_4d[126];
+extern int tpermorder[1296][9];

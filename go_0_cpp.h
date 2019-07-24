@@ -8,7 +8,8 @@ const char * zh_g_cpt[10] = { "npuz", "guess", "close_d ", "upd1 ", "upd2 ",
 #include "go_2xx_cpp.h"
 #include "go_3xx_cpp.h"
 #include "go_4xx_cpp.h"
- void Go_0xx(){
+#include "go_5xx_cpp.h"
+void Go_0xx(){
 	 switch (sgo.command) {
 	// case 0: Go_c0(); break;// test on brute force
 	 case 10: Go_c10(); break;// extract valid puzzles from entry
@@ -26,6 +27,7 @@ void Go_sol_1xx(){
 	switch (sgo.command){
 	case 110: Go_c110(); break;// template solve serate mode
 	case 111: Go_c111(); break;// solve/split quick serate mode
+	case 112: Go_c112(); break;// solve full explain mode
 	case 118: Go_c118(); break;// study a sub grid
 	case 199: Go_c199(); break;// current test 
 	}
@@ -94,15 +96,30 @@ void Go_misc_4xx(){
 	case 481: Go_c480(); break;// check/update game data base
 	case 484: Go_c484(); break;// restore game data base
 	case 485: Go_c485(); break;// find close to entry in base
-	case 490: Go_c490(); break;// extract sym on box
+	case 490: Go_c490(); break;// extract puzzles with central or diagonal symmetry
 	case 491: Go_c491(); break;// morph to pattern -s0-
+	case 492: Go_c492(); break;// find minimal pattern for central diagonal symmetry
+
 	case 495: Go_c495(); break;// check/update game data base
+
+	}
+
+}
+void Go_misc_5xx() {
+	cout << "command 5xx command=" << sgo.command << endl;
+	switch (sgo.command) {
+	case 500: Go_c500(); break;// check no 17 2 cells in one band 
+	case 510: Go_c510(); break;// check no 17 2 cells in one band 
+	case 511: Go_c511(); break;// check no 17 2 cells in one band 
 
 	}
 
 }
 
 void Go_0( ){
+	memset(p_cptg, 0, sizeof p_cptg);// used in debugging sequences only
+	memset(p_cpt1g, 0, sizeof p_cpt1g);// used in debugging sequences only
+	memset(p_cpt2g, 0, sizeof p_cpt2g);// used in debugging sequences only
 	// open  outputs files 1;2;3 output +_filex.txt
 	if (sgo.foutput_name){
 		char zn[200];
@@ -119,6 +136,7 @@ void Go_0( ){
 	case 2: Go_gen_2xx(); break;
 	case 3: Go_can_3xx(); break;
 	case 4: Go_misc_4xx(); break;
+	case 5: Go_misc_5xx(); break;
 	}
 	cerr << "go_0 return" << endl;
 }

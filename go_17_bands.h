@@ -1,5 +1,4 @@
 
-
 // standard first band (or unique band)
 struct STD_B416 {
 	char band[28];
@@ -13,7 +12,8 @@ struct STD_B416 {
 		nua = t16_nua[i416];
 		memcpy(tua, &t16_UAs[t16_indua[i416]], 4 * nua);
 	}
-	void MorphUas();
+	void MorphUas()
+;
 	void InitC10(int i);
 	void InitG12(int i) ;
 	void InitBand2_3(int i16,char * ze, BANDMINLEX::PERM & p

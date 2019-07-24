@@ -6,14 +6,17 @@
 //22521159232789761
 //536435903110145
 #define LIM3Y 2000000
-//#define DEBUGLEVEL 10
+//#define DEBUGLEVEL 10  nb12=3461507
 void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,ds3
-	const char * diagband = "265738914348591267791264538";
-	const char * diagpuz = ".23.........18...6..9............9.4......2..7...6.......9.2.7.8.4...........3...";
+	const char * diagband = "285914637376528194914763528";
+	const char * diagpuz = ".2.4........1....3........5.85......3...........76..2..6.....4......29..8....5...";
+	diag = 0;
 	//diag = 2; p17diag.SetAll_0();
-	uint64_t diagval = 795388;
+	cout << "entry m10 nb12=" << genb12.nb12 << "nbands3="<< genb12.nband3 << endl;
+	uint64_t diagval = 311976;
 	p_cpt2g[0] ++;
 	p_cpt2g[7] +=genb12.nband3;
+	if (genb12.nband3 > p_cpt2g[23])	p_cpt2g[23] = genb12.nband3;
 	if (diag) {
 		if (genb12.nb12 == diagval) {
 			for (int i = 0; i < 54; i++)
@@ -43,6 +46,8 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	if (!(myband1.n5| myband2.n5)) return; // no 656 no 566
 	int nb3 = genb12.nband3;
 	int ni3 = myband2.nind[2];
+	if (genb12.nb12 == 3461507) diag = 2;
+
 	if (diag ) {
 		cout << "first check" << endl;
 		//myband1.PrintStatus();
@@ -62,7 +67,7 @@ void G17B::GoM10(){// processing an entry 656 566 with the relevant table of ba,
 	if(genuasb12.Initgen()) return;
 	if (diag) {
 		genuasb12.DebugUas();
-		cout << diagpuz << " puz known" << endl;
+		//cout << diagpuz << " puz known" << endl;
 		//return;
 	}
 	genb12.BuildGang9x3();
@@ -81,6 +86,8 @@ void G17B::Go(){// search process external loop 2X2Y
 	indexstep.StartDead();
 	int n1 = myband1.nind[1],
 		n2 = myband2.nind[1];
+	cout << genb12.nb12 << " n1=" << n1 << " n2=" << n2
+		<< " n52=" << myband2.n5 << " cpt2=" << p_cpt2g[2] << endl;
 	if (diag == 2)	GodebugInit(1);//  1 base 2 all UAs 
 	for (int i1 = 0; i1 < n1; i1++) {
 		if (g17b.debug17) {
@@ -91,7 +98,7 @@ void G17B::Go(){// search process external loop 2X2Y
 			}
 			else continue;
 		}
-		if (diag == 2) {
+		if (diag &4) {
 				int * t1 = myband1.index2[i1];
 				if ((t1[0] & p17diag.bf.u32[0]) == t1[0]) {
 					cout << Char27out(t1[0]) << " step 1  BF i1=" << i1
@@ -113,7 +120,7 @@ void G17B::Go(){// search process external loop 2X2Y
 				}
 				else continue;
 			}
-			if (diag == 2) {
+			if (diag &4) {
 				int * t2 = myband2.index2[i2];
 				if ((t2[0] & p17diag.bf.u32[1]) == t2[0]) {
 					cout << Char27out(t2[0]) << " step 1  BF i2=" << i2
@@ -753,7 +760,7 @@ void G17XY::Go_0(){// check stacks, check more uas, collect Guas status
 		}
 
 	}
-	if ( g17b.diag == 2) {
+	if ( g17b.diag &4) {
 		//if (cellsbf != g17b.p17diag.bf.u64[0]) return;
 		if (cellsbf == g17b.p17diag.bf.u64[0]) {
 			cout << Char2Xout(cellsbf) << " expected XY" << endl;
@@ -1033,6 +1040,7 @@ void G17XY::BuildActiveBands() {
 		}
 		g17tb3go[ntb3++] = wg3;
 	}
+	if (ntb3 > p_cpt2g[24])	p_cpt2g[24] = ntb3;
 }
 int G17XY::Find_More_Sockets3(uint32_t free_minis) {
 	int rmini = 0;
@@ -1359,8 +1367,8 @@ int G17B3HANDLER::IsMultiple(int bf){
 		cout<<Char27out(bf)  << "call is multple diag="<<diagh << endl;
 	if (_popcnt32(bf) > 25) return 0;
 	// check first if all tuab3 is hit
-	for (int i = 0; i < g17xy.ntuab3; i++)
-		if (!(bf&g17xy.tuab3[i])) return 1;// previous UA not hit
+	//for (int i = 0; i < g17xy.ntuab3; i++)
+	//	if (!(bf&g17xy.tuab3[i])) return 1;// previous UA not hit
 	int ir = zhou[1].CallMultipleB3(zhou[0], bf , diagh);
 	if (ir) {//consider store the fresh ua b3
 	}
@@ -1422,7 +1430,7 @@ void  G17B3HANDLER::Go(){
 	if (g17b.debug17)	cout << " call handler go   nmiss="<<nmiss << endl;
 	if (indexstep.diag_on > 1)	cout << " call handler go   nmiss=" << nmiss << endl;
 	rknown_b3 = 0;
-	g17xy.ntuab3 = 0;
+	//g17xy.ntuab3 = 0;
 	//if (DEBUGLEVEL == 3) return;
 	if (nmiss){
 		//if (DEBUGLEVEL == 3 && nmiss > 0) return;
@@ -2055,7 +2063,7 @@ void G17B::GodebugInit(int mode) {
 		<< "n6  " << myband1.n6 << ";" << myband2.n6 << endl;
 	uint64_t t1 = (uint64_t)myband1.n5 *(uint64_t)myband2.n6;
 	uint64_t t2 = (uint64_t)myband2.n5 *(uint64_t)myband1.n6;
-	cout << t1 << endl << t2 << endl<<t1+t2<< endl;
+	cout << t1 <<"\t" << t2 << "\t"<<t1+t2<<"\t t1 t2 t1+t2"<< endl;
 	if (mode == 2) {
 		cout << "sockets 2 table" << endl;
 		int n2 = 0;

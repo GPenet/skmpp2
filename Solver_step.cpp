@@ -408,7 +408,7 @@ int WWUR2::Go_serate(GINT64 & t, int etarget){
 
 
 	CELL_FIX cf1 = cellsFixedData[cell1], cf2 = cellsFixedData[cell2];
-	if (pm_go.opprint2 & 2)cout << "wwur2 go_serate cells " << cf1.pt << "  " << cf2.pt
+	if (pm_go.opprint & 1)cout << "wwur2 go_serate cells " << cf1.pt << "  " << cf2.pt
 		<< " target=" << target << endl;
 
 	if (cf1.eb == cf2.eb) if (Go_serate_unit(cf1.ebu, hdegree, ndegree)) goto ok;
@@ -416,7 +416,7 @@ int WWUR2::Go_serate(GINT64 & t, int etarget){
 	if (cf1.pl == cf2.pl) if (Go_serate_unit(cf1.plu, hdegree, ndegree)) goto ok;
 	return 0;;
 ok:
-	if (pm_go.opprint2 & 4)cout << det_mess << " cells " << cf1.pt << "  " << cf2.pt
+	if (pm_go.opprint & 2)cout <<"URs/ULs "<< det_mess << " cells " << cf1.pt << "  " << cf2.pt
 		<< " rating=" << pm_go.hint.rating_done << endl;
 	return 1;
 }
@@ -455,7 +455,7 @@ quad:
 }
 int WWUR2::Go_serate_unit(int eunit, int hdegree, int ndegree){
 	Init(eunit);
-	if (pm_go.opprint2 & 2)cout << " go_serate unit " << eunit << "  hdegree=" << hdegree
+	if (pm_go.opprint & 1)cout << " go_serate unit " << eunit << "  hdegree=" << hdegree
 		<< " ndegree=" << ndegree << " go_naked=" << go_naked << endl;
 
 	InitFreeDigits();
@@ -620,7 +620,7 @@ void XSTATUS::AddStart(int xcell, int unit, GINT64 * t, int & nt, BF128 * tx, BF
 }
 int XSTATUS::XCycle(int fast){
 	if (!active) return 0;
-	if (pm_go.opprint2 & 2){
+	if (pm_go.opprint & 1){
 		cout << "try XCycle for digit " << digit + 1 << endl;
 		zhou_solve.DebugDigit(digit);
 		char ws[82];
@@ -664,24 +664,24 @@ int XSTATUS::XCycle(int fast){
 		xce2 = zu.getFirst128();
 		int npas = R65Xexpand(xce1, xce2, 1, tback,txstarts[ist]);
 		if (!npas)continue;
-		if (pm_go.opprint & 2){
-			cout << "loop back npas=" << npas << endl;
-			for (int i = 0; i <= npas; i++){
-				int xcell = tback[i], cell = From_128_To_81[xcell];
-				if (!(i & 1)) cout << "~";
-				if (cell >= 0 && cell<81)
-					cout << cellsFixedData[cell].pt << " ";
-				else cout << cell << " ";
-
-			}
-			cout << endl;
-
-		}
 		if (npas <= 6 || fast){// do elims set iret to 1
 			pm_go.nstore_xlc = 0; //clean longer if any
 			if (CleanLoop(tback, npas)){
 				if (npas < maxpas)maxpas = npas;
 				iret = 1;
+				if (pm_go.opprint & 2) {
+					cout << "loop back npas=" << npas << " digit=" << digit + 1 << endl;
+					for (int i = 0; i <= npas; i++) {
+						int xcell = tback[i], cell = From_128_To_81[xcell];
+						if (!(i & 1)) cout << "~";
+						if (cell >= 0 && cell < 81)
+							cout << cellsFixedData[cell].pt << " ";
+						else cout << cell << " ";
+
+					}
+					cout << endl;
+
+				}
 			}
 		}
 		else if (!iret){// nothing to store if active and new
@@ -731,10 +731,9 @@ int XSTATUS::CleanChain(int * t, int nt, BF128 & clean){
 	}
 	return 0;
 }
-
 int XSTATUS::XChain(int fast){
 	if (!active) return 0;
-	if (pm_go.opprint2 & 2){
+	if (pm_go.opprint & 1){
 		cout << "try XChain for digit " << digit + 1 << endl;
 		char ws[82];
 		cout << elims.String3X(ws) << " elims � voir" << endl;
@@ -757,24 +756,24 @@ int XSTATUS::XChain(int fast){
 				pm_go.nstore_xlc = store_start;// clean file of store xchain
 				maxpas = npas;
 			}
-			if (pm_go.opprint & 4){
-				cout << "chain back npas=" << npas << endl;
-				for (int i = 0; i <= npas; i++){
-					int xcell = tback[i], cell = From_128_To_81[xcell];
-					if (i & 1) cout << "~";
-					if (cell >= 0 && cell<81)
-						cout << cellsFixedData[cell].pt << " ";
-					else cout << cell << " ";
-				}
-				cout << endl;
-			}
 			if (npas <= 6 || fast){// do elims set iret to 1
 				pm_go.nstore_xlc = 0; //clean longer if any
 				BF128 clean;
 				if (CleanChain(tback, npas,clean)){
 					we -= clean;
 					iret = 1;
-					break;
+					if (pm_go.opprint & 2) {
+						cout << "chain back npas=" << npas<< " digit="<<digit+1 << endl;
+						for (int i = 0; i <= npas; i++) {
+							int xcell = tback[i], cell = From_128_To_81[xcell];
+							if (i & 1) cout << "~";
+							if (cell >= 0 && cell < 81)
+								cout << cellsFixedData[cell].pt << " ";
+							else cout << cell << " ";
+						}
+						cout << endl;
+					}
+					//break;
 				}
 			}
 			else if (!iret){// nothing to store if active 
@@ -791,15 +790,34 @@ int XSTATUS::XChain(int fast){
 	}
 	return iret;
 }
-
 struct XCOM{// data for x search one for all digits
+	struct XCN {// Nishio contradiction
+		GINT16	tret1[50], tret2[50],elim;
+		int hintrating, nret1, nret2;
+		void Print() {
+			cout << "path1\t ";
+			for (int i = 0; i < nret1; i++) {
+				GINT16 x = tret1[i];
+				if (x.u8[1])cout << "~";
+				cout << cellsFixedData[x.u8[0]].pt << " ";
+			}
+			cout << endl;
+			cout << "path2\t ";
+			for (int i = 0; i < nret2; i++) {
+				GINT16 x = tret2[i];
+				if (x.u8[1])cout << "~";
+				cout << cellsFixedData[x.u8[0]].pt << " ";
+			}
+			cout << endl;
+		}
+	}xc,txc[10];
 	int fast, hitmode, ntcand,digit,cell,old_rating,clear_done;
-	int hintrating,nret1,nret2,nelims,opprint;
+	int hintrating, nelims,opprint;
 	GINT16 tex[2][81];// pointer to source cell/sign or unit/2
-	GINT16	tret1[50], tret2[50], tcand[150],telims[10];
+	GINT16	 tcand[150],telims[10];
 	PM3X seen_elims;
 	void Init(int f,int oldr=0){
-		opprint = pm_go.opprint2 & 8;
+		opprint = pm_go.opprint & 2;
 		if (oldr)old_rating = oldr;
 		else old_rating = pm_go.rat_er;
 		if (old_rating < 76)old_rating = 76;// minimum expected do it always
@@ -819,22 +837,27 @@ struct XCOM{// data for x search one for all digits
 		if (nelims >= 10) return;
 		if (seen_elims.On_c(dig, cell))return;//redundancy
 		seen_elims.Set_c(dig, cell);
-		if(opprint)cout << "store  "<<dig+1 << cellsFixedData[cell].pt << " rating=" << rr << endl;
-		Print();
-		telims[nelims++].u16 = (uint16_t)(cell | (dig << 8)); 
+		if (opprint < 2) {
+			cout << "store  " << dig + 1 << cellsFixedData[cell].pt << " rating=" << rr << endl;
+			xc.Print();
+		}
+		if (opprint & 2) {// store chains for later print
+			txc[nelims] = xc;
+		}
+		telims[nelims++].u16 = (uint16_t)(cell | (dig << 8));
 	}
 
 	void Store1( int c_elim, int c_contradiction, XSTATUS * xst){
 		int d_elim = xst->digit;
 		if (zhou_solve.IsOffCandidate_c(d_elim, c_elim))return;
 		GINT16 x; x.u16 = (uint16_t)c_contradiction;
-		nret1 = XBackNishio(x, tret1, xst);
+		xc.nret1 = XBackNishio(x, xc.tret1, xst);
 		x.u8[1] = 1;
-		nret2 = XBackNishio(x, tret2, xst);
-		int rr = pm_go.hint.ChainLengthAdjusted(75, nret1+nret2);
+		xc.nret2 = XBackNishio(x, xc.tret2, xst);
+		int rr = pm_go.hint.ChainLengthAdjusted(75, xc.nret1+xc.nret2);
 		if (rr <= old_rating){
-			if (opprint)cout << "clear " << cellsFixedData[c_elim].pt << endl;
-			Print();
+			if (opprint)cout << "clear "<<d_elim+1 << cellsFixedData[c_elim].pt << endl;
+			xc.Print();
 			zhou_solve.ClearCandidate_c(d_elim, c_elim);
 			clear_done = 1;
 			return;
@@ -844,14 +867,14 @@ struct XCOM{// data for x search one for all digits
 	void Store2( int n1,GINT16 * t1,int c_elim, XSTATUS * xst){
 		int d_elim = xst->digit;
 		if (zhou_solve.IsOffCandidate_c(d_elim, c_elim))return;
-		nret1 = n1;
-		memcpy(tret1, t1, 2 * nret1);
+		xc.nret1 = n1;
+		memcpy(xc.tret1, t1, 2 * xc.nret1);
 		GINT16 x; x.u16 = (uint16_t)(c_elim + 0x100); // start path2 with elim in off mode
-		nret2 = XBackNishio(x, tret2, xst);
-		int rr = pm_go.hint.ChainLengthAdjusted(75, nret1 + nret2 + 1);
+		xc.nret2 = XBackNishio(x, xc.tret2, xst);
+		int rr = pm_go.hint.ChainLengthAdjusted(75, xc.nret1 + xc.nret2 + 1);
 		if (rr <= old_rating){
 			if (opprint)cout << "clear " << cellsFixedData[c_elim].pt << endl;
-			Print();
+			xc.Print();
 			zhou_solve.ClearCandidate_c(d_elim, c_elim);
 			clear_done = 1;
 			return;
@@ -859,24 +882,6 @@ struct XCOM{// data for x search one for all digits
 		AddElim(d_elim, c_elim, rr);
 	}
 	int XBackNishio(GINT16 x, GINT16 * tretr, XSTATUS * xst);
-	void Print(){
-		if (!opprint) return;
-		GINT16 *tp[2] = { tret1, tret2 };
-		cout << "path1\t " ;
-		for (int i = 0; i < nret1; i++){
-			GINT16 x = tp[0][i];
-			if (x.u8[1])cout <<"~";
-			cout << cellsFixedData[x.u8[0]].pt << " ";
-		}
-		cout << endl;
-		cout << "path2\t ";
-		for (int i = 0; i < nret2; i++){
-			GINT16 x = tp[1][i];
-			if (x.u8[1])cout << "~";
-			cout << cellsFixedData[x.u8[0]].pt << " ";
-		}
-		cout << endl;
-	}
 }xcom;
 
 
@@ -914,7 +919,12 @@ int XCOM::XBackNishio(GINT16 x0, GINT16 * tretr,XSTATUS * xst){
 		int nb = 0;
 		for (int i = 0; i<ntcand; i++){
 			GINT16 x = tcand[i];
-			if (back_bf.On_c(x.u8[0])) tretr[nb++] = x;
+			if (back_bf.On_c(x.u8[0])) {
+				if (x.u8[0] == x0.u8[0]) {// skip false sign
+					if (x.u8[1] == x0.u8[1])tretr[nb++] = x0;
+				}
+				else tretr[nb++] = x;
+			}
 		}
 	}
 	return itret;
@@ -1028,7 +1038,7 @@ int  XSTATUS::XexpandNishio(int cell1){
 
 int XSTATUS::Nishio1(){// this is for a given digit
 	if (!active) return 0;
-	int iret = 0;
+	int iret = xcom.clear_done=0;
 	if (pm_go.opprint2 & 8){
 		cout << "try Nishio1 for digit " << digit + 1 << endl;
 		char ws[82];
@@ -1117,13 +1127,21 @@ int XSTATUS::Nishio2(){// must also consider bi value multi chains seen as x->~a
 	return iret;
 }
 
+void STORE_XLC::Print() {//[From_128_To_81[xce1]];
+	cout << "Xprint loop=" << loop  << " digit=" <<dig+1<< endl;
+	for (int i = 0; i <= nt; i++) {
+		if ((i+loop) & 1) cout << "~" ;
+		cout << cellsFixedData[From_128_To_81[t[i]]].pt << " ";
+	}
+	cout <<endl;
+}
 
 //============================================= YLSEARCH
 
 int YLSEARCH::Search(int fast ){// search using zh_g.digit_sol as compulsory 
 	//cout << "ylsearch start" << endl;
 	locdiag = 0;
-	if (pm_go.opprint & 2) locdiag = 1;
+	if (pm_go.opprint & 1) locdiag = 1;
 	BF128 lastloop; lastloop.SetAll_0();
 	pm_go.nstore_yl = 0;
 	maxpas = 15;
@@ -1151,8 +1169,7 @@ int YLSEARCH::Search(int fast ){// search using zh_g.digit_sol as compulsory
 						for (int i = 0; i < ncells; i++) loop.Set_c(tback[i].u16[0]);
 						if (loop == lastloop)continue;
 						if (locdiag){
-							cout << " yloop seen ncells=" << ncells << " start on dig " << idig + 1 << endl;
-							PrintTback();
+							PrintTback(" yloop seen ");
 						}
 						if (ncells < maxpas){
 							maxpas = ncells;
@@ -1161,9 +1178,8 @@ int YLSEARCH::Search(int fast ){// search using zh_g.digit_sol as compulsory
 						lastloop = loop;
 						if (ncells == 4|| fast){// apply the loop
 							if (CleanLoop()){
+								PrintTback(" active yloop ");
 								iret = 1;
-								//cout << "after cleaning yl" << endl;
-								//zhou_solve.ImageCandidats();
 							}
 						}
 						else {
@@ -1361,7 +1377,7 @@ int YLSEARCH::SearchOut(int fast){// search using zh_g.digit_sol as compulsory
 	//cout << "ylsearchout start" << endl;
 	maxpas = 12;
 	locdiag = 0;
-	if (pm_go.opprint & 2) locdiag |= 1;// 4 + 8;
+	if (pm_go.opprint & 1) locdiag = 1;
 	if (zh_g.pairs.Count() < 7) return 0;// minimm with no XY wing
 	//maxpas = 20;// don't do that would delete ylsearch stored
 	mode = 1;
@@ -1387,7 +1403,7 @@ int YLSEARCH::SearchOut(int fast){// search using zh_g.digit_sol as compulsory
 					int w = c1 | (c2 << 16);
 					for (int i = 0; i < ntpstart; i++) if (w == tpstart[i]) goto skipc2;
 					tpstart[ntpstart++] = w;
-					if (locdiag & 8){
+					if (0 ){
 						cout <<idig+1<< cellsFixedData[c0].pt << " " 
 							<< cellsFixedData[c1].pt << " "	<< cellsFixedData[c2].pt
 							<< " c0,c1,c2 go yloopout maxpas=" << maxpas << endl;
@@ -1397,12 +1413,14 @@ int YLSEARCH::SearchOut(int fast){// search using zh_g.digit_sol as compulsory
 						loop.SetAll_0();
 						for (int i = 0; i < ncells; i++) loop.Set_c(tback[i].u16[0]);
 						if (locdiag & 8){
-							cout << " yloopout seen ncells=" << ncells << " start on dig " << idig + 1 << endl;
-							PrintTback();
+							PrintTback(" yloop out seen ");
 						}
 						if (ncells < maxpas){maxpas = ncells;	pm_go.nstore_yl = 0;}
 						if (ncells <8 || fast){// apply the loop
-							if (CleanLoopOut())return 1; 	// should always be "yes"							
+							if (CleanLoopOut()) {
+								PrintTback(" yloop out active ");
+								return 1; 	// should always be "yes"	
+							}
 						}
 						else {
 							for (int i = 0; i < pm_go.nstore_yl; i++){
@@ -1472,11 +1490,11 @@ int YLSEARCH::CleanLoopOut(){
 	return iret;
 }
 
-void YLSEARCH::PrintTback(){
+void YLSEARCH::PrintTback(const char * lib){
 	for (int i = 0; i < ncells; i++){
 		cout << cellsFixedData[tback[i].u16[0]].pt << " -> ";
 	}
-	cout << cellsFixedData[tback[ncells].u16[0]].pt << endl;
+	cout << cellsFixedData[tback[ncells].u16[0]].pt<<" "<<lib << " start on dig " << idig + 1 << endl;
 }
 //============================================= XYSEARCH
 void  XYSEARCH::AddUnit(int unit, int source){
@@ -1679,7 +1697,7 @@ int XYSEARCH::CleanXYChain(){
 			}
 		}
 	}
-	if (pm_go.opprint & 2)cout << "CleanXYChain() return ="<<iret << endl;
+	if(iret && (pm_go.opprint & 2))cout << "CleanXYChain() return ="<<iret << endl;
 	return iret;
 }
 
@@ -1824,7 +1842,7 @@ void XYSEARCH::Init(){//Collect bi values
 }
 void XYSEARCH::Init2(){// if multi_chains level reached
 	BF128 wbiv = cells_biv_all | pairs,singles=cells_all-cells_biv_all;
-	if( 0 &&pm_go.cycle == 5){
+	if(0){
 		dbiv.Print(" bi-values status");
 		char ws[82];
 		cout << wbiv.String3X(ws) << " wbiv" << endl;
@@ -1886,7 +1904,7 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 	GINT wstore[50];// chain to store or back
 	BF128 wsloop, tsloop[20];
 	int ntsloop = 0;
-	locdiag = 0;	if (pm_go.opprint & 2) locdiag = 1;
+	locdiag = 0;	if (pm_go.opprint & 1) locdiag = 1;
 	if (locdiag) {
 		cout << "xysearch start fast =" << fast << endl;
 	}
@@ -1917,7 +1935,11 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 					pm_go.gintbuf.Init(); // clean all stored
 				}
 				if (rating == 70) {
-					iret += CleanXYChain();
+					int ir= CleanXYChain();
+					if (ir) {
+						PrintTback();
+						iret = 1;
+					}
 				}
 				else if (rating == maxrating) {// store it for later use
 					// need to store tback, nsteps mode
@@ -1955,7 +1977,11 @@ int XYSEARCH::Search(int fast){// search using zh_g.zerobased_sol[81] as digit
 			tback[i- 1].u32[0] = w.u32;
 		}
 		if (locdiag)PrintTback();
-		iret += CleanXYChain();
+		int ir = CleanXYChain();
+		if (ir) {
+			PrintTback();
+			iret = 1;
+		}
 	}
 	pm_go.hint.rating_done = (USHORT)maxrating;
 	if (iret){
@@ -1997,13 +2023,6 @@ int XYSEARCH::SearchMulti(int fast){
 			BF128 wiu = units3xBM[iu]; wiu &= pm;
 			BF128 wiud = wiu&wd, wiun = wiu-wiud , wseen = pm - wiu;
 			int n = wiun.Count(), cell2;
-			if (locdiag&& idig==3 && iu == 24){
-				cout << "look at digit 4 box24" << endl;
-				char ws[82];
-				cout << wiu.String3X(ws) << " wiu" << endl;
-				cout << wiun.String3X(ws) << " wiun" << endl;
-				cout << wseen.String3X(ws) << " wseen" << endl;
-			}
 			if (!n)goto tryiu;
 			if (n > 3) goto nextiu;
 			while ((cell2 = wiun.getFirstCell()) >= 0){
@@ -2016,7 +2035,6 @@ int XYSEARCH::SearchMulti(int fast){
 		nextiu:;
 		}
 	}
-	//cout << "exit multi iret=" << iret << " ntelims=" << ntelims << endl;
 	if (iret) return 1;
 	if (ntelims){// do stored elim(s) if any
 		for (int i = 0; i < ntelims; i++){
@@ -2134,7 +2152,11 @@ int XYSEARCH::MultiCell(int c0){
 }
 
 void XYSEARCH::PrintBackMulti(int elim_dig, int elim_cell){
+	BUILDSTRING & wp = pm_go.bdsp[0];
+	if (wp.NoFree()) return; // safety code must have room to store
 	cout << "Print back multi elim " << elim_dig + 1 << cellsFixedData[elim_cell].pt << endl;
+	int nstore = 0;
+	GINT64 * pstore = wp.GetFree();
 	BF128 seen = cell_z3x[elim_cell]; seen &= zh_g2.pm.pmdig[elim_dig];
 	for (int ipath = 0; ipath < npaths; ipath++){
 		PATH &pth = paths[ipath];
@@ -4363,6 +4385,7 @@ new process  "8"
    une ligne et une colonne par bande trois connus
 */
 
+//========================= BUILDSTRING
 
 
 //=========================  PM_GO  processing a file
@@ -4395,7 +4418,7 @@ void PM_GO::HINT::Add(PM3X & elime, USHORT rate){
 	if (rate<rating){
 		rating = rate;
 		pmelims = elime;
-		if (rating>62)parent->bdsp[0]->Init();
+		if (rating>62)parent->bdsp[0].Init();
 	}
 	else
 		pmelims |= elime;
@@ -4406,21 +4429,21 @@ int PM_GO::HINT::AddCand(USHORT dig, USHORT cell, USHORT rate){
 	if (rate <= parent->rat_er){// already active, keep it 
 		if (rating>parent->rat_er){// but check for higher rating there (xy chains)
 			pmelims.SetAll_0();
-			if (rating>62)		parent->bdsp[0]->SetCurrentAsFirst();
+			if (rating>62)		parent->bdsp[0].SetCurrentAsFirst();
 		}
-		if (pmelims.On(dig, cell)){ parent->bdsp[0]->ClearCurrent(); return 0; }
+		if (pmelims.On(dig, cell)){ parent->bdsp[0].ClearCurrent(); return 0; }
 		pmelims.Set(dig, cell);
 		rating = (USHORT)parent->rat_er; // just to say something hapenned
 		return 1;
 	}
-	if (rate>rating) { parent->bdsp[0]->ClearCurrent(); return 0; }
+	if (rate>rating) { parent->bdsp[0].ClearCurrent(); return 0; }
 	//	if(rate>65)EE.Enl("add rating accepted");
-	if (rate == rating && pmelims.On(dig, cell)){ parent->bdsp[0]->ClearCurrent(); return 0; }
+	if (rate == rating && pmelims.On(dig, cell)){ parent->bdsp[0].ClearCurrent(); return 0; }
 	if (rate<rating){
 		//		if(rate>65)EE.Enl("add rating acceptedzero reset");
 		rating = rate;
 		pmelims.SetAll_0();
-		if (rating>62)		parent->bdsp[0]->SetCurrentAsFirst();
+		if (rating>62)		parent->bdsp[0].SetCurrentAsFirst();
 	}
 	pmelims.Set(dig, cell);
 	return 1;
@@ -4429,26 +4452,23 @@ int PM_GO::HINT::AddCand(USHORT dig, USHORT cell, USHORT rate){
 PM_GO::PM_GO(){
 	/*
 	t2cells.parent = r0search.parent = xysearch.yls.goparent = this;
-
 	nested.tpmd = &zpmd[1]; //main data and dynam area for basic work
 	nested.drcells = zpmd[1].dig_cells;
-	// setup buildstring permanent areas
-	xysearch.buildstring.SetUp(builstr1, buildstringsize1);
-	nested.buildstring.SetUp(builstr2, buildstringsize2);
-	bdsp[0] = &xysearch.buildstring;
-	bdsp[1] = &nested.buildstring;
 	rank0_min = 2;
 	rank0_max = 5;
 	myd_at_start = &zpmd[0];
 	c = zpmd[0].pm.bfc;
 	*/
+	// setup buildstring permanent areas
 	gintbuf.Set(gintbuffer, GINTBUFSIZE1);
+	bdsp[0].SetUp(builstr1, buildstringsize1);
+	bdsp[1].SetUp(builstr2, buildstringsize2);
 	for (int i = 0; i<17; i++) ratfound[i] = 0;// used in low ratings compressed
 	sgiven_ok = 0; // initial symmetry of given to nothing
 	is_valid_puzzle = 1; // usually a valid puzzle processed 
 }
 int PM_GO::CleanOr(int d1, int c1, int d2, int c2){
-	if (opprint2 & 2)cout << "pm_go cleanor " << d1 + 1 << cellsFixedData[c1].pt << " "
+	if (opprint & 1)cout << "pm_go cleanor " << d1 + 1 << cellsFixedData[c1].pt << " "
 		<< d2 + 1 << cellsFixedData[c2].pt << endl;
 	int digits = (1 << d1) | (1 << d2);
 	BF128 clean = cell_z3x[c1];
@@ -4460,19 +4480,18 @@ int PM_GO::CleanOr(int d1, int c1, int d2, int c2){
 	else if (c1 == c2) {
 		int digs_c = zh_g2.dig_cells[c1];
 		if (_popcnt32(digs_c) < 3) return 0;
-		digs_c &= (~digits);
-		zhou_solve.CleanCellForDigits(c1, digs_c);
-		return 1;
+		digs_c &= (~digits);		
+		return zhou_solve.CleanCellForDigits(c1, digs_c);
 	}
 	else {// must be cell + digit
 		if (clean.Off_c(c2)) return 0;// cells must be same unit
 		int digs = zh_g2.dig_cells[c1];
-		if (digs & (1 << d2)){
+		if( (digs & (1 << d2))&& zhou_solve.FD[d2][0].On_c(c1)) {
 			zhou_solve.ClearCandidate_c(d2, c1);
 			return 1;
 		}
 		digs = zh_g2.dig_cells[c2];
-		if (digs & (1 << d1)){
+		if ((digs & (1 << d1)) && zhou_solve.FD[d1][0].On_c(c2)) {
 			zhou_solve.ClearCandidate_c(d1, c2);
 			return 1;
 		}
@@ -4974,12 +4993,10 @@ int PM_GO::SolveDet(int lim,int printopt,int mode) {
 		}
 		zh_g2.Init_Assign();
 		ratecycle = 0;
-		//if (rat_er < 28) { if (Next10_28()) continue; }
-		//else 
-			if (Next28()) continue;
-		if (Next30_44()) continue;
+		if (Next_below_45()) continue;
 		if (lim <= 44) return 0;
 		//to test Rate45_52_Fast () smal additional risk with multi URs ULs
+		if (pm_go.opprint & 2) 	if ((cycle - 1) & 15) 		zhou_solve.ImageCandidats();
 		if (Rate45_52()) continue;
 		if (Rate52())continue;
 		if (Rate54())continue;
@@ -4987,7 +5004,8 @@ int PM_GO::SolveDet(int lim,int printopt,int mode) {
 		if (lim <= 61) return 0;
 		if (Rate62())continue;
 		SetupActiveDigits();
-		if (pm_go.opprint & 2) cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
+		if ((pm_go.opprint & 2) && zh_g2.active_floor)
+			cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
 		XStatusPrepare();
 		if (Rate65Xcycle(0)) continue;
 		if (lim <= 65) return 0;
@@ -5182,7 +5200,85 @@ void PM_GO::SolveSerate111(){// quick rate ans split serate mode
 	else fout2 << zh_g2.puz << ";" << rat_er << ";" << rat_ep << ";" << rat_ed << endl;
 
 }
+void PM_GO::SolveSerate112() {// full explain mode
+	//===========================================================
+	opprint = sgo.vx[8];	opprint2 = sgo.bfx[8];
+	if (opprint)cout << zh_g2.zsol << "valid puzzle printoption=" << opprint << "  print2=" << opprint2 << endl;
+	stop_rating = cycle = assigned = 0;
+	rat_er = rat_ep = rat_ed = ratecycle = 0;
+	zh_g.nsol = 0; zh_g.lim = 1;
+	ur_serate_mode = 0;
+	if (!sgo.vx[2])sgo.vx[2] = 200;// limit for searched rating
+	while (cycle++ < 150) {//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  enough in test up to 150 later
+		if (cycle > 148) { stop_rating = 7;	break; }
+		if (stop_rating) 	break;
+		if (zhou_solve.cells_unsolved.isEmpty()) {
+			if (opprint)cout << "solved ER=" << rat_er << "/" << rat_ep << "/" << rat_ed << endl << "___________________________" << endl;
+			break;
+		}
+		if (pm_go.opprint & 2) {
+			char zi[82];  zhou_solve.SetKnown(zi);
+			cout << zi << "	cycle=" << cycle << " rating=" << rat_er << " unsolved=" << zhou_solve.cells_unsolved.Count() << endl;
+			if (!((cycle - 1) & 15)) 		zhou_solve.ImageCandidats();
+			if (zhou_solve.CheckStatus()) {
+				zhou_solve.ImageCandidats();
+				cerr << "fatal error" << endl;
+				cout << "fatal error" << endl;
+				return;
+			}
+		}
+		zh_g2.Init_Assign();
+		ratecycle = 0;
+		if( Next_below_45()) continue;
+		//to test Rate45_52_Fast () smal additional risk with multi URs ULs
+		if (pm_go.opprint & 2) 	if ((cycle - 1) & 15) 		zhou_solve.ImageCandidats();
+		if (Rate45_52()) continue; // 50 naked quad
+		if (Rate52())continue;// jellyfish
+		if (Rate54())continue;// hidden quad
+		if (Rate56())continue;// bug
+		if (sgo.vx[2] <= 61) goto exit_limit;
+		if (Rate62())continue;// aligned pair
+		SetupActiveDigits();
+		if ((opprint & 2) && zh_g2.active_floor) {
+			cout << Char9out(zh_g2.active_floor) << " active digits" << endl;
+			if (opprint & 4) {
+				for (int i = 0, bit = 1; i < 9; i++, bit <<= 1) if (zh_g2.active_floor & bit)
+					zhou_solve.DebugDigit(i);
+			}
+		}
+		XStatusPrepare();
+		if (Rate65Xcycle(0)) continue;
+		if (sgo.vx[2] <= 65) goto exit_limit;
+		if (Rate6xXcycle(66)) continue;
+		if (Rate66Xchain(0)) continue;
+		if (rat_er < 75)// skip Y loop if XY chain can be applied
+			if (ylsearch.Search()) { Quickrate(66); continue; }
+		if (Rate67_70()) continue;
+		if (Rate70_75(0)) continue;
+		if (Rate75())continue;// aligned triplet
+		if (Rate76Nishio(0)) continue;
+		if (sgo.vx[2] <= 81) goto exit_limit;
+		if (Rate80Multi(0))continue;
+		if (Rate85Dynamic(rat_er >= 96))continue;
+		if (sgo.vx[2] <= 90) goto exit_limit;
+		if (Rate90DynamicPlus(1))continue;
 
+		if (1) { stop_rating = 1; break; }
+		stop_rating = 1;
+		break;
+		//next_cycle:;
+	}
+
+	if (stop_rating) {
+		cout << zh_g2.puz << "; puz n=" << zh_g2.npuz << " unsolved stop_rating = " << stop_rating << endl;
+		fout1 << zh_g2.puz << ";0;0;0;" << stop_rating << " stop======" << endl;
+	}
+	else fout1 << zh_g2.puz << ";" << rat_er / 10 << "." << rat_er % 10 << ";" << rat_ep / 10 << "." << rat_ep % 10
+		<< ";" << rat_ed / 10 << "." << rat_ed % 10 << endl;
+	return;
+exit_limit:
+	if (sgo.bfx[7] & 1)fout2 << zh_g2.puz << endl;
+}
 
 
 void PM_GO::Solve118_subgrid() {
@@ -5244,6 +5340,26 @@ int PM_GO::Next30_44(){
 	if (Rate44())return 1;		
 	return 0;
 }
+int PM_GO::Next_below_45() {
+	zh_g2.Pm_Status(&zhou_solve);
+	zhou_solve.FindNakedPairsTriplets_NoSingle();
+	zhou_solve.Naked_Pairs_Seen();
+	if (Rate10()+Rate12()+Rate15()+Rate23())return 1;// single somewhere
+	if (Rate26())return 1;// locked in box
+	if (Rate28())return 1;// locked row col
+	if (Rate30())return 1;// naked pair
+	if (Rate32())return 1;// xwing
+	if (Rate34())return 1;// hidden pair
+	zh_g2.Pm_Status_End();// cell digits and box digit/cells
+	if (Rate36())return 1;// naked triplet
+	if (Rate38())return 1;// swordfish
+	if (Rate40())return 1;// hidden triplet
+	if (Rate42())return 1;// xywing
+	if (Rate44())return 1;// xyzwing
+	return 0;
+}
+
+
 int PM_GO::Rate10(){
 	if (zhou_solve.Rate10_LastInUnit()){
 		//if(opprint2 & 1)cout << "seen rating 10 last in unit" << endl;
@@ -5300,7 +5416,7 @@ int PM_GO::Rate20(){
 }
 int PM_GO::Rate23(){
 	if (zhou_solve.Rate23_SingleInCell_Assign()){
-		if (opprint2 & 1)cout << "seen rating 23 single in cell" << endl;
+		if (opprint & 1)cout << "seen rating 23 single in cell" << endl;
 		zhou_solve.AssignSolver(opprint & 1);
 		assigned = 1;
 		Quickrate(23);
@@ -5411,15 +5527,15 @@ int  PM_GO::Rate45_52(){//
 		Quickrate(45);
 		return 1;
 	}
-	if (opprint & 2)cout << "exit UR pending URs " << ntur << endl;
+	if (opprint & 1)cout << "exit UR pending URs " << ntur << endl;
 	if (Rate45_2cells(tur, ntur)){// clean twin digit and clear if no UR digit in the plus cells
-		//if (opprint2 & 2)cout << "Rate45_URs twin digit" << endl;
+		if (opprint & 2)cout << "Rate45_URs twin digit" << endl;
 		Quickrate(45);
 		return 1;
 	}
 	ntul = 0;
 	for (int target = 45; target <= 53; target++){// try step by step more
-		//if (opprint2 & 2)cout << "URs for target " << target << endl;
+		if (opprint & 1)cout << "URs for target " << target << endl;
 		int iret = 0;
 		if (ntur && target<=48){
 			for (int iur = 0; iur < ntur; iur++)
@@ -5525,10 +5641,11 @@ int PM_GO::Rate6xXcycle(int rating){
 		STORE_XLC & s = store_xlc[i];
 		if (!s.loop) break; //no more  xcycle
 		if (s.rating != rating) continue;
-		if (pm_go.opprint2 & 2)cout << "try r6xcycle rating" << rating << " istore=" << i << endl;
-		iret += xstatus[s.dig].CleanLoop(s.t, s.nt);
+		if (pm_go.opprint & 1)cout << "try r6xcycle rating" << rating << " istore=" << i << endl;
+		int ir= xstatus[s.dig].CleanLoop(s.t, s.nt);
+		if (ir) { s.Print();		iret = 1; }
 	}
-	if (iret) 		Quickrate(rating);
+	if (iret)Quickrate(rating);
 	return iret;
 }
 int PM_GO::Rate66Xchain(int fast){
@@ -5557,17 +5674,21 @@ int PM_GO::R67_70(int rating){
 		STORE_XLC & s = store_xlc[i];
 		if (s.rating != rating) continue;
 		if (s.loop) {
-			iret += xstatus[s.dig].CleanLoop(s.t, s.nt);
+			int ir = xstatus[s.dig].CleanLoop(s.t, s.nt);
+			if (ir) { s.Print();		iret = 1; }
 		}
 		else{// this is an xchain
 			BF128 clean;
-			iret += xstatus[s.dig].CleanChain(s.t, s.nt,clean);
+			int ir =xstatus[s.dig].CleanChain(s.t, s.nt,clean);
+			if (ir) { s.Print();		iret = 1; }
 		}
 	}
 	for (int i = 0; i <nstore_yl; i++){
 		YLSEARCH & s = store_yl[i];
-		if (pm_go.opprint2 & 4) s.PrintTback();
-		if (s.Is_To_Clean(rating))	iret += s.CleanLoop();
+		if (s.Is_To_Clean(rating)) {
+			int ir = s.CleanLoop();
+			if (ir) { s.PrintTback(" yloop active ");		iret = 1; }
+		}
 	}
 	if (iret) return 1;
 	if (rating == 68)		return ylsearch.SearchOut(0);//try also yloop clear out of region
@@ -5589,21 +5710,21 @@ int PM_GO::Rate75(){
 	return 0;
 }
 int PM_GO::Rate76Nishio(int fast){
-	int diagloc = opprint2 & 8;
+	int diagloc = 0;
 	if(diagloc)cout << "rate 76 nishio" << endl;
 	int iret = 0;
 	xcom.Init(fast);
 	for (int i = 0; i < 9; i++){
 		if (xstatus[i].Nishio1()){
 			iret++;
-			if (diagloc)cout << "nishio1 clear digit" << i + 1 << endl;
+			if (opprint & 1)cout << "nishio1 clear digit" << i + 1 << endl;
 		}
 	}
 	if (!iret){
 		for (int i = 0; i < 9; i++){
 			if (xstatus[i].Nishio2()){
 				iret++;
-				if (diagloc)cout << "nishio2 clear digit" << i + 1 << endl;
+				if (opprint & 2)cout << "nishio2 clear digit" << i + 1 << endl;
 			}
 		}
 	}
@@ -5615,7 +5736,10 @@ int PM_GO::Rate76Nishio(int fast){
 		for (int i = 0; i < xcom.nelims; i++){
 			GINT16 x = xcom.telims[i];
 			zhou_solve.ClearCandidate_c(x.u8[1], x.u8[0]);
-			if (diagloc)cout << "deferred clearing" << x.u8[1] + 1 << cellsFixedData[x.u8[0]].pt << endl;
+			if (opprint & 2) {
+				cout << "deferred clearing" << x.u8[1] + 1 << cellsFixedData[x.u8[0]].pt << endl;
+				xcom.txc[i].Print();
+			}
 		}
 		Quickrate(xcom.hintrating);
 		return 1;
@@ -5733,7 +5857,7 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 									clean &= zh_g2.pm.pmdig[exd];
 									if (clean.isNotEmpty()) {
 										iret = 1;
-										if (opprint2 & 2)cout << "UR one extra digit "
+										if (opprint & 2)cout << "UR one extra digit "
 											<< cellsFixedData[tcells[0]].pt << " " << cellsFixedData[tcells[1]].pt << " "
 											<< cellsFixedData[tcells[2]].pt << " " << cellsFixedData[tcells[3]].pt << endl;
 										zhou_solve.FD[exd][0] -= clean;
@@ -5746,7 +5870,7 @@ int PM_GO::Rate45_URs(GINT64 * t, int & nt){
 								int digc1 = zh_g2.dig_cells[c1], digc2 = zh_g2.dig_cells[c2];
 								if (zh_g.pairs.On_c(c2)){// type 1 UR 
 									iret = 1;
-									if (opprint2 & 2)cout << "UR type1 " 
+									if (opprint & 2)cout << "UR type1 " 
 										<< cellsFixedData[tcells[0]].pt << " " << cellsFixedData[tcells[1]].pt << " "
 										<< cellsFixedData[tcells[2]].pt << " " << cellsFixedData[tcells[3]].pt << endl;
 									if (zh_g.triplets.On_c(c1))	zhou_solve.Setcell(c1);
@@ -5820,15 +5944,15 @@ int PM_GO::Rate45Plus(GINT64 * t, int  nt, int plus){
 		int degree = nothers;
 		if (degree< plus) degree = plus; //crazy but  to copy serate mode
 		CELL_FIX cf1 = cellsFixedData[cell1], cf2 = cellsFixedData[cell2];
-//		if (opprint2 & 4)cout << "UR/UL  cells " << cf1.pt << "  " << cf2.pt
-//			<< " rating=" << hint.rating_done << endl;
+		if (opprint & 2)cout << "UR/UL  cells " << cf1.pt << "  " << cf2.pt
+			<< " rating=" << hint.rating_done << endl;
 		if (cf1.eb == cf2.eb) if (Rate45_el(w, cf1.ebu, degree)) goto ok;
 		if (cf1.el == cf2.el) if (Rate45_el(w, cf1.el,degree)) goto ok;
 		if (cf1.pl == cf2.pl) if (Rate45_el(w, cf1.plu,degree)) goto ok;
 		continue;
 		ok:
 		iret++;
-		if (opprint2 & 4)cout << det_mess << " cells " << cf1.pt << "  " << cf2.pt
+		if (opprint & 2)cout << det_mess << " cells " << cf1.pt << "  " << cf2.pt
 			<<" rating="<< hint.rating_done<< endl;
 		w.u16[1] = 0;// kill it 
 	}
@@ -6073,13 +6197,13 @@ int PM_GO::RateUL_base(STORE_UL & wul){// try to rate the UL table
 	case 0:{// one cell with digits in excess
 		if (_popcnt32(digc1) == 3)zhou_solve.Setcell(cell1);
 		else zhou_solve.CleanCellForDigits(cell1, digs);
-		if (opprint2 & 2)wul.Print("type 1 UL ");
+		if (opprint & 2)wul.Print("type 1 UL ");
 		wul.ur2.u16[1] = 0;
 		return 1;
 	}
 	case 1:{// one digit in excess elim  is not empty 
 		zhou_solve.FD[wul.digit_one][0] -= wul.one_digit_elims;
-		if (opprint2 & 2)wul.Print("one active extra digit ");
+		if (opprint & 2)wul.Print("one active extra digit ");
 		wul.ur2.u16[1] = 0;
 		return 1;
 	}
@@ -6091,7 +6215,7 @@ int PM_GO::RateUL_base(STORE_UL & wul){// try to rate the UL table
 			return 1;
 		}
 		if (!wul.ur2.u16[1])  {
-			if (opprint2 & 2)cout << "killed no digit of the URr in the solution  " << endl;
+			if (opprint & 1)cout << "killed no digit of the URr in the solution  " << endl;
 		}
 		return 0;;
 
@@ -6321,19 +6445,19 @@ int PM_GO::Rate_ULs(int plus45){// try to rate the UL table
 	return iret;
 }
 int PM_GO::Rate56BUG() {
-	if (opprint2 & 2){	cout << "start bug analysis" << endl; }
+	if (opprint & 1){	cout << "start bug analysis" << endl; }
 	if (bug.Init())	return 0;   // not a BUG pattern
-	if (opprint2 & 2)cout << "bug pattern" << endl;
+	if (opprint & 1)cout << "bug pattern" << endl;
 	int iret = 0, cell1 = bug.tplus[0];
 	if (bug.ntplus == 1){		//======================= bug type 1
-		if (opprint2 & 2)cout << "bug type 1" << endl;
+		if (opprint & 2)cout << "bug type 1" << endl;
 		zhou_solve.Setcell(cell1);
 		hint.Done(56);
 		return 1;
 	}
 	if (_popcnt32(bug.or_change) == 1){	//======================= bug type 2 same digit
 		uint32_t dig1; bitscanforward(dig1, bug.change_plus[0]);
-		if (opprint2 & 2)cout << "bug type 2 same digit=" << dig1 + 1 << endl;
+		if (opprint & 2)cout << "bug type 2 same digit=" << dig1 + 1 << endl;
 		if (0){
 			char ws[82];
 			cout << bug.zz.String3X(ws) << " to clean" << endl;
@@ -6350,7 +6474,7 @@ int PM_GO::Rate56BUG() {
 	for (int iu = 26; iu >= 0; iu--){ // serate seems to give the priority to boxes
 		BF128 wu = units3xBM[iu]; wu &= zhou_solve.cells_unsolved;
 		if (!bug.wplus.isSubsetOf(wu))continue;
-		if (opprint2 & 2)cout << "bug type 3/4 see unit=" << iu << endl;
+		if (opprint & 2)cout << "bug type 3/4 see unit=" << iu << endl;
 		//must have self eliminations with bug.or_change
 		BF128 wu_pairs = wu&zh_g.pairs, wupw = wu_pairs;// cells pair of the unit
 		int or_pairs = 0, tpairs[10],tpairs_digits[10], ntpairs = 0,cell;
@@ -6373,7 +6497,7 @@ int PM_GO::Rate56BUG() {
 		//================================== locked digit
 		int locked_d = bug.or_plus_tot & ~or_pairs;
 		if (bug.ntplus == 2 && locked_d){// locked digits 2 cells
-			if (opprint2 & 2)cout << "bug 3/4 locked digit(s) in plus cell(s) locked 0"
+			if (opprint & 2)cout << "bug 3/4 locked digit(s) in plus cell(s) locked 0"
 				<< oct << locked_d<<dec << endl;
 			for (int i = 0; i < bug.ntplus; i++){// keep  locked plus change 
 				int digbf = bug.tplus_digits[i] ^ locked_d;
@@ -6383,8 +6507,8 @@ int PM_GO::Rate56BUG() {
 			hint.Done(57);
 			return 1;
 		}
-		if (opprint2 & 2)cout << oct << "0" << changet << " change count=" << dec << count_change << endl;
-		if (opprint2 & 2)cout << "nchange=" << nchange << " nmix=" << nmix << " ntpairs=" << ntpairs << endl;
+		if (opprint & 1)cout << oct << "0" << changet << " change count=" << dec << count_change << endl;
+		if (opprint & 1)cout << "nchange=" << nchange << " nmix=" << nmix << " ntpairs=" << ntpairs << endl;
 		// note if 2 cells and one digit in both, ( here not a single digit) could be erased
 		// likely same for more than 2 cells similar to APE rated 6.2
 		//======================== now looking for naked pair triplet quad 5
@@ -6394,7 +6518,7 @@ int PM_GO::Rate56BUG() {
 		for (int i1 = 0; i1 < ntpairs; i1++){
 			if (tpairs_digits[i1] == changet){
 				hint.Done(58);
-				if (opprint2 & 2)cout << "bug 3/4 naked pair cell " << cellsFixedData[tpairs[i1]].pt << endl;
+				if (opprint & 2)cout << "bug 3/4 naked pair cell " << cellsFixedData[tpairs[i1]].pt << endl;
 				BF128 cells_clean = wu_pairs; cells_clean.Clear_c(tpairs[i1]);
 				if (zhou_solve.CleanCellsForDigits(cells_clean, changet))return 1;// should always be yes
 				return 0;// safety code
@@ -6408,7 +6532,7 @@ int PM_GO::Rate56BUG() {
 				int digt = tpairs_digits[i1] | tpairs_digits[i2] | changet;
 				if (_popcnt32(digt) ==3){
 					hint.Done(59);
-					if (opprint2 & 2)cout << "bug 3/4 naked triplet" << endl;
+					if (opprint & 2)cout << "bug 3/4 naked triplet" << endl;
 					BF128 cells_clean = wu_pairs; cells_clean.Clear_c(tpairs[i1]); cells_clean.Clear_c(tpairs[i2]);
 					if (zhou_solve.CleanCellsForDigits(cells_clean, digt))return 1;// should always be yes
 					goto quad; 
@@ -6427,7 +6551,7 @@ int PM_GO::Rate56BUG() {
 					int digt = dig2 | tpairs_digits[i3];
 					if (_popcnt32(digt) == 4){
 						hint.Done(60);
-						if (opprint2 & 2)cout << "bug 3/4 naked quad" << endl;
+						if (opprint & 2)cout << "bug 3/4 naked quad" << endl;
 						BF128 cells_clean = wu_pairs; cells_clean.Clear_c(tpairs[i1]); 
 						cells_clean.Clear_c(tpairs[i2]); cells_clean.Clear_c(tpairs[i3]);
 						if (zhou_solve.CleanCellsForDigits(cells_clean, digt))return 1;// should always be yes
@@ -6449,7 +6573,7 @@ int PM_GO::Rate56BUG() {
 						int digt = dig3 | tpairs_digits[i4];
 						if (_popcnt32(digt) == 5){
 							hint.Done(61);
-							if (opprint2 & 2)cout << "bug 3/4 naked (5)" << endl;
+							if (opprint & 2)cout << "bug 3/4 naked (5)" << endl;
 							BF128 cells_clean = wu_pairs; cells_clean.Clear_c(tpairs[i1]);
 							cells_clean.Clear_c(tpairs[i2]); cells_clean.Clear_c(tpairs[i3]);
 							cells_clean.Clear_c(tpairs[i4]);
@@ -6464,7 +6588,7 @@ int PM_GO::Rate56BUG() {
 	return iret;
 }
 int PM_GO::Rate62_APE(){
-	if (opprint2 & 2){ cout << "start AlignedPairExclusion" << endl; }
+	if (opprint & 1){ cout << "start AlignedPairExclusion" << endl; }
 	int iret = 0;
 	for (int iband = 0; iband < 6; iband++){
 		BF128 bpairs = band3xBM[iband]; bpairs &= zh_g.pairs;
@@ -6477,15 +6601,12 @@ int PM_GO::Rate62_APE(){
 		for (int idig = 0; idig < 9; idig++){//Find possible active digits
 			digs_pairs[idig] = zh_g2.pm.pmdig[idig]&bpairs;
 			npdigs[idig] = digs_pairs[idig].Count();
-			//BF128 bfdig = band3xBM[iband]; bfdig &= zh_g.pm.pmdig[idig];
-			//BF128 bfdig_pairs = bfdig&bpairs;
 			if (npdigs[idig] >= 3)active_digs |= 1<<idig;
 		}
 		if (!active_digs) continue; //no APE to come
-		if (0 &&opprint2 & 2){
+		if (opprint & 1){
 			cout << "study band  " << iband
 				<< " active digs 0" << oct << active_digs << dec << endl;
-			//continue;
 		}
 		int cell_base;// source where on digit can be cleaned (any number of digits
 		while ((cell_base = base.getFirstCell()) >= 0){
@@ -6521,8 +6642,10 @@ int PM_GO::Rate62_APE(){
 					if (seen.isEmpty()) goto nextidig;
 				}
 				// this is a valid ape 
-				//char ws[82];
-				//cout <<seen.String3X(ws)<< " APE" << endl;
+				if (opprint & 2) {
+					char ws[82];
+					cout <<seen.String3X(ws)<< " Align pair exclusion PE for digit"<< idig+1 << endl;
+				}
 
 				zhou_solve.FD[idig][0] -= seen;
 				iret = 1;
@@ -6606,12 +6729,17 @@ int PM_GO::Rate75_ATE() {
 						if (find1) zhou_solve.CleanCellForDigits(i1, find1);
 						if (find2) zhou_solve.CleanCellForDigits(i2, find2);
 						if (find3) zhou_solve.CleanCellForDigits(i3, find3);
-						if (opprint2 & 8)
-							cout << "ATExclusion cells " << cellsFixedData[i1].pt <<" "
-							<< cellsFixedData[i2].pt << " " << cellsFixedData[i3].pt 
-							<< " excluded digits 0"<<oct<<find1
-							<<" 0"<<find2<<" 0"<<find3<<dec<< endl;
-					
+						if (opprint & 2) {
+							cout << "ATE exclusion cells " << cellsFixedData[i1].pt << " "
+								<< cellsFixedData[i2].pt << " " << cellsFixedData[i3].pt
+								<< " elims ";
+							for (int idig = 0, bit = 1; idig < 9; idig++, bit <<= 1) {
+								if (find1&bit) cout << idig + 1 << cellsFixedData[i1].pt << " ";
+								if (find2&bit) cout << idig + 1 << cellsFixedData[i2].pt << " ";
+								if (find3&bit) cout << idig + 1 << cellsFixedData[i3].pt << " ";
+							}
+							cout << endl;
+						}					
 					}
 				}
 			}

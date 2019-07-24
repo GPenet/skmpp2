@@ -5,7 +5,7 @@
 #include <sys/timeb.h>
 #include "main.h"  // tab0  
 
-uint64_t p_cptg[40], p_cpt1g[20], p_cpt2g[20];
+uint64_t p_cptg[40], p_cpt1g[20], p_cpt2g[40];
 
 
 extern ZH_1D_GLOBAL zh1d_g;

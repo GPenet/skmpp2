@@ -109,6 +109,7 @@ struct XSTATUS{// fish data for fish processing
 struct STORE_XLC{
 	int dig, rating,t[20],nt,loop;
 	BF128 pattern;
+	void Print();
 };
 struct YLSEARCH{
 	int idig, xcell1, xcell2, maxpas, ncells, 
@@ -123,7 +124,7 @@ struct YLSEARCH{
 	int CleanLoop();
 	int CleanLoopOut();
 	int Is_To_Clean(int rating);
-	void PrintTback();
+	void PrintTback(const char * lib);
 };
 struct XYSEARCH{
 	struct PATH{
@@ -328,28 +329,25 @@ struct R0SEARCH {
 		int TryUsingElims(BF16 floors,BF81 * elims_floors, BF81 & elims_cells);
 	}r0search;	*/
 
+/* Build Strings v2
+main task : store and print a multi chains of any kind
+don't store if print off
+each candidate is a GINT64  cell,digit,{sign,end chain,end multi}, 0 
+
+*/
 class BUILDSTRING{
 public:
-	char * p, *lim, *current_elim_start;
-	char *zs;
+	GINT64 *zs, * p, *lim, *current_elim_start;
 	int mysize;
 	// must be called before any use
-	void SetUp(char * zse, int mysizee){ mysize = mysizee; zs = zse; lim = zs + mysize - 100; }
+	void SetUp(GINT64 * zse, int mysizee){ mysize = mysizee; zs = zse; lim = zs + mysize - 100;
+	Init();
+	}
 	void Init() { p = current_elim_start = zs; }
-	inline void Ach(char x){ if (lim - p)		(*p++) = x; }
-	inline void Achint(int x){ if (lim - p)(*p++) = (char)(x + '1'); }
-	void Astr(const char * x);
-	void Aunit(int x);
-	//	inline void Arating(int x){if(lim-p)(*p++)=(char)(x/10+'0');(*p++)=(char)(x%10+'0');}
-	//void Aint(int x){ char buf[20]; _itoa_s(x, buf, 20, 10); Astr(buf); } //MD 23.9.2018 commented out
-	inline void Aendl(){ if (lim - p) (*p++) = 0; } // put end string end of line
-	inline void Aspace(){ if (lim - p)(*p++) = ' '; }
-	void AScand(SCAND x);
-	void Close();
-	void Store(UCAND & w);
+	inline int NoFree() { return p > lim; }
+	inline GINT64 * GetFree() { return p; }
+	inline void Lock(int n) { p += n; }
 	void StoreChain(SCAND * t, int n);
-	void StoreX(SCAND & w, int dig);
-	void StoreXChain(SCAND * t, int n, int dig);
 	inline void SetCurrentElim(){ current_elim_start = p; }
 	inline void ClearCurrent(){ p = current_elim_start; }
 	void SetCurrentAsFirst(){
@@ -486,26 +484,23 @@ public:
 
 */
 	//          start of PM_GO data and functions
-	EXPLAIN_BUFFER expbuf;// locate the source in a path
-	USHORT * texplain[1000];// start of each "event"
-	//PM_DATA zpmd[3], mydxx, *myd_at_start, dyndx;
-	//char	* mybits;	//c = "....|...._....|...._....|....-....|
-	//PMBF pmelims,pair_biv;
+	//EXPLAIN_BUFFER expbuf;// locate the source in a path
+	//USHORT * texplain[1000];// start of each "event"
 	BF16 active_floors,mfloors; 
 	ONE_FLOOR one_floor;
-	ACTIVERCB activercb;
+	//ACTIVERCB activercb;
 //	EXOCET	texocet[30],	wexo; // 30 in open band mode
 //	EXO8 texo8[5],wexo8;
 //	PMBFONOFF pof_store[1000];  // use in vloop expansion
 
 	// settings for builstrings in xysearch and nested
     #define GINTBUFSIZE1 2000
-	#define buildstringsize1 200000
-	#define buildstringsize2 20000
-	char builstr1[buildstringsize1],builstr2[buildstringsize2];
+	#define buildstringsize1 20000
+	#define buildstringsize2 2000
+	GINT64 builstr1[buildstringsize1],builstr2[buildstringsize2];
 	GINT gintbuffer[GINTBUFSIZE1];
 	GINTBUF gintbuf;
-	BUILDSTRING * bdsp[2];  //pointers to builstring main and nested
+	BUILDSTRING  bdsp[2];  //pointers to builstring main and nested
 
 	int opprint, opprint2, stop_rating,
 		ntr0logic,r0logictype,logictype,
@@ -551,8 +546,9 @@ public:
 	int Solved_xx(int lim);// internal call valid puzzle 
 	int SolveGetLow44(int pack=0,int diag=0);// internal call valid puzzle 
 	int SolveDet(int liml, int printopt, int mode);
-	void SolveSerate110();
-	void SolveSerate111();
+	void SolveSerate110();// serate mode
+	void SolveSerate111();// quick rate
+	void SolveSerate112();// solve full explain mode
 	void Solve118_subgrid();
 	void Solve199test();
 
@@ -598,6 +594,7 @@ public:
 	int Next10_28();
 	int Next28();
 	int Next30_44();
+	int Next_below_45();
 
 	//int NextElim();
 	//int NextSolve2();

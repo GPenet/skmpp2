@@ -112,7 +112,7 @@ struct G17TB3GO{
 		countsum,// 4 values (4x16 bits) min clues total and per stack
 		countstack;// count of clues per stack {bands 12 + countsum)
 	void Debug();
-}g17tb3go[256];
+}g17tb3go[512];
 struct G17B3HANDLER{
 	G17TB3GO wg3;
 	int known_b3,rknown_b3, active_b3, 
@@ -199,7 +199,7 @@ struct G17XY{
 	int ntb3, b3lim,// number of active bands after Guas and stack filters
 		ibfirst, // first band valid index in FirstCheckActiveBands
 		nbx, nby,nclues,more3;// band x and band y count
-	int tuab3[40], ntuab3;// UAs band3 found inside a ba,d3 cycle
+	//int tuab3[40], ntuab3;// UAs band3 found inside a ba,d3 cycle
 	G17TB3GO wg3;// current band 
 	G17B3HANDLER g17hh0;
 	int uasb3_1[2000], nuasb3_1, uasb3_2[2000], nuasb3_2;
